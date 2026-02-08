@@ -7887,13 +7887,54 @@ def yt_podcast_picks_feed():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
+@app.route('/podcast/briefs/feed.xml', methods=['GET'])
+def brief_podcast_feed():
+    """Serve RSS feed for daily brief podcast episodes."""
+    try:
+        conn = sqlite3.connect(DATABASE_PATH)
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+
+        cursor.execute('''
+            SELECT * FROM brief_podcast_episodes
+            WHERE status = 'ready'
+            ORDER BY created_at DESC
+        ''')
+        episodes = [dict(row) for row in cursor.fetchall()]
+        conn.close()
+
+        host_url = _get_podcast_host_url()
+        feed_url = f"{host_url}podcast/briefs/feed.xml"
+
+        image_url = f"{host_url}podcast-audio/brief_podcast_cover.png"
+
+        rss = _generate_podcast_rss(
+            title="AI & Tech Daily Brief",
+            description="AI-synthesized daily intelligence brief covering AI, tech infrastructure, and the forces shaping the industry.",
+            episodes=episodes,
+            feed_url=feed_url,
+            host_url=host_url,
+            image_url=image_url,
+        )
+
+        from flask import Response
+        return Response(rss, mimetype='application/rss+xml',
+                        headers={'Cache-Control': 'no-cache, max-age=0'})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
 @app.route('/podcast-audio/<path:filename>', methods=['GET'])
 def yt_podcast_serve_audio(filename):
-    """Serve podcast MP3 audio files."""
+    """Serve podcast audio files and cover images."""
     try:
         file_path = os.path.join(PODCAST_AUDIO_FOLDER, filename)
         if not os.path.exists(file_path):
             return jsonify({'success': False, 'error': 'Audio file not found'}), 404
+        if filename.endswith('.png'):
+            return send_file(file_path, mimetype='image/png')
+        elif filename.endswith('.jpg') or filename.endswith('.jpeg'):
+            return send_file(file_path, mimetype='image/jpeg')
         return send_file(file_path, mimetype='audio/mpeg')
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
@@ -8006,6 +8047,26 @@ def yt_podcast_list_feeds():
             })
 
         conn.close()
+
+        # Brief podcast feed
+        try:
+            conn2 = sqlite3.connect(DATABASE_PATH)
+            conn2.row_factory = sqlite3.Row
+            cursor2 = conn2.cursor()
+            cursor2.execute("SELECT COUNT(*) as cnt FROM brief_podcast_episodes WHERE status = 'ready'")
+            brief_ready = cursor2.fetchone()['cnt']
+            cursor2.execute("SELECT COUNT(*) as cnt FROM brief_podcast_episodes")
+            brief_total = cursor2.fetchone()['cnt']
+            conn2.close()
+            feeds.append({
+                'name': 'Daily Intelligence Brief',
+                'type': 'briefs',
+                'feed_url': f'{host_url}podcast/briefs/feed.xml',
+                'ready_episodes': brief_ready,
+                'total_episodes': brief_total
+            })
+        except Exception:
+            pass  # Table may not exist yet
 
         # Storage info
         total_size = 0
@@ -8133,8 +8194,8 @@ def generate_brief_api():
         vertical = data.get('vertical', 'ai_tech')
 
         # Route to correct pipeline based on vertical
-        import sys
-        import importlib
+        # Use importlib to load from exact file paths (sys.path manipulation is unreliable)
+        import importlib.util
 
         if vertical == 'health_longevity':
             brief_dir = os.path.join(os.path.dirname(__file__), 'health_longevity_brief')
@@ -8143,14 +8204,18 @@ def generate_brief_api():
         else:
             brief_dir = os.path.join(os.path.dirname(__file__), 'daily_brief')
 
-        sys.path.insert(0, brief_dir)
-        # Force reimport in case both verticals run in same process
-        if 'collectors' in sys.modules:
-            del sys.modules['collectors']
-        if 'synthesizer' in sys.modules:
-            del sys.modules['synthesizer']
-        from collectors import collect_all
-        from synthesizer import synthesize_brief
+        collectors_path = os.path.join(brief_dir, 'collectors.py')
+        synthesizer_path = os.path.join(brief_dir, 'synthesizer.py')
+
+        spec_c = importlib.util.spec_from_file_location(f"collectors_{vertical}", collectors_path)
+        collectors_mod = importlib.util.module_from_spec(spec_c)
+        spec_c.loader.exec_module(collectors_mod)
+        collect_all = collectors_mod.collect_all
+
+        spec_s = importlib.util.spec_from_file_location(f"synthesizer_{vertical}", synthesizer_path)
+        synthesizer_mod = importlib.util.module_from_spec(spec_s)
+        spec_s.loader.exec_module(synthesizer_mod)
+        synthesize_brief = synthesizer_mod.synthesize_brief
 
         # Collect signals (wider window for futures — twice-weekly cadence)
         hours = 96 if vertical == 'futures_trends' else 24

@@ -1,0 +1,69 @@
+<svg viewBox="0 0 1400 1400" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0a0f1a"/>
+      <stop offset="100%" style="stop-color:#1a1f3a"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#00d4aa"/>
+      <stop offset="100%" style="stop-color:#0088ff"/>
+    </linearGradient>
+    <linearGradient id="accent2" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#00d4aa;stop-opacity:0.3"/>
+      <stop offset="100%" style="stop-color:#0088ff;stop-opacity:0.1"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1400" height="1400" fill="url(#bg)"/>
+
+  <!-- Subtle grid lines -->
+  <g opacity="0.06" stroke="#ffffff" stroke-width="1">
+    <line x1="0" y1="280" x2="1400" y2="280"/>
+    <line x1="0" y1="560" x2="1400" y2="560"/>
+    <line x1="0" y1="840" x2="1400" y2="840"/>
+    <line x1="0" y1="1120" x2="1400" y2="1120"/>
+    <line x1="280" y1="0" x2="280" y2="1400"/>
+    <line x1="560" y1="0" x2="560" y2="1400"/>
+    <line x1="840" y1="0" x2="840" y2="1400"/>
+    <line x1="1120" y1="0" x2="1120" y2="1400"/>
+  </g>
+
+  <!-- Signal pulse wave -->
+  <g transform="translate(0, 650)" opacity="0.15">
+    <path d="M0,0 Q100,-80 200,0 Q300,80 400,0 Q500,-120 600,0 Q700,60 800,0 Q900,-40 1000,0 Q1100,100 1200,0 Q1300,-60 1400,0"
+          fill="none" stroke="url(#accent)" stroke-width="3"/>
+    <path d="M0,30 Q100,-50 200,30 Q300,110 400,30 Q500,-90 600,30 Q700,90 800,30 Q900,-10 1000,30 Q1100,130 1200,30 Q1300,-30 1400,30"
+          fill="none" stroke="url(#accent)" stroke-width="2" opacity="0.5"/>
+  </g>
+
+  <!-- Accent bar top -->
+  <rect x="100" y="100" width="200" height="6" rx="3" fill="url(#accent)"/>
+
+  <!-- AI & TECH text -->
+  <text x="100" y="460" font-family="Helvetica Neue, Arial, sans-serif" font-weight="700" font-size="180" fill="url(#accent)" letter-spacing="8">AI &amp; TECH</text>
+
+  <!-- DAILY text -->
+  <text x="100" y="640" font-family="Helvetica Neue, Arial, sans-serif" font-weight="300" font-size="180" fill="#ffffff" letter-spacing="20" opacity="0.9">DAILY</text>
+
+  <!-- BRIEF text -->
+  <text x="100" y="820" font-family="Helvetica Neue, Arial, sans-serif" font-weight="700" font-size="180" fill="#ffffff" letter-spacing="8">BRIEF</text>
+
+  <!-- Divider line -->
+  <rect x="100" y="880" width="600" height="3" rx="1.5" fill="url(#accent)" opacity="0.6"/>
+
+  <!-- Subtitle -->
+  <text x="100" y="960" font-family="Helvetica Neue, Arial, sans-serif" font-weight="400" font-size="42" fill="#ffffff" opacity="0.4" letter-spacing="8">KNOWLEDGE STUDIO</text>
+
+  <!-- Signal dots bottom right -->
+  <g transform="translate(1050, 1100)" opacity="0.4">
+    <circle cx="0" cy="0" r="8" fill="#00d4aa"/>
+    <circle cx="50" cy="0" r="8" fill="#00d4aa" opacity="0.7"/>
+    <circle cx="100" cy="0" r="8" fill="#0088ff" opacity="0.5"/>
+    <circle cx="150" cy="0" r="8" fill="#0088ff" opacity="0.3"/>
+    <circle cx="200" cy="0" r="8" fill="#0088ff" opacity="0.15"/>
+  </g>
+
+  <!-- Bottom accent bar -->
+  <rect x="100" y="1250" width="120" height="6" rx="3" fill="url(#accent)" opacity="0.6"/>
+</svg>
