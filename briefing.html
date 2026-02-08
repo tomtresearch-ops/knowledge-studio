@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Briefing Room - Knowledge Studio</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 40px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: #8b5cf6;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .logo-text h1 {
+            font-size: 24px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .logo-text p {
+            font-size: 14px;
+            color: #a1a1aa;
+            margin: 0;
+        }
+
+        .nav {
+            display: flex;
+            gap: 32px;
+        }
+
+        .nav a {
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .nav a:hover {
+            color: #8b5cf6;
+        }
+
+        .nav a.active {
+            color: #8b5cf6;
+        }
+
+        /* Main Content */
+        .main-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .page-header-left h1 {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .page-header-left p {
+            font-size: 14px;
+            color: #a1a1aa;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .generate-btn {
+            padding: 10px 20px;
+            background: rgba(139, 92, 246, 0.2);
+            border: 1px solid rgba(139, 92, 246, 0.4);
+            border-radius: 10px;
+            color: #d1c4ff;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .generate-btn:hover:not(:disabled) {
+            background: rgba(139, 92, 246, 0.35);
+            border-color: rgba(139, 92, 246, 0.6);
+            color: #ffffff;
+        }
+
+        .generate-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .refresh-btn {
+            padding: 10px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            color: #a1a1aa;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.2s;
+        }
+
+        .refresh-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+        }
+
+        /* Status message */
+        .status-message {
+            padding: 12px 16px;
+            background: rgba(139, 92, 246, 0.15);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 10px;
+            color: #a78bfa;
+            font-size: 14px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .status-message.error {
+            background: rgba(239, 68, 68, 0.15);
+            border-color: rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+        }
+
+        /* Vertical Tabs */
+        .vertical-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .vertical-tab {
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            color: #a1a1aa;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .vertical-tab:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: #ffffff;
+        }
+
+        .vertical-tab.active {
+            background: rgba(139, 92, 246, 0.2);
+            border-color: rgba(139, 92, 246, 0.4);
+            color: #a78bfa;
+        }
+
+        /* Layout */
+        .briefing-layout {
+            display: flex;
+            gap: 24px;
+            min-height: calc(100vh - 280px);
+        }
+
+        /* Brief List Sidebar */
+        .brief-list {
+            width: 340px;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .brief-card {
+            background: rgba(20, 20, 40, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .brief-card:hover {
+            border-color: rgba(139, 92, 246, 0.3);
+            background: rgba(20, 20, 40, 0.8);
+        }
+
+        .brief-card.active {
+            border-color: rgba(139, 92, 246, 0.5);
+            background: rgba(139, 92, 246, 0.1);
+        }
+
+        .brief-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .vertical-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .brief-card-date {
+            font-size: 12px;
+            color: #71717a;
+        }
+
+        .brief-card-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #ffffff;
+            line-height: 1.4;
+            margin-bottom: 6px;
+        }
+
+        .brief-card-meta {
+            font-size: 12px;
+            color: #71717a;
+        }
+
+        /* Brief Reader */
+        .brief-reader {
+            flex: 1;
+            background: rgba(20, 20, 40, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 32px;
+            overflow-y: auto;
+            max-height: calc(100vh - 280px);
+        }
+
+        .reader-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 24px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .reader-header h2 {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .reader-meta {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            font-size: 13px;
+            color: #71717a;
+        }
+
+        .reader-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-btn {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            padding: 8px 12px;
+            color: #a1a1aa;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+
+        .action-btn:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: #ffffff;
+        }
+
+        .action-btn.delete:hover {
+            background: rgba(239, 68, 68, 0.15);
+            border-color: rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+        }
+
+        /* Markdown Body */
+        .brief-body {
+            font-size: 15px;
+            line-height: 1.8;
+            color: #e4e4e7;
+        }
+
+        .brief-body h1 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #ffffff;
+            margin-top: 28px;
+            margin-bottom: 12px;
+        }
+
+        .brief-body h2 {
+            font-size: 17px;
+            font-weight: 600;
+            color: #a78bfa;
+            margin-top: 24px;
+            margin-bottom: 12px;
+        }
+
+        .brief-body h3 {
+            font-size: 15px;
+            font-weight: 600;
+            color: #ffffff;
+            margin-top: 20px;
+            margin-bottom: 8px;
+        }
+
+        .brief-body p {
+            margin-bottom: 14px;
+        }
+
+        .brief-body strong {
+            color: #ffffff;
+        }
+
+        .brief-body em {
+            color: #c4b5fd;
+        }
+
+        .brief-body a {
+            color: #8b5cf6;
+            text-decoration: none;
+        }
+
+        .brief-body a:hover {
+            text-decoration: underline;
+        }
+
+        .brief-body ul, .brief-body ol {
+            margin-left: 24px;
+            margin-bottom: 14px;
+        }
+
+        .brief-body li {
+            margin-bottom: 8px;
+        }
+
+        .brief-body hr {
+            border: none;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            margin: 28px 0;
+        }
+
+        .brief-body .yt-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            background: rgba(239, 68, 68, 0.08);
+            border: 1px solid rgba(239, 68, 68, 0.15);
+            border-radius: 8px;
+            color: #e4e4e7;
+            text-decoration: none;
+            font-size: 13px;
+            margin: 4px 0;
+            transition: all 0.2s;
+        }
+
+        .brief-body .yt-link:hover {
+            background: rgba(239, 68, 68, 0.15);
+            border-color: rgba(239, 68, 68, 0.3);
+            text-decoration: none;
+        }
+
+        .brief-body .yt-link .yt-icon {
+            color: #ef4444;
+            font-size: 11px;
+        }
+
+        .brief-body .yt-link .yt-channel {
+            color: #71717a;
+            font-size: 12px;
+        }
+
+        .brief-body blockquote {
+            border-left: 3px solid #8b5cf6;
+            padding-left: 16px;
+            margin: 16px 0;
+            color: #a1a1aa;
+        }
+
+        .brief-body code {
+            background: rgba(139, 92, 246, 0.2);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        /* Empty State */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            min-height: 400px;
+            text-align: center;
+            color: #71717a;
+        }
+
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+            opacity: 0.6;
+        }
+
+        .empty-state h3 {
+            font-size: 20px;
+            color: #a1a1aa;
+            margin-bottom: 8px;
+        }
+
+        .empty-state p {
+            font-size: 14px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #a1a1aa;
+        }
+
+        @media (max-width: 1000px) {
+            .briefing-layout {
+                flex-direction: column;
+            }
+            .brief-list {
+                width: 100%;
+                flex-direction: row;
+                overflow-x: auto;
+            }
+            .brief-card {
+                min-width: 280px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">
+            <div class="logo-icon">📡</div>
+            <div class="logo-text">
+                <h1>Knowledge Studio</h1>
+                <p>Briefing Room</p>
+            </div>
+        </div>
+        <nav class="nav">
+            <a href="/">Capture</a>
+            <a href="/library">Library</a>
+            <a href="/channels">Channels</a>
+            <a href="/briefing" class="active">Briefing Room</a>
+            <a href="/intelligence">Intelligence</a>
+            <a href="/stats">Stats</a>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="page-header">
+            <div class="page-header-left">
+                <h1>Briefing Room</h1>
+                <p id="briefCount">Loading briefs...</p>
+            </div>
+            <div class="header-actions">
+                <select id="verticalSelect" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: #e4e4e7; padding: 8px 12px; border-radius: 8px; font-size: 14px; cursor: pointer;">
+                    <option value="ai_tech">🤖 AI & Tech</option>
+                    <option value="health_longevity">🧬 Health & Longevity</option>
+                    <option value="futures_trends">🔭 Futures & Trends</option>
+                </select>
+                <button class="generate-btn" id="generateBtn" onclick="generateBrief()">
+                    Generate Brief
+                </button>
+                <button class="refresh-btn" onclick="loadBriefs()">↻</button>
+            </div>
+        </div>
+
+        <div class="status-message" id="statusMessage"></div>
+
+        <div class="vertical-tabs" id="verticalTabs">
+            <button class="vertical-tab active" onclick="filterVertical('all', this)">All</button>
+        </div>
+
+        <div class="briefing-layout">
+            <div class="brief-list" id="briefList">
+                <div class="loading">Loading briefs...</div>
+            </div>
+
+            <div class="brief-reader" id="briefReader">
+                <div class="empty-state">
+                    <div class="empty-state-icon">📡</div>
+                    <h3>Select a brief to read</h3>
+                    <p>Or generate a new daily brief from your signal sources</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const VERTICAL_META = {
+            ai_tech: { label: 'AI & Tech', icon: '🤖', color: '#8b5cf6' },
+            crypto_macro: { label: 'Crypto & Macro', icon: '₿', color: '#f59e0b' },
+            health_longevity: { label: 'Health & Longevity', icon: '🧬', color: '#10b981' },
+            futures_trends: { label: 'Futures & Trends', icon: '🔭', color: '#3b82f6' },
+        };
+
+        let allBriefs = [];
+        let selectedBriefId = null;
+        let activeVertical = 'all';
+
+        async function loadBriefs() {
+            try {
+                const response = await fetch('/api/briefs');
+                const data = await response.json();
+                if (data.success && data.briefs) {
+                    allBriefs = data.briefs;
+                    document.getElementById('briefCount').textContent =
+                        `${allBriefs.length} brief${allBriefs.length !== 1 ? 's' : ''}`;
+                    buildVerticalTabs();
+                    renderBriefList();
+                    // Auto-select first brief if none selected
+                    if (allBriefs.length > 0 && !selectedBriefId) {
+                        selectBrief(allBriefs[0].id);
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to load briefs:', error);
+                document.getElementById('briefList').innerHTML =
+                    '<div class="empty-state"><div class="empty-state-icon">⚠️</div><h3>Failed to load</h3><p>Check that the server is running</p></div>';
+            }
+        }
+
+        function buildVerticalTabs() {
+            const verticals = [...new Set(allBriefs.map(b => b.vertical))];
+            const container = document.getElementById('verticalTabs');
+            container.innerHTML = `<button class="vertical-tab ${activeVertical === 'all' ? 'active' : ''}" onclick="filterVertical('all', this)">All</button>`;
+            verticals.forEach(v => {
+                const meta = VERTICAL_META[v] || { label: v, icon: '📄', color: '#71717a' };
+                container.innerHTML += `<button class="vertical-tab ${activeVertical === v ? 'active' : ''}" onclick="filterVertical('${v}', this)">${meta.icon} ${meta.label}</button>`;
+            });
+        }
+
+        function filterVertical(vertical, btn) {
+            activeVertical = vertical;
+            document.querySelectorAll('.vertical-tab').forEach(t => t.classList.remove('active'));
+            btn.classList.add('active');
+            renderBriefList();
+        }
+
+        function getFilteredBriefs() {
+            if (activeVertical === 'all') return allBriefs;
+            return allBriefs.filter(b => b.vertical === activeVertical);
+        }
+
+        function renderBriefList() {
+            const container = document.getElementById('briefList');
+            const briefs = getFilteredBriefs();
+
+            if (briefs.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state" style="min-height: 200px;">
+                        <div class="empty-state-icon">📡</div>
+                        <h3>No briefs yet</h3>
+                        <p>Generate your first brief to get started</p>
+                    </div>`;
+                return;
+            }
+
+            container.innerHTML = briefs.map(brief => {
+                const meta = VERTICAL_META[brief.vertical] || { label: brief.vertical, icon: '📄', color: '#71717a' };
+                const date = new Date(brief.created_at);
+                const dateStr = date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+                return `
+                    <div class="brief-card ${selectedBriefId === brief.id ? 'active' : ''}" onclick="selectBrief(${brief.id})">
+                        <div class="brief-card-header">
+                            <span class="vertical-badge" style="background: ${meta.color}22; color: ${meta.color};">
+                                ${meta.icon} ${meta.label}
+                            </span>
+                            <span class="brief-card-date">${dateStr}</span>
+                        </div>
+                        <div class="brief-card-title">${escapeHtml(brief.title)}</div>
+                        <div class="brief-card-meta">${brief.signal_count} signals · ${brief.source_count} sources</div>
+                    </div>`;
+            }).join('');
+        }
+
+        function selectBrief(id) {
+            selectedBriefId = id;
+            renderBriefList();
+
+            const brief = allBriefs.find(b => b.id === id);
+            if (!brief) return;
+
+            const meta = VERTICAL_META[brief.vertical] || { label: brief.vertical, icon: '📄', color: '#71717a' };
+            const date = new Date(brief.created_at);
+            const fullDate = date.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+            const reader = document.getElementById('briefReader');
+            reader.innerHTML = `
+                <div class="reader-header">
+                    <div>
+                        <h2>${escapeHtml(brief.title)}</h2>
+                        <div class="reader-meta">
+                            <span class="vertical-badge" style="background: ${meta.color}22; color: ${meta.color};">
+                                ${meta.icon} ${meta.label}
+                            </span>
+                            <span>${fullDate}</span>
+                            <span>${brief.signal_count} signals · ${brief.source_count} sources</span>
+                        </div>
+                    </div>
+                    <div class="reader-actions">
+                        <button class="action-btn" onclick="copyBrief(${brief.id})" title="Copy to clipboard">📋 Copy</button>
+                        <button class="action-btn delete" onclick="deleteBrief(${brief.id})" title="Delete brief">🗑</button>
+                    </div>
+                </div>
+                <div class="brief-body">${renderMarkdown(brief.content)}</div>`;
+
+            reader.scrollTop = 0;
+            enrichYouTubeLinks();
+        }
+
+        async function generateBrief() {
+            const btn = document.getElementById('generateBtn');
+            const vertical = document.getElementById('verticalSelect').value;
+            const verticalLabel = document.getElementById('verticalSelect').selectedOptions[0].text;
+            btn.disabled = true;
+            btn.textContent = 'Generating...';
+            showStatus(`Collecting signals for ${verticalLabel}... this may take a minute.`, false);
+
+            try {
+                const response = await fetch('/api/briefs/generate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ vertical }),
+                });
+                const data = await response.json();
+                if (data.success) {
+                    showStatus(`Brief generated: ${data.brief.title || 'New brief'} (${data.brief.signal_count} signals)`, false);
+                    selectedBriefId = null;
+                    await loadBriefs();
+                } else {
+                    showStatus(data.error || 'Failed to generate brief', true);
+                }
+            } catch (error) {
+                showStatus('Failed to connect to server', true);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Generate Brief';
+            }
+        }
+
+        async function deleteBrief(id) {
+            if (!confirm('Delete this brief?')) return;
+            try {
+                await fetch(`/api/briefs/${id}`, { method: 'DELETE' });
+                allBriefs = allBriefs.filter(b => b.id !== id);
+                if (selectedBriefId === id) {
+                    selectedBriefId = null;
+                    document.getElementById('briefReader').innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">📡</div>
+                            <h3>Select a brief to read</h3>
+                            <p>Or generate a new daily brief from your signal sources</p>
+                        </div>`;
+                }
+                document.getElementById('briefCount').textContent =
+                    `${allBriefs.length} brief${allBriefs.length !== 1 ? 's' : ''}`;
+                renderBriefList();
+            } catch (error) {
+                showStatus('Failed to delete brief', true);
+            }
+        }
+
+        function copyBrief(id) {
+            const brief = allBriefs.find(b => b.id === id);
+            if (!brief) return;
+            navigator.clipboard.writeText(brief.content).then(() => {
+                showStatus('Brief copied to clipboard', false);
+                setTimeout(() => hideStatus(), 2000);
+            });
+        }
+
+        function showStatus(msg, isError) {
+            const el = document.getElementById('statusMessage');
+            el.textContent = msg;
+            el.className = 'status-message' + (isError ? ' error' : '');
+            el.style.display = 'block';
+        }
+
+        function hideStatus() {
+            document.getElementById('statusMessage').style.display = 'none';
+        }
+
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        // Simple markdown renderer
+        function renderMarkdown(md) {
+            if (!md) return '';
+            let html = md;
+
+            // Escape HTML first
+            html = html.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+            // Horizontal rules
+            html = html.replace(/^---+$/gm, '<hr>');
+
+            // Headers
+            html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+            html = html.replace(/^## (.+)$/gm, '<h2>$1</h2>');
+            html = html.replace(/^# (.+)$/gm, '<h1>$1</h1>');
+
+            // Bold + italic
+            html = html.replace(/\*\*\*(.+?)\*\*\*/g, '<strong><em>$1</em></strong>');
+            html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+            html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+
+            // Links
+            html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
+
+            // Bare YouTube URLs — mark for enrichment
+            html = html.replace(/^(https?:\/\/(?:www\.)?youtube\.com\/watch\?v=[^\s]+)$/gm,
+                '<a href="$1" target="_blank" class="yt-link" data-url="$1">Loading...</a>');
+
+            // Other bare URLs on their own line
+            html = html.replace(/^(https?:\/\/[^\s]+)$/gm, function(match, url) {
+                if (url.includes('youtube.com/watch')) return match; // already handled
+                return '<a href="' + url + '" target="_blank">' + url + '</a>';
+            });
+
+            // Inline code
+            html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+
+            // Lists
+            html = html.replace(/^- (.+)$/gm, '<li>$1</li>');
+            html = html.replace(/^• (.+)$/gm, '<li>$1</li>');
+            html = html.replace(/(<li>.*<\/li>\n?)+/g, '<ul>$&</ul>');
+
+            // Paragraphs - wrap non-tag lines
+            html = html.split('\n\n').map(block => {
+                block = block.trim();
+                if (!block) return '';
+                if (block.startsWith('<h') || block.startsWith('<ul') || block.startsWith('<hr') || block.startsWith('<blockquote')) {
+                    return block;
+                }
+                // Don't wrap if it's already wrapped
+                if (block.startsWith('<p>')) return block;
+                return '<p>' + block.replace(/\n/g, '<br>') + '</p>';
+            }).join('\n');
+
+            return html;
+        }
+
+        // YouTube link enrichment — fetch title + channel for bare YT URLs
+        const ytCache = {};
+
+        async function enrichYouTubeLinks() {
+            const links = document.querySelectorAll('.yt-link');
+            for (const link of links) {
+                const url = link.dataset.url;
+                if (!url) continue;
+
+                // Check cache first
+                if (ytCache[url]) {
+                    applyYtMeta(link, ytCache[url]);
+                    continue;
+                }
+
+                try {
+                    const resp = await fetch(`https://noembed.com/embed?url=${encodeURIComponent(url)}`);
+                    const data = await resp.json();
+                    if (data.title) {
+                        const meta = { title: data.title, channel: data.author_name || '' };
+                        ytCache[url] = meta;
+                        applyYtMeta(link, meta);
+                    } else {
+                        link.textContent = url;
+                    }
+                } catch {
+                    link.textContent = url;
+                }
+            }
+        }
+
+        function applyYtMeta(link, meta) {
+            link.className = 'yt-link enriched';
+            link.innerHTML = `<span class="yt-icon">▶</span> ${escapeHtml(meta.title)}${meta.channel ? ' <span class="yt-channel">— ' + escapeHtml(meta.channel) + '</span>' : ''}`;
+        }
+
+        // Init
+        loadBriefs();
+    </script>
+</body>
+</html>
