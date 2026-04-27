@@ -1,0 +1,31 @@
+{
+  "headline": "The Infrastructure Reckoning: Why AI Companies Are Going Private",
+  "subtitle": "Anthropic trades capability for safety, major platforms get breached, and hardware shortages force a reset on how AI actually ships.",
+  "editorial_intro": "Three things happened this week that together tell a story about the next phase of AI: the companies building it are getting more cautious, the platforms hosting it are getting compromised, and the hardware running it is becoming scarce. This isn't noise. It's a structural shift away from the \"bigger model wins\" era and toward something messier and more defensive.",
+  "signals": [
+    {
+      "headline": "Anthropic Is Deliberately Slowing Claude Down",
+      "body": "Between Claude Opus 4.6 and 4.7, Anthropic changed the system prompt to restrict what the model can do \u2014 not because it couldn't do it, but because doing so costs more in regulatory and reputational friction than the capability is worth. This is a company choosing to be less powerful but more defensible. It's the first public signal that frontier labs have hit a ceiling where raw capability gains create more problems than they solve.",
+      "whycare": "Watch for this pattern to spread. Companies will start competing not on \"smartest model\" but on \"most useful while staying out of trouble.\" If you're building AI products, expect models to become more restricted, not less \u2014 and plan around it."
+    },
+    {
+      "headline": "Your Infrastructure Layer Just Got Breached",
+      "body": "Vercel and Notion both suffered major security breaches within days of each other. Vercel hosts countless AI deployments and integrations. Notion hosts the documents and workflows of thousands of AI teams. When infrastructure companies this foundational get compromised, every product built on top of them becomes exposed. This is no longer a vendor problem \u2014 it's a supply chain problem for anyone shipping AI products.",
+      "whycare": "Start auditing your deployment stack now. If you're running AI on shared cloud platforms, you're accepting the breach risk of those platforms as the cost of doing business. Self-hosted and private infrastructure just became a competitive advantage, not a luxury."
+    },
+    {
+      "headline": "RAM Shortage Could Last Years \u2014 And It Changes Everything",
+      "body": "Semiconductor supply constraints mean AI companies can't simply buy their way out of compute limitations. RAM will be scarce and expensive for years. This kills the strategy of \"throw more hardware at the problem.\" It forces a ruthless focus on efficiency: smaller models, better compression, smarter routing. Companies that can build useful products on constrained hardware win. Companies betting on scale lose.",
+      "whycare": "Invest in model compression, quantization, and edge deployment now. The AI stack of 2027 won't look like the stack of today \u2014 it'll be smaller, more distributed, and more private. Position accordingly."
+    }
+  ],
+  "bigger_picture": "Three separate events point to the same inflection point: the era of centralized, scaling-driven AI is over. Anthropic is restricting capability because it's now a liability. Vercel and Notion breaches show that shared infrastructure is the vulnerability. RAM shortages prove that hardware won't scale to meet demand. What emerges is a new architecture: smaller models running locally or on private infrastructure, restricted to specific, defensible use cases, operating under hard resource constraints. The winners will be companies that embrace these constraints early. The losers will be those still trying to build the \"smartest, biggest, most centralized\" system. This isn't a temporary adjustment \u2014 it's a fundamental reset in how AI gets built and deployed.",
+  "_meta": {
+    "vertical": "ai_tech",
+    "brief_id": 128,
+    "brief_date": "2026-04-20 01:30:57",
+    "signal_count": 291,
+    "source_count": 5,
+    "generated_at": "2026-04-19T22:00:10.940164"
+  }
+}

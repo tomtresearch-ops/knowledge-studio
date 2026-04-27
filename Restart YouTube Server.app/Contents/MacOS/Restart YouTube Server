@@ -1,0 +1,34 @@
+#!/usr/bin/osascript
+on run
+    set scriptDir to "/Users/bossmdaddy/Desktop/Coding Projects Master/youtube-intelligence"
+    
+    -- Show restarting notification
+    display notification "Restarting YouTube Intelligence Server..." with title "Server Restarting"
+    
+    -- Run the restart script in background using do shell script
+    -- This runs without Terminal window and survives Flask being killed
+    try
+        do shell script "cd " & quoted form of scriptDir & " && nohup ./restart_server.sh > /dev/null 2>&1 &"
+        
+        -- Wait a moment and check if server restarted
+        delay 8
+        
+        -- Check if server is running
+        try
+            do shell script "lsof -i :5001 > /dev/null 2>&1"
+            display notification "Server restarted successfully at http://localhost:5001" with title "Server Restarted" sound name "Glass"
+        on error
+            display notification "Server may still be restarting. Check http://localhost:5001 in a moment." with title "Server Restarting"
+        end try
+    on error errorMessage
+        display notification "Error: " & errorMessage with title "Server Restart Failed" sound name "Basso"
+    end try
+end run
+
+
+
+
+
+
+
+

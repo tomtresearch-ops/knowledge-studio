@@ -1,0 +1,57 @@
+## 🥇 EXECUTIVE SYNTHESIS REQUIREMENT:
+-   **Goal:** A powerful, high-level overview that immediately contextualizes the interviewee and summarizes the entire scope of the discussion, acting as a narrative table of contents.
+-   **Max Length:** 180 words total.
+
+**Synthesis Structure:**
+* Start the very first sentence providing a quick identification of the interviewee (**Name**, **Title/Company**, and one single most relevant credential, e.g., 'Author of X').
+* Strictly follow this with a new paragraph (maximum of **4 sentences**) that clearly and comprehensively lays out the interview's central topic, the expert's core thesis, and the main areas covered.
+* Conclude this section with a succinct **bulleted list of 3-5 key thesis points**. Use **bolding only on key terms or phrases** within each bullet for visual guidance, not the entire sentence.
+
+---
+## 💡 TOP 5 KEY TAKEAWAYS & ACTIONABLE INSIGHTS:
+-   **Goal:** Provide immediate, high-impact, scannable knowledge right after the synthesis.
+-   **Format:** A succinct, **numbered list of exactly five points**. Each point must be a distinct, strategic lesson, future prediction, or actionable piece of advice.
+
+---
+## 🧠 DYNAMIC CORE THEMATIC BREAKDOWN:
+-   **Goal:** Restructure the interview by identifying **3 to 4 primary, non-obvious, and logical thematic sections (MAX 4)** based **only** on the non-predictive content (context, claims, facts). **This is the core constraint for word count reduction.**
+-   **Format:** Present themes using standard numbered headings. The format **MUST be** `[NUMBER]. [THEME HEADLINE]`. For example: `1. THEME TITLE: KEY INSIGHT`. **DO NOT** use any brackets or decorative separators. **STRICTLY EXCLUDE PREDICTIVE STATEMENTS OR RECOMMENDATIONS FROM THIS SECTION.**
+
+**[THEME HEADING EXAMPLE: 1. THEME TITLE: A KEY INSIGHT OR FOCUS]**
+
+Write a **single, highly dense paragraph** (MAX 6 sentences) that combines the necessary context, background, and synthesis of the expert's core perspective on this theme. This is the only narrative prose allowed per theme. Optionally, integrate **one** compelling, concise quote (MAX 20 words) from the interviewee into or immediately following this paragraph, using blockquotes (`>`).
+
+* Use a bulleted list to capture **4-7 specific details, claims, or arguments** made by the expert. (STRICT LIMIT)
+* Use **bolding on key terms** for maximum scannability.
+* This list is the primary vehicle for high-density information transfer. **Do not force themes that are not present.**
+
+---
+## 🧠 STRATEGIC PREDICTIONS/RECOMMENDATIONS:
+-   **Goal:** Consolidate ALL forecasts, timelines, warnings, and policy recommendations from the entire transcript into this single master section.
+-   **Format:** Recreate the **exact sub-structure** shown in the user's preferred output, using bolded headings and dedicated paragraphs/bullets for each element (e.g., **Next 5 Years: Formal Systems Dominance**, **2025-2027: Geopolitical Positioning Deadline**, **Risk: Energy Constraint Intersection**, etc.).
+
+---
+## 📈 KEY DATA, STATS, AND CITATIONS:
+-   **Goal:** Isolate and present all crucial quantitative and reference-based facts in a single location, prioritizing clean visual presentation.
+-   **Format:** A bulleted list where the **Statistic/Data Point** is **bolded** and immediately followed by the **Context/Source** on the same line. **Do not use pipe characters (`|`) or table headings.**
+    If no substantial data is present, write a single line: *No significant quantitative data points were presented in the interview.*
+
+---
+## CONCLUSION REQUIREMENT:
+
+**The Argument Wrapped Up:**
+Write a **single paragraph** (MAX 6 sentences) synthesizing the expert's overall thesis and how they connect their major themes together.
+
+**Final Assessment:**
+List **3 final bullets** capturing the expert's ultimate message and most critical parting advice.
+
+## SOURCE FIDELITY & FORMATTING REQUIREMENTS:
+* **Tone:** Formal, objective, and analytical.
+* **Total Length:** The final output must be between **700 and 1000 words**.
+* **Exclusions:** DO NOT include any dialogue from the host/interviewer or conversational filler.
+* **Minimalism:** **DO NOT** use any redundant sub-headers, brackets in the numbering, or repetitive separator lines (`---`) within the main section content. **The output should only use the headings specified by the Markdown hierarchy.**
+* **Output Flow:** Maintain flow that builds understanding of the overall argument, using the expert's natural organization and emphasis within the defined structure.
+
+---
+**Video Title:** {title}
+**Transcript:** {transcript}

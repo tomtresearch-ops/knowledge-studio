@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Agents Brief — April 20, 2026</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Georgia', 'Times New Roman', serif;
+    background: #0a0a0a;
+    color: #e8e4df;
+    line-height: 1.75;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 40px 24px;
+  }
+
+  .header {
+    padding-bottom: 28px;
+    margin-bottom: 32px;
+    border-bottom: 1px solid #2a2520;
+  }
+
+  .masthead {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #7a6f63;
+    margin-bottom: 16px;
+  }
+
+  .issue-title {
+    font-size: 26px;
+    font-weight: 700;
+    color: #f0ebe4;
+    line-height: 1.35;
+    margin-bottom: 12px;
+  }
+
+  .issue-subtitle {
+    font-size: 16px;
+    color: #a89e93;
+    line-height: 1.6;
+    font-style: italic;
+  }
+
+  .issue-meta {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 12px;
+    color: #5a5049;
+    margin-top: 16px;
+  }
+
+  .editorial {
+    font-size: 16px;
+    color: #c4bdb3;
+    line-height: 1.85;
+    margin-bottom: 36px;
+  }
+
+  .signal {
+    margin-bottom: 32px;
+  }
+
+  .signal-number {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #4a9e8e;
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+
+  .signal-headline {
+    font-size: 19px;
+    font-weight: 700;
+    color: #f0ebe4;
+    line-height: 1.4;
+    margin-bottom: 12px;
+  }
+
+  .signal-body {
+    font-size: 15.5px;
+    color: #b5ada3;
+    line-height: 1.85;
+  }
+
+  .signal-whycare {
+    font-size: 15px;
+    color: #4a9e8e;
+    line-height: 1.75;
+    margin-top: 12px;
+    font-weight: 500;
+  }
+
+  .divider {
+    border: none;
+    border-top: 1px solid #1e1a16;
+    margin: 32px 0;
+  }
+
+  .bottomline {
+    background: #111;
+    border-left: 3px solid #4a9e8e;
+    padding: 20px 24px;
+    margin: 36px 0;
+    border-radius: 0 4px 4px 0;
+  }
+
+  .bottomline-label {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 10px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: #4a9e8e;
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+
+  .bottomline-text {
+    font-size: 15.5px;
+    color: #c4bdb3;
+    line-height: 1.8;
+  }
+
+  .cta-row {
+    text-align: center;
+    margin: 36px 0;
+  }
+
+  .cta-button {
+    display: inline-block;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    text-decoration: none;
+    padding: 12px 28px;
+    border-radius: 4px;
+    margin: 0 6px;
+  }
+
+  .cta-primary {
+    background: #4a9e8e;
+    color: #0a0a0a;
+  }
+
+  .cta-secondary {
+    background: #1e1a16;
+    color: #4a9e8e;
+  }
+
+  .footer {
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid #1e1a16;
+    text-align: center;
+  }
+
+  .footer-text {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 11px;
+    color: #4a443d;
+    line-height: 2;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <div class="header">
+    <div class="masthead">AI Agents Brief</div>
+    <div class="issue-title">Agents Stop Being Projects, Start Being Services</div>
+    <div class="issue-subtitle">Anthropic ships managed agent hosting, open-source adversarial testing arrives, and local execution beats the cloud on cost.</div>
+    <div class="issue-meta">April 20, 2026 &middot; 3 min read</div>
+  </div>
+
+  <div class="editorial">
+    This week marks a tipping point: agents are leaving the lab. Three developments converge—platform consolidation, safety becoming systematic, and deployment costs collapsing—to signal that agent infrastructure is maturing faster than most builders realize. What you build on today matters.
+  </div>
+
+  
+  <div class="signal">
+    <div class="signal-number">01</div>
+    <div class="signal-headline">Claude Managed Agents: Infrastructure Disappears</div>
+    <div class="signal-body">Anthropic is shipping a fully hosted agent platform that handles orchestration, persistence, scaling, and 24/7 execution out of the box. No more building orchestration layers or wrestling with infrastructure. This shifts agents from "complex coding project" to "managed service"—comparable to how Vercel abstracted deployment for web apps. For the agent market, this is decisive: whoever controls the runtime owns the velocity advantage.</div>
+    <div class="signal-whycare">Start evaluating managed platforms as your baseline, not edge cases. If you're building agent infrastructure from scratch, you're competing against platforms that already solve persistence, scaling, and adversarial testing—a war you'll lose.</div>
+  </div>
+  <hr class="divider">
+
+  <div class="signal">
+    <div class="signal-number">02</div>
+    <div class="signal-headline">Adversarial Testing Becomes Table Stakes</div>
+    <div class="signal-body">Nyx, an open-source framework for multi-step agent red-teaming, is now production-grade. It doesn't test isolated responses—it simulates real attack chains: tool misuse, state corruption, authorization bypasses. Agent safety is moving from prompt tuning to systematic testing. Expect enterprise buyers to demand agents tested against known adversarial scenarios before signing contracts.</div>
+    <div class="signal-whycare">Audit your agent's failure modes using multi-step adversarial scenarios, not isolated test cases. Agents without built-in testing frameworks are shipping liabilities, not features.</div>
+  </div>
+  <hr class="divider">
+
+  <div class="signal">
+    <div class="signal-number">03</div>
+    <div class="signal-headline">Local Agents Just Beat Cloud on Cost and Speed</div>
+    <div class="signal-body">Qwen 3.6 running on consumer GPUs now achieves 45.6% task success on small benchmarks—outperforming cloud agents on the same scaffolds. For tasks completing in under 2 minutes, running locally eliminates API latency and cost simultaneously. This isn't theoretical: builders are shipping local agents to production. The question shifted from "cloud or local?" to "which model solves this task fastest?"</div>
+    <div class="signal-whycare">Benchmark your agent workflows on local hardware before committing to cloud APIs. For rapid iteration and short-duration tasks, you're wasting money and time on remote calls.</div>
+  </div>
+  
+
+
+  <div class="bottomline">
+    <div class="bottomline-label">The Bigger Picture</div>
+    <div class="bottomline-text">
+      Agent infrastructure is consolidating around three axes: managed execution (Claude Managed Agents, Routines), systematic safety (adversarial testing frameworks), and deployment flexibility (local competitive with cloud). This means competitive advantage has shifted from "how do I code this?" to "which template, skill set, and deployment model solves this task?" Agents are becoming appliances. Builders who ship production-grade reliability—through enforced skill lifecycles, adversarial testing, and deployment choice—will outcompete those treating agents as infinitely capable black boxes. Watch for the gap between demo agents and production agents to close entirely within six months. The winner will own the skill library and the governance layer, not the base model.
+    </div>
+  </div>
+
+  <div class="cta-row">
+    <a href="#" class="cta-button cta-primary">Read the Full Brief</a>
+    
+  </div>
+
+  <div class="footer">
+    <div class="footer-text">
+      AI Agents Brief<br>
+      AI-curated intelligence on autonomous agents, agent frameworks, and the agent economy<br>
+      201 signals processed from 7 sources
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

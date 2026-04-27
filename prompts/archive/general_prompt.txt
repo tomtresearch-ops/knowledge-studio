@@ -1,0 +1,93 @@
+CYou're creating a comprehensive but scannable summary for a CEO who captures dozens of videos daily. This prompt handles explainers, thesis arguments, philosophical discussions, and analytical content. Target: 500-600 words. Complete enough to capture the full framework, tight enough to read in 2-3 minutes.
+
+---
+
+## STRUCTURE
+
+**WHAT THIS COVERS** (1-2 sentences)
+Core thesis, argument, or topic being explored. What question is being answered or position being argued.
+
+**STRATEGIC CONTEXT** (2-3 sentences, ONLY if essential)
+Include brief exposition ONLY when it provides critical framing:
+- Why this argument matters now (timing, relevance, implications)
+- Non-obvious context that makes the rest make sense
+- Key assumptions or starting points for the argument
+
+Skip if the thesis is self-explanatory.
+
+**CORE ARGUMENT** (3-4 sentences in brief paragraph)
+The main thesis, position, or central claim being made. What is the speaker actually arguing? State it clearly and directly.
+
+**KEY FRAMEWORKS/CONCEPTS** (~300-400 words)
+The substantive content. Format based on what's being presented:
+
+**For frameworks with components (models, systems, acronyms):**
+- Framework name as bold header
+- Each component as sub-bullet with one-line explanation
+- Include enough context to understand what it means and why it matters
+- Example: **Six Axioms of Intelligence Limits:**
+  - **Axiom 1: Universal Superset** - Physics ⊃ Math ⊃ Machines ⊃ Humans; machines face different constraints than biological brains
+  - **Axiom 2: Time Horizons** - Chaos limits prediction to ~18 months; more compute doesn't overcome butterfly effects
+
+**For philosophical/logical arguments:**
+- Main premises as bullets
+- Supporting reasoning in one line per premise
+- Key evidence or examples when provided
+- Logical conclusions drawn
+
+**For analytical discussions:**
+- Major points as bold bullets
+- Supporting context as sub-bullets or brief follow-on
+- Data, numbers, timelines when specific
+- Counterarguments or limitations acknowledged
+
+**For explainer content:**
+- Core concepts being explained
+- How they work or why they matter
+- Practical implications or applications
+- Common misconceptions corrected
+
+**ALWAYS include when present:**
+- Specific numbers, data, percentages ("18-month prediction horizon" not "limited horizon")
+- Named frameworks, models, or systems (complete the full framework, not just summary)
+- Key examples or analogies that make abstract concepts concrete
+- Counterarguments or limitations (what the thesis does NOT claim)
+- Practical implications (so what? why does this matter?)
+
+**KEY IMPLICATIONS** (3-5 bullets)
+What does this mean practically? What follows from this argument?
+- Each implication as a bullet
+- Include "if true" reasoning when appropriate
+- Distinguish between what the speaker claims vs what might follow
+- Note any significant caveats or uncertainties
+
+**BOTTOM LINE** (1-2 sentences)
+The main takeaway or why this matters. Make it actionable or thought-provoking.
+
+---
+
+## RULES
+
+- **Target 500-600 words total** - comprehensive but consumable in 2-3 minutes
+- **Use brief exposition (2-3 sentences) only for essential context** - why this matters now, critical framing, non-obvious starting assumptions
+- **Default to bullets for structured content** - frameworks, premises, implications, key points
+- **Be ruthlessly specific:**
+  - "18-month prediction horizon" not "limited forecasting"
+  - "P ≠ NP computational complexity" not "hard problems exist"
+  - Named frameworks in full (all components, not just summary)
+  - Actual numbers, percentages, timelines when provided
+- **Complete frameworks are mandatory** - if speaker presents a model with 6 parts, show all 6 with brief explanations
+- **Include what the argument does NOT claim** - boundaries and limitations matter
+- **No filler** - every sentence and bullet must add specific information
+- **Dense but scannable** - use bold for framework names, sub-bullets for components, brief paragraphs for thesis and implications
+
+**FORMATTING PRIORITY:**
+- Brief paragraph for core thesis
+- Bullets/sub-bullets for frameworks and structured arguments
+- Brief paragraph for bottom line
+- NO lengthy narrative paragraphs explaining each point
+
+**QUALITY BAR:** After reading this (2-3 minutes), the reader should understand the complete argument, all major components of any frameworks presented, key implications, and what the speaker does/doesn't claim. They should feel informed enough to have an opinion without needing to watch the video.
+
+Video Title: {title}
+Transcript: {transcript}

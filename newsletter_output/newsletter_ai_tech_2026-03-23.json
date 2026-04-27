@@ -1,0 +1,31 @@
+{
+  "headline": "The AI Market Is Splitting in Three",
+  "subtitle": "Government locks in with Palantir, local models upend the cloud narrative, and enterprise discovers AI doesn't equal ROI.",
+  "editorial_intro": "Three things happened this week that reshape how we should think about AI's future. None of them are about model capability. They're about who controls the infrastructure, where the real money flows, and why bolting AI onto existing business processes doesn't work. The pattern is clear: the winners aren't building better models \u2014 they're building deeper integration.",
+  "signals": [
+    {
+      "headline": "Palantir Becomes the Pentagon's Operating System",
+      "body": "Palantir has moved from a defense contractor tool to what the Pentagon is calling a \"core US military system.\" This isn't a product purchase \u2014 it's infrastructure lock-in. Once classified workflows run on Palantir's platform, switching competitors becomes a security nightmare, not a technical decision. The same move is happening in UK state intelligence. This signals that the highest-margin AI market (government + defense) is being claimed through integration depth, not model quality.",
+      "whycare": "Watch where capital flows next. If government is locking into single vendors for AI infrastructure, the first $100B+ AI markets won't be in SaaS \u2014 they'll be in defense, energy, and intelligence. Commercial builders chasing enterprise software are chasing a secondary market."
+    },
+    {
+      "headline": "A Laptop Just Ran a 397-Billion-Parameter Model",
+      "body": "Flash-MoE proved that architectural innovation can decouple parameter count from compute requirements. A 397B parameter model now runs locally on consumer hardware \u2014 demolishing the \"you need cloud access to run capable AI\" assumption that was supposed to hold through 2027. The constraint shifted overnight from \"can you afford the GPU?\" to \"can you engineer the architecture?\" That's a different competitive surface entirely.",
+      "whycare": "Ask yourself: if capable models run locally, why pay for cloud inference? API providers will respond by bundling orchestration, persistence, and state management \u2014 the things local stacks can't easily handle. The commodity is being decommodified; the margin moves to orchestration."
+    },
+    {
+      "headline": "Walmart Fired OpenAI and Revealed the Real Problem",
+      "body": "Walmart deployed OpenAI, ran the experiment for a year, and shut it down. The reason: it didn't drive measurable ROI fast enough. This isn't a capability problem \u2014 it's an integration problem. Bolting AI onto existing workflows without redesigning the workflow itself creates operational friction, not value. Walmart is the world's largest retailer delivering this message to every Fortune 500 procurement team.",
+      "whycare": "Prepare for 60-90 days of AI procurement freezes as this news ripples through enterprise. Builders betting on \"AI-first\" products are vulnerable. Builders solving specific, high-friction tasks (a finance agent that replaces manual reconciliation, an ops agent that owns inventory optimization) survive the reckoning."
+    }
+  ],
+  "bigger_picture": "These three signals form a coherent story: capability is table-stakes now, but orchestration wins markets. Flash-MoE proves the models are good enough everywhere. OpenClaw's ecosystem proves you can build agents. Walmart's failure proves that neither matters without workflow-specific integration. The vendors winning right now (Palantir in defense, emerging agent platforms in commercial) aren't winning on model quality \u2014 they're winning on integration and persistence. Claude and GPT are becoming undifferentiated infrastructure. The real margin is in the management layer above them. Meanwhile, government adoption is outpacing commercial adoption by months. Defense budgets move faster than enterprise procurement. This suggests the AI infrastructure story won't be settled by ChatGPT competitors \u2014 it'll be settled by vendors who own the integration stack for intelligence, energy, and defense. For builders, the question isn't \"What model should I use?\" anymore. It's \"Which workflow am I redesigning, and how do I own that redesign?\"",
+  "_meta": {
+    "vertical": "ai_tech",
+    "brief_id": 103,
+    "brief_date": "2026-03-23 01:30:55",
+    "signal_count": 271,
+    "source_count": 5,
+    "generated_at": "2026-03-22T22:00:11.306168"
+  }
+}

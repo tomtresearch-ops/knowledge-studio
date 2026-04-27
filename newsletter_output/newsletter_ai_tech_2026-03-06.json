@@ -1,0 +1,31 @@
+{
+  "headline": "The AI Market Is Splitting Into Three Worlds",
+  "subtitle": "OpenAI's async reasoning changes everything, Anthropic faces institutional lockout, and open-source infrastructure becomes a liability.",
+  "editorial_intro": "Today's three signals reveal a fundamental reshape of the AI competitive landscape. It's no longer about model quality alone\u2014it's about infrastructure, policy, and trust. The winners won't be determined by whose model reasons best, but by who controls the platforms, the contracts, and the reliable data pipelines.",
+  "signals": [
+    {
+      "headline": "GPT-5.4 Shifts From Real-Time API to Batch Processing",
+      "body": "OpenAI is launching GPT-5.4 with \"extreme thinking mode\"\u2014the ability to reason for hours on complex problems without requiring instant responses. This fundamentally changes how developers integrate AI: instead of prompt-response loops, teams will submit problems and check back later, like AWS batch jobs. The real shift isn't model capability. It's the product model itself, which advantages OpenAI's infrastructure and makes real-time API dependencies obsolete.",
+      "whycare": "Watch for developer experience announcements in your toolchain over the next 30 days. Async reasoning is cheaper to run and scales differently than real-time APIs\u2014this reshapes pricing and who can afford to compete."
+    },
+    {
+      "headline": "Pentagon Formally Blocks Anthropic From Military Contracts",
+      "body": "The U.S. Department of Defense has classified Anthropic as a supply-chain risk, barring them from formal procurement and classified work. This isn't messaging\u2014it's structural exclusion. OpenAI has simultaneously locked in NATO and select U.S. military relationships, creating a geographic moat. Anthropic's bet on transparency-as-competitive-advantage has hit its limit when the buyer can legally lock you out.",
+      "whycare": "Track whether this Pentagon restriction spreads to other U.S. agencies (DOJ, Treasury, State). If it does, Anthropic's revenue ceiling tightens dramatically. If it stays Pentagon-specific, it's a political wound, not a market collapse."
+    },
+    {
+      "headline": "Wikipedia Compromise Reveals Open-Source Training Data Is a Vulnerability",
+      "body": "Wikipedia's governance layer was compromised, exposing that the reference data used to train every open-source LLM (Llama, Qwen, Mistral) is now an attack surface. Closed labs like OpenAI and Anthropic control their training pipelines. Open-source labs depend on clean public data\u2014and that data is now a hostile environment. This creates a quiet moat expansion: enterprises will demand indemnification and secure infrastructure around open models.",
+      "whycare": "If you're betting on open-source models, start asking vendors about data provenance and governance security. The value in open-source is shifting from model code to the orchestration and compliance layers around it."
+    }
+  ],
+  "bigger_picture": "Three separate moves are crystallizing three separate AI markets. OpenAI is building the async infrastructure layer\u2014faster, cheaper, more efficient than real-time APIs. Anthropic is being pushed into enterprise and EU markets, away from government contracts. And open-source is becoming a cost-center liability rather than a moat, pushing value up the stack to whoever controls the secure hosting and governance layers. By mid-2026, the competitive pressure won't be \"whose model is smarter.\" It'll be \"whose platform handles async reasoning at scale, whose contracts are legally defensible, and who can guarantee clean data.\" Infrastructure, policy, and trust\u2014not capability\u2014are the new differentiators.",
+  "_meta": {
+    "vertical": "ai_tech",
+    "brief_id": 58,
+    "brief_date": "2026-03-06 02:30:53",
+    "signal_count": 328,
+    "source_count": 5,
+    "generated_at": "2026-03-05T22:00:10.513907"
+  }
+}

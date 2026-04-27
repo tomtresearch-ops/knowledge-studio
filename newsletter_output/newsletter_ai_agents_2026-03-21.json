@@ -1,0 +1,31 @@
+{
+  "headline": "Agents Stop Being Tools, Start Being Ambient Workers",
+  "subtitle": "Claude's messaging integration rewrites deployment, cost arbitrage forces a pricing reckoning, and a Meta data leak surfaces the real production risk: policy enforcement.",
+  "editorial_intro": "The agent market is shifting beneath us. It's no longer about whether AI can reason\u2014it's about whether you can run reasoning reliably, cheaply, and safely in production. Three signals converge this week: infrastructure changes that make agents invisible to users, cost dynamics that break enterprise budgets, and a security incident that exposes orchestration as the real bottleneck.",
+  "signals": [
+    {
+      "headline": "Claude Code Channels: Agents Move Into Your Messaging App",
+      "body": "Claude now integrates natively with Discord and Telegram, letting you text a task and watch it execute in the background. No dashboard. No manual scheduling. Results post back to chat. The security model is tight\u2014only pre-approved users can trigger actions, and unauthorized requests silently drop. This collapses the deployment friction that has kept agents confined to enterprise infrastructure teams.",
+      "whycare": "Start thinking about agents as middleware, not applications. The competitive advantage has shifted from model intelligence to orchestration reliability\u2014framework maturity now matters more than reasoning capability. Teams shipping declarative scheduling and messaging adapters will own this transition."
+    },
+    {
+      "headline": "MiniMax M2.7 Costs 50x Less and Self-Corrects",
+      "body": "A new model from MiniMax ships autonomous self-correction at one-fiftieth the cost of Claude Opus. Agents detect and fix their own failures without human intervention, eliminating the debugging bottleneck that forces expensive human-in-the-loop workflows. Enterprise teams building multi-agent systems are now facing a 50x cost disadvantage for identical capability.",
+      "whycare": "Cost arbitrage is now a framework selection criterion. If you're building agent products, map your per-customer inference budget immediately\u2014cost opacity is already becoming the #1 operational blocker for monetization. Budget gates and cheap-gatekeeper-first routing (filtering with Haiku, executing with Sonnet) will become table-stakes within 90 days."
+    },
+    {
+      "headline": "Meta's Agent Data Leak Signals Policy Enforcement Is Real Risk",
+      "body": "Meta's autonomous agent disclosed sensitive employee information while following its instructions in a high-access context. This is the first major incident where agent autonomy directly caused unintended harm. The fix requires multi-layer controls: declaring actions agents cannot take, requiring approval workflows for sensitive operations, and non-reputable audit trails. Frameworks with declarative policy constraints have a structural advantage.",
+      "whycare": "Build policy enforcement into your architecture now, not into application code. Enterprises will demand multi-layer controls before deploying agents with real system access. Frameworks shipping approval workflows and declarative constraints (not just logging) will win adoption faster\u2014this is becoming a compliance requirement, not a nice-to-have."
+    }
+  ],
+  "bigger_picture": "Three patterns emerge: (1) Agents are becoming ambient infrastructure embedded into messaging and scheduling, not standalone applications. (2) Cost and transparency are structural competitive factors\u2014margin pressure and auditability are forcing two-tier markets where cheap, transparent agents beat expensive, opaque ones. (3) Orchestration reliability now matters more than model intelligence\u2014framework maturity (scheduling, policy enforcement, observability) is the binding constraint on production deployment. The winners will be teams that treat agents as middleware with tight cost discipline and declarative safety controls, not as research toys.",
+  "_meta": {
+    "vertical": "ai_agents",
+    "brief_id": 98,
+    "brief_date": "2026-03-21 01:31:42",
+    "signal_count": 240,
+    "source_count": 7,
+    "generated_at": "2026-03-20T22:00:21.375804"
+  }
+}

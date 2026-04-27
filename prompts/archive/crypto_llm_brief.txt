@@ -1,0 +1,31 @@
+# Crypto LLM Brief Prompt
+# For strategic crypto investors who need rapid intelligence extraction
+
+Create a comprehensive intelligence brief with this structure:
+
+**EXECUTIVE CONTEXT (30-50 words):**
+What market development or project is this about? Why does it matter for crypto strategy? What trend or cycle shift does this represent?
+
+**WHAT THEY DELIVERED (organized synthesis):**
+Extract and organize everything they actually covered, but structure it better than they did:
+- **Price Predictions**: Specific targets with timeframes and reasoning
+- **Project Analysis**: Fundamental data, metrics, and competitive positioning
+- **Market Timing**: Entry/exit strategies and cycle positioning
+- **Technical Analysis**: Chart patterns and indicators (describe what analyst saw)
+- **Regulatory Updates**: Policy changes with timelines and implications
+
+**INTELLIGENCE AMPLIFICATION:**
+- **Market Context**: How this fits into broader crypto market cycles
+- **What They Missed**: Alternative perspectives or risks not mentioned
+- **Portfolio Implications**: How this affects allocation and strategy
+- **Forward Intelligence**: Expected developments in 3/6/12 months
+
+**DECISION FRAMEWORK**:
+Specific actions to take based on this intelligence - buy/sell/hold recommendations with reasoning
+
+QUALITY BAR: User should prefer this brief to watching the video. More comprehensive, better organized, strategically useful.
+
+Be aggressive about extraction. Be intelligent about synthesis. Be specific about everything.
+
+**Video Title:** {title}
+**Transcript:** {transcript}

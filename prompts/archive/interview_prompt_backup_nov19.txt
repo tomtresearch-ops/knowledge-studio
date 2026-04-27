@@ -1,0 +1,57 @@
+CRITICAL CONTEXT: This transcript came from someone who screenshots videos instead of watching them. They saw something in the title/thumbnail that made them think "I need this expert's thinking" and captured it for later processing.
+
+Your job: Create a comprehensive, scannable summary that captures everything essential from this content.
+
+---
+
+## SUMMARY
+**LENGTH TARGET: 800-1200 words.** This must be comprehensive yet scannable - readable in 3-4 minutes. The goal is to give the user complete understanding without needing to watch the video.
+
+**STRUCTURE:**
+
+**1. BRIEF CONTEXT (ONLY IF ADDITIVE - 1 clause to 1 sentence max)**
+- **Solo host/creator:** Half a sentence (a clause) - e.g., "Tech entrepreneur discusses..." or "AI researcher explains..." - ONLY if it adds context. Skip if obvious or redundant.
+- **Interview with guest:** One full sentence about the guest - e.g., "AI researcher Mo Gawdat discusses..." - ONLY if it adds context about who they are.
+
+**2. MAIN CONTENT (600-1000 words)**
+Provide comprehensive information in flowing narrative paragraphs:
+- Core thesis/main argument (2-3 sentences)
+- Core arguments and reasoning (narrative paragraphs, not bullets)
+- Most important predictions with timelines (weave into narrative)
+- **Key frameworks mentioned** - provide complete breakdowns:
+  - Acronyms: Each letter with full meaning, explanation, and application
+  - Systems: Every component with context, examples, and use cases
+  - Mental models: Complete logic, application, and variations
+- Critical data points, numbers, percentages (integrated into narrative)
+- Main recommendations and takeaways
+- Expert commentary with direct quotes that capture their reasoning and logic
+- Strategic implications: how this connects to other thinkers/trends, what this means for different audiences
+
+**3. PROMISED LISTS (IF APPLICABLE)**
+- **If video promises specific deliverables** (e.g., "5 amazing tools for X", "10 steps to Y"): List ALL promised items
+- **If it's a descriptive/metaphorical number** (e.g., "what I learned from 500 YouTube videos"): Extract the takeaways/lessons, NOT a list of 500 items
+- **Distinguish:** Promised deliverables = list them. Descriptive numbers = extract insights.
+
+**4. CONCLUSION (ONLY IF ADDITIVE)**
+Brief wrap-up (1-2 sentences) if it adds value - skip if redundant.
+
+**CRITICAL RULES:**
+- **DO include complete framework breakdowns** - when frameworks, models, systems, or acronyms are mentioned, provide full explanations with all components
+- **DO include comprehensive lists** when they're promised deliverables or when they're essential to understanding
+- **DO use narrative paragraphs** - flowing, readable prose that weaves information together
+- **DO prioritize the most important information** - what matters most, but include complete context for key concepts
+- **DO keep it scannable** - use clear headings, short paragraphs (3-4 sentences max)
+- **DO be smart about lists** - promised deliverables get listed completely, descriptive numbers get insights extracted
+- **DO include direct quotes** - capture their exact words when they express key reasoning or insights
+
+**QUALITY BAR:** After reading this summary (3-4 minutes), the user should have complete understanding of the main argument, key predictions, frameworks, and why it matters. They should feel fully informed without needing to watch the video.
+
+---
+
+## FORMATTING:
+- Comprehensive but scannable - use headings, bullets, and clear structure
+- Let content determine structure - no rigid format
+- Write densely but readably - include every specific worth knowing
+
+Video Title: {title}
+Transcript: {transcript}

@@ -1,0 +1,34 @@
+CRITICAL CONTEXT: This transcript came from someone who screenshots videos instead of watching them. They saw something in the title/thumbnail that made them think "I need this information" and captured it for later processing.
+
+Your job: Extract EVERYTHING valuable and organize it using the speaker's own frameworks, terminology, and natural structure. Create output that reads better than watching the video.
+
+## DISCOVERY + NARRATIVE MANDATE:
+
+**SURFACE THEIR FRAMEWORKS WITH CONTEXT:**
+- Discover their acronyms, systems, frameworks (like "FACE RIPS", "MAP-MAD")
+- Find their natural phases, stages, progressions
+- BEGIN each major section with 2-3 sentences explaining the concept
+- THEN provide organized extraction within that framework
+- Use their terminology for headers, not generic templates
+
+**NARRATIVE FLOW REQUIREMENTS:**
+- Each major section starts with explanatory narrative
+- Explain the concept before listing specifics
+- Connect ideas logically between sections
+- Maintain readable flow while preserving density
+- Balance CEO-level overview with specific details
+
+**EXHAUSTIVE EXTRACTION WITHIN NARRATIVE:**
+- Every prediction with exact timeline and supporting reasoning
+- Every percentage, statistic, number, date with context
+- Every named person, company, book, framework with relevance
+- Every methodology with step-by-step breakdown
+- Every anecdote with the point it illustrates
+- Every contrarian claim with their supporting arguments
+- Every warning with specific preparation advice
+
+## QUALITY STANDARD:
+Output should read like a brilliant executive briefing - comprehensive enough to skip the video, organized enough to scan quickly, narrative enough to understand the logic flow. Someone should think "this is so much better than watching the video."
+
+Video Title: {title}
+Transcript: {transcript}

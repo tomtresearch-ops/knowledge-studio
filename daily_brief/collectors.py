@@ -3,6 +3,7 @@ Daily Brief — Source Collectors
 Gather signal from multiple sources for synthesis into daily briefs.
 """
 
+import os
 import requests
 import json
 from datetime import datetime, timedelta
@@ -379,6 +380,249 @@ class YouTubeSearchCollector:
 
 
 # ============================================================
+# YOUTUBE HEADLINE COLLECTOR
+# Scans curated YouTube channels for recent video titles/descriptions
+# as a signal detector. Uses playlistItems endpoint (1 unit/call)
+# instead of search (100 units/call) for quota efficiency.
+# ============================================================
+
+class YouTubeHeadlineCollector:
+    """Scan curated YouTube channels for recent uploads as topic signal."""
+
+    BASE_URL = "https://www.googleapis.com/youtube/v3"
+
+    # Path to the curated channel list JSON (relative to this file)
+    CHANNELS_JSON = os.path.join(os.path.dirname(__file__), "youtube_channels.json")
+
+    def __init__(self, api_key: Optional[str] = None, db_path: Optional[str] = None,
+                 hours_back: int = 48, max_videos_per_channel: int = 5):
+        self.api_key = api_key
+        self.db_path = db_path
+        self.hours_back = hours_back
+        self.max_videos_per_channel = max_videos_per_channel
+        self.cutoff = datetime.utcnow() - timedelta(hours=hours_back)
+        self.cutoff_iso = self.cutoff.strftime("%Y-%m-%dT%H:%M:%SZ")
+
+    def _load_channels_from_json(self) -> list[dict]:
+        """Load curated channel list from JSON file."""
+        try:
+            if os.path.exists(self.CHANNELS_JSON):
+                with open(self.CHANNELS_JSON, "r") as f:
+                    channels = json.load(f)
+                print(f"  [YT Headlines] Loaded {len(channels)} channels from JSON")
+                return channels
+        except Exception as e:
+            print(f"  [YT Headlines] Error loading JSON channel list: {e}")
+        return []
+
+    def _load_channels_from_db(self) -> list[dict]:
+        """Load enabled channels from channel_subscriptions table."""
+        if not self.db_path:
+            return []
+        try:
+            import sqlite3
+            conn = sqlite3.connect(self.db_path)
+            conn.row_factory = sqlite3.Row
+            cursor = conn.cursor()
+            cursor.execute("""
+                SELECT channel_id, channel_name, uploads_playlist_id
+                FROM channel_subscriptions
+                WHERE enabled = 1
+            """)
+            channels = []
+            for row in cursor.fetchall():
+                channels.append({
+                    "channel_id": row["channel_id"],
+                    "channel_name": row["channel_name"] or "",
+                    "uploads_playlist_id": row["uploads_playlist_id"] or "",
+                    "category": "subscribed",
+                })
+            conn.close()
+            print(f"  [YT Headlines] Loaded {len(channels)} channels from DB")
+            return channels
+        except Exception as e:
+            print(f"  [YT Headlines] Error loading DB channels: {e}")
+            return []
+
+    def _get_merged_channels(self) -> list[dict]:
+        """Merge channels from JSON file and DB, deduplicate by channel_id."""
+        json_channels = self._load_channels_from_json()
+        db_channels = self._load_channels_from_db()
+
+        merged = {}
+        # DB channels first (may have uploads_playlist_id already cached)
+        for ch in db_channels:
+            cid = ch["channel_id"]
+            merged[cid] = ch
+        # JSON channels overlay (won't overwrite DB entries that have more data)
+        for ch in json_channels:
+            cid = ch["channel_id"]
+            if cid not in merged:
+                merged[cid] = ch
+
+        channels = list(merged.values())
+        print(f"  [YT Headlines] {len(channels)} unique channels after merge")
+        return channels
+
+    @staticmethod
+    def _derive_uploads_playlist(channel_id: str) -> str:
+        """Derive uploads playlist ID from channel ID (UC... -> UU...)."""
+        if channel_id.startswith("UC"):
+            return "UU" + channel_id[2:]
+        return ""
+
+    def _fetch_playlist_items(self, playlist_id: str, max_results: int = 5) -> list[dict]:
+        """
+        Fetch recent videos from an uploads playlist.
+        Cost: 1 quota unit per call. Returns up to 50 items per call.
+        """
+        try:
+            params = {
+                "part": "snippet",
+                "playlistId": playlist_id,
+                "maxResults": min(max_results, 50),
+                "key": self.api_key,
+            }
+            resp = requests.get(f"{self.BASE_URL}/playlistItems", params=params, timeout=10)
+            resp.raise_for_status()
+            data = resp.json()
+            return data.get("items", [])
+        except requests.exceptions.HTTPError as e:
+            # Handle specific errors gracefully
+            if e.response is not None:
+                status = e.response.status_code
+                if status == 404:
+                    # Playlist not found (channel may have no uploads or ID is wrong)
+                    return []
+                elif status == 403:
+                    error_body = e.response.json() if e.response.text else {}
+                    errors = error_body.get("error", {}).get("errors", [])
+                    for err in errors:
+                        if err.get("reason") == "quotaExceeded":
+                            print("  [YT Headlines] API quota exceeded — stopping")
+                            raise QuotaExceededError("YouTube API quota exceeded")
+                    # Other 403 (private playlist, etc.) — skip silently
+                    return []
+            print(f"  [YT Headlines] HTTP error for playlist {playlist_id}: {e}")
+            return []
+        except QuotaExceededError:
+            raise  # Re-raise to stop collection loop
+        except Exception as e:
+            print(f"  [YT Headlines] Error fetching playlist {playlist_id}: {e}")
+            return []
+
+    def _parse_video_item(self, item: dict, channel_name: str, category: str) -> Optional[dict]:
+        """Parse a playlistItems response item into a signal dict."""
+        snippet = item.get("snippet", {})
+        published_str = snippet.get("publishedAt", "")
+
+        # Filter by recency — only videos within our lookback window
+        if published_str:
+            try:
+                # YouTube API returns ISO 8601 format: 2024-01-15T10:30:00Z
+                published_dt = datetime.strptime(published_str, "%Y-%m-%dT%H:%M:%SZ")
+                if published_dt < self.cutoff:
+                    return None  # Too old
+            except ValueError:
+                pass  # Can't parse date, include it anyway
+
+        video_id = snippet.get("resourceId", {}).get("videoId", "")
+        if not video_id:
+            return None
+
+        title = snippet.get("title", "")
+        # Skip YouTube system entries
+        if title in ("Private video", "Deleted video", ""):
+            return None
+
+        description = snippet.get("description", "") or ""
+
+        return {
+            "source": "youtube_headlines",
+            "title": title,
+            "url": f"https://www.youtube.com/watch?v={video_id}",
+            "video_id": video_id,
+            "channel": channel_name or snippet.get("channelTitle", ""),
+            "channel_id": snippet.get("channelId", ""),
+            "description": description[:300],
+            "published_at": published_str,
+            "thumbnail": snippet.get("thumbnails", {}).get("high", {}).get("url", ""),
+            "category": category,
+        }
+
+    def collect_ai_tech(self) -> list[dict]:
+        """
+        Scan all curated channels for recent uploads.
+        Returns signal items sorted by recency.
+
+        Quota budget: ~1 unit per channel (playlistItems.list).
+        For 50 channels = ~50 units out of 10,000 daily quota.
+        """
+        if not self.api_key:
+            print("[YT Headlines] No API key configured — skipping")
+            return []
+
+        print(f"[YT Headlines] Scanning curated channels (last {self.hours_back}h)...")
+        channels = self._get_merged_channels()
+
+        if not channels:
+            print("  [YT Headlines] No channels configured — skipping")
+            return []
+
+        all_results = []
+        seen_ids = set()
+        channels_scanned = 0
+        channels_with_new = 0
+
+        for ch in channels:
+            channel_id = ch.get("channel_id", "")
+            channel_name = ch.get("channel_name", "")
+            category = ch.get("category", "unknown")
+
+            # Get or derive uploads playlist ID
+            playlist_id = ch.get("uploads_playlist_id", "")
+            if not playlist_id:
+                playlist_id = self._derive_uploads_playlist(channel_id)
+            if not playlist_id:
+                continue
+
+            try:
+                items = self._fetch_playlist_items(playlist_id, self.max_videos_per_channel)
+            except QuotaExceededError:
+                print(f"  [YT Headlines] Quota hit after {channels_scanned} channels")
+                break
+
+            channels_scanned += 1
+            channel_had_new = False
+
+            for item in items:
+                parsed = self._parse_video_item(item, channel_name, category)
+                if parsed and parsed["video_id"] not in seen_ids:
+                    seen_ids.add(parsed["video_id"])
+                    all_results.append(parsed)
+                    channel_had_new = True
+
+            if channel_had_new:
+                channels_with_new += 1
+
+        # Sort by published date (newest first)
+        all_results.sort(
+            key=lambda x: x.get("published_at", ""),
+            reverse=True,
+        )
+
+        print(f"  [YT Headlines] Scanned {channels_scanned} channels, "
+              f"{channels_with_new} had new content, "
+              f"{len(all_results)} total videos")
+        return all_results
+
+
+class QuotaExceededError(Exception):
+    """Raised when YouTube API quota is exceeded."""
+    pass
+
+
+# ============================================================
 # KNOWLEDGE STUDIO COLLECTOR
 # Pull recently processed content from the local KS database
 # ============================================================
@@ -495,6 +739,16 @@ def collect_all(vertical: str = "ai_tech",
         if youtube_api_key:
             yt = YouTubeSearchCollector(api_key=youtube_api_key, hours_back=48)
             results["sources"]["youtube_search"] = yt.collect_ai_tech()
+
+        # YouTube Headlines (curated channel scan)
+        if youtube_api_key:
+            yt_headlines = YouTubeHeadlineCollector(
+                api_key=youtube_api_key,
+                db_path=db_path,
+                hours_back=48,
+                max_videos_per_channel=5,
+            )
+            results["sources"]["youtube_headlines"] = yt_headlines.collect_ai_tech()
 
         # Knowledge Studio
         if db_path:

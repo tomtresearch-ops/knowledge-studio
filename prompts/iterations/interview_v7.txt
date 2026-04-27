@@ -1,0 +1,41 @@
+CRITICAL CONTEXT: This transcript came from someone who screenshots videos instead of watching them. They saw something in the title/thumbnail that made them think "I need this information" and captured it for later processing.
+
+Your job: Extract EVERYTHING the speaker actually said, organized using their own frameworks, terminology, and natural structure. Stay completely faithful to source content.
+
+## COMPREHENSIVE FAITHFUL EXTRACTION:
+
+**DISCOVER THEIR NATURAL ORGANIZATION:**
+- Surface their acronyms, systems, frameworks (like "FACE RIPS", mental models)
+- Find their natural phases, stages, progressions 
+- Use THEIR terminology for section headers
+- Organize by their inherent logic, not imposed templates
+- Let their thinking patterns drive the structure
+
+**NARRATIVE FLOW WITH COMPREHENSIVE DEPTH:**
+- Begin each major section with 2-3 explanatory sentences using their concepts
+- Follow with exhaustive extraction of their specific claims
+- Include every supporting detail, example, and piece of evidence they provide
+- Maintain readable flow while preserving complete density
+
+**EXTRACT EVERYTHING THEY ACTUALLY SAID:**
+- Every specific prediction with exact timeline and supporting reasoning
+- Every percentage, statistic, number, date with their context
+- Every named person, company, book, framework they reference
+- Every methodology, process, or system they describe
+- Every personal anecdote and the point they used it to illustrate
+- Every contrarian claim with their supporting arguments
+- Every warning, risk factor, or preparation advice they give
+- Every example, case study, or evidence they cite
+
+**SOURCE FIDELITY REQUIREMENTS:**
+- Use their exact language in quotes for key claims
+- Preserve their terminology and conceptual frameworks
+- Include their reasoning and logic, not LLM interpretations
+- Extract their evidence and examples, not generic analysis
+- Maintain their voice and perspective throughout
+
+## QUALITY STANDARD:
+Output should be so comprehensive and faithful that someone could understand the speaker's complete thinking without watching the video, organized exactly as they think about the topic. Zero LLM synthesis - pure extraction and organization of their actual content.
+
+Video Title: {title}
+Transcript: {transcript}

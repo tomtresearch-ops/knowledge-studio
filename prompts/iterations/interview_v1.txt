@@ -1,0 +1,51 @@
+CRITICAL CONTEXT: This transcript came from someone who screenshots videos instead of watching them. They saw something in the title/thumbnail that made them think "I need this information" and captured it for later processing.
+
+Your job: Extract every specific prediction, timeline, and concrete claim. Organize it by what the content actually contains, using logical groupings that make scanning effortless.
+
+CONTENT TYPE: Future/Vision/Prediction content
+OUTPUT STANDARD: Visionary CEO quality - dense, specific, scannable
+
+## EXTRACTION APPROACH:
+
+Analyze the content and organize it by logical themes. Common patterns for this content type include:
+- Main thesis/argument
+- Specific predictions with timelines  
+- Stages or phases described
+- Risks and warnings
+- Recommended preparations
+- Speaker credibility context
+- Unique contrarian insights
+
+Create sections based on what's actually in the content, not forced templates.
+
+## EXTRACTION RULES:
+
+1. **Be Aggressively Specific:**
+   - Never say "significant changes" → extract "80-90% job displacement"
+   - Never say "in the coming years" → extract "by 2027"
+   - Never say "various impacts" → list each specific impact
+
+2. **Extract Exact Claims:**
+   - If they say "virtually ALL current jobs" → use "virtually ALL current jobs"
+   - If they give percentages → include the percentages
+   - If they name specific years → include the years
+
+3. **Organize by Logic, Not Chronology:**
+   - Group related predictions together
+   - Short-term vs long-term sections if relevant
+   - Separate opportunities from threats
+
+4. **Surface Buried Value:**
+   - Find the specific insights hidden in rambling explanations
+   - Extract actionable advice from theoretical discussions
+   - Identify contrarian views that differ from mainstream
+
+5. **Credibility Context:**
+   - Always include speaker credentials
+   - Note relevant experience for this topic
+   - Mention books/companies/achievements
+
+**QUALITY TEST:** Someone reading this should think "this is so much better organized than watching the video" and "I now understand exactly what they're predicting and when."
+
+Video Title: {title}
+Transcript: {transcript}

@@ -119,12 +119,33 @@ def prepare_signal_digest(collected_data: dict) -> str:
     return "\n\n".join(sections)
 
 
+def get_previous_brief(vertical: str = "futures_trends", db_path: str = None) -> Optional[str]:
+    """Fetch the most recent brief for this vertical from the database."""
+    import sqlite3
+    if db_path is None:
+        db_path = "/Users/bossmdaddy/Desktop/Coding Projects Master/youtube-intelligence/youtube_intelligence.db"
+    try:
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT content FROM daily_briefs WHERE vertical = ? ORDER BY created_at DESC LIMIT 1",
+            (vertical,)
+        )
+        row = cursor.fetchone()
+        conn.close()
+        return row[0] if row else None
+    except Exception:
+        return None
+
+
 def synthesize_brief(collected_data: dict,
                      vertical: str = "futures_trends",
-                     api_key: Optional[str] = None) -> str:
+                     api_key: Optional[str] = None,
+                     previous_brief: Optional[str] = None) -> str:
     """
     Synthesize collected signals into a structured futures & trends brief.
     Cross-domain synthesis is the centerpiece.
+    If previous_brief is None, automatically fetches the most recent one from DB.
     """
     client = Anthropic(api_key=api_key) if api_key else Anthropic()
 
@@ -133,6 +154,28 @@ def synthesize_brief(collected_data: dict,
 
     source_counts = {k: len(v) for k, v in collected_data.get("sources", {}).items()}
     total = sum(source_counts.values())
+
+    # Auto-fetch previous brief for dedup if not provided
+    if previous_brief is None:
+        previous_brief = get_previous_brief(vertical)
+
+    dedup_section = ""
+    if previous_brief:
+        dedup_section = f"""
+## PREVIOUS BRIEF (DO NOT REPEAT)
+
+The following is the most recent brief that was already published. DO NOT repeat the same stories, findings, or framings. If a topic appeared in the previous brief:
+- SKIP it entirely unless there is genuinely new data, a new development, or a meaningful update
+- If there IS a meaningful update, frame it as "Update on [topic]: [new development]" — do not re-explain the original analysis
+- If the same underlying signals appear in today's raw data but nothing has changed, ignore them
+- Fill the brief with OTHER signals and findings instead — maintain the same depth and density, just with fresh content
+
+Previous brief:
+{previous_brief}
+
+---
+
+"""
 
     # Check if we have internal briefs to reference
     has_internal = len(collected_data.get("sources", {}).get("internal_briefs", [])) > 0
@@ -147,7 +190,7 @@ You have access to recent AI & Tech and Health & Longevity briefs produced by th
     prompt = f"""You are a strategic foresight analyst producing a twice-weekly brief for a macro-oriented thinker who tracks where the world is heading across technology, geopolitics, economics, demographics, culture, and science.
 
 Today is {today}. You have {total} signals from: {json.dumps(source_counts)}.
-
+{dedup_section}
 Your job: synthesize these raw signals into a sharp, high-value futures brief. This is NOT a news roundup and NOT a single-domain analysis — it's cross-domain pattern recognition. You think like a futurist, not a journalist. Long time horizons (1-10 years), not daily news reaction.
 
 {internal_instruction}
@@ -255,7 +298,9 @@ def generate_daily_brief(vertical: str = "futures_trends",
 if __name__ == "__main__":
     DB_PATH = "/Users/bossmdaddy/Desktop/Coding Projects Master/youtube-intelligence/youtube_intelligence.db"
     OUTPUT_DIR = "/Users/bossmdaddy/Desktop/Coding Projects Master/youtube-intelligence/futures_trends_brief/output"
-    YT_API_KEY = "AIzaSyA5VGDmqxRfYzgab5kqcRwxtLckH35BHNQ"
+    from dotenv import load_dotenv
+    load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
+    YT_API_KEY = os.getenv("YOUTUBE_API_KEY", "")
 
     brief = generate_daily_brief(
         vertical="futures_trends",

@@ -1,0 +1,175 @@
+"""
+High School (14-18) Brief — Synthesizer
+Takes collected signals and produces a structured brief using Claude Haiku.
+"""
+
+import json
+import os
+import sys
+from datetime import datetime
+from typing import Optional
+from anthropic import Anthropic
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from lifestage_shared_collectors import (
+    prepare_signal_digest,
+    get_previous_brief,
+    build_dedup_section,
+)
+
+VERTICAL_ID = "lifestage_high_school"
+
+
+def synthesize_brief(collected_data: dict,
+                     vertical: str = VERTICAL_ID,
+                     api_key: Optional[str] = None,
+                     previous_brief: Optional[str] = None) -> str:
+    """
+    Synthesize collected signals into a structured High School brief.
+    If previous_brief is None, automatically fetches the most recent one from DB.
+    """
+    client = Anthropic(api_key=api_key) if api_key else Anthropic()
+
+    digest = prepare_signal_digest(collected_data)
+    today = datetime.now().strftime("%B %d, %Y")
+
+    source_counts = {k: len(v) for k, v in collected_data.get("sources", {}).items()}
+    total = sum(source_counts.values())
+
+    # Auto-fetch previous brief for dedup if not provided
+    if previous_brief is None:
+        previous_brief = get_previous_brief(vertical)
+
+    dedup_section = build_dedup_section(previous_brief)
+
+    prompt = f"""You are an education and career intelligence analyst producing a daily brief for parents of teens ages 14-18. These parents are making expensive, high-stakes decisions. College vs trade school vs gap year vs entrepreneurship — all while AI is reshaping what careers will exist in 5 years. Their teen is picking a major. They need to know which fields the research says are growing vs shrinking, and what the AI landscape means for that choice.
+
+Today is {today}. You have {total} signals from: {json.dumps(source_counts)}.
+{dedup_section}
+
+Your job: synthesize these raw signals into a strategic, evidence-grounded brief. Your teen is picking a major. Here's which fields the research says are growing vs shrinking, and what the AI landscape means for that choice.
+
+## SOURCE HIERARCHY
+1. Research (PubMed papers) — primary evidence, highest weight
+2. News aggregators (RSS feeds) — context and coverage on education policy, admissions, career trends
+3. Community (Reddit, HN) — real-world experience with college admissions, career planning, teen development
+4. Cross-vertical context — if recent AI or Health brief findings are relevant to parents at this stage, reference them naturally
+
+## RAW SIGNALS
+
+{digest}
+
+## OUTPUT FORMAT
+
+Produce the brief in this exact structure:
+
+# HIGH SCHOOL BRIEF — {today}
+
+## TARGET SIGNAL
+The single most important finding or development today for parents of 14-18 year olds. 2-3 sentences. Why this matters for your teen's trajectory right now.
+
+## RESEARCH
+3-5 items from PubMed/aggregators. For each:
+- **Bold finding headline** — 1-2 sentence analysis. What does this mean for your teen's education, mental health, or career planning? Is it confirmatory, novel, or does it change the calculus on a major decision?
+- Include the source URL on a new line.
+- Note the evidence level — peer-reviewed study vs preliminary finding matters.
+
+## THIS WEEK
+2-3 actionable items parents can actually use. Specific, strategic, grounded in evidence. Not generic "support your teen" advice — real intelligence about admissions trends, scholarship strategies, which certifications matter, how to evaluate a gap year program, or what employer data says about specific career paths.
+
+## BIGGER PICTURE
+2-3 observations connecting dots across signals. How do this week's findings fit into the larger story of high school education and the transition to adulthood? What converging trends should parents be watching? Always connect to how rapid technological change (AI reshaping careers, automation of knowledge work, new credentialing models) intersects with the decisions your teen is making right now.
+
+## WORTH YOUR TIME
+2-3 items worth deeper reading. Brief note on why each matters. Include URLs.
+
+## RULES
+- Research first. PubMed and education research findings anchor the brief. Community discussion is context, not the story.
+- Be strategic — these parents are making decisions that cost real money and shape real futures. Respect the stakes.
+- Be precise about evidence levels: distinguish between observational study, RCT, longitudinal study, meta-analysis, and labor market data.
+- Note if something is a preprint (not yet peer-reviewed).
+- Translate education and career jargon: "vocational tracking" becomes "the decision about whether your teen should pursue a trade certification, college prep, or both."
+- Be opinionated but evidence-grounded. "This matters because..." not "Some researchers think..."
+- College and career advice should always be contextualized against the AI/automation landscape — a degree recommendation without considering AI disruption is incomplete in 2025+.
+- If recent AI or Health brief findings are relevant to parents at this stage, reference them naturally — don't force it.
+- Keep the entire brief under 800 words. Density over length.
+- If signals are thin or redundant, say so honestly rather than padding.
+- For YouTube links, ALWAYS format as a markdown link with title and channel: [Video Title — Channel Name](url). Never output bare YouTube URLs.
+- For non-YouTube URLs (papers, articles), put them on their own line.
+"""
+
+    print(f"\n[Synthesizer] Generating high school brief ({total} signals -> Claude Haiku)...")
+
+    response = client.messages.create(
+        model="claude-haiku-4-5-20251001",
+        max_tokens=2000,
+        messages=[{"role": "user", "content": prompt}]
+    )
+
+    brief = response.content[0].text
+
+    # Add metadata footer
+    brief += f"\n\n---\n*Generated {datetime.now().strftime('%Y-%m-%d %H:%M')} | Sources: {total} signals across {len(source_counts)} sources*"
+
+    print(f"[Synthesizer] Brief generated ({len(brief)} chars)")
+    return brief
+
+
+def generate_daily_brief(vertical: str = VERTICAL_ID,
+                         hours_back: int = 24,
+                         db_path: str = None,
+                         youtube_api_key: str = None,
+                         anthropic_api_key: str = None,
+                         output_dir: str = None) -> str:
+    """
+    Full pipeline: collect -> synthesize -> save.
+    Returns the brief text.
+    """
+    from collectors import collect_all
+
+    # Step 1: Collect
+    collected = collect_all(
+        vertical=vertical,
+        hours_back=hours_back,
+        db_path=db_path,
+        youtube_api_key=youtube_api_key,
+    )
+
+    # Step 2: Synthesize
+    brief = synthesize_brief(collected, vertical=vertical, api_key=anthropic_api_key)
+
+    # Step 3: Save
+    if output_dir:
+        os.makedirs(output_dir, exist_ok=True)
+        date_str = datetime.now().strftime("%Y-%m-%d")
+        filename = f"{date_str}_{vertical}_brief.md"
+        filepath = os.path.join(output_dir, filename)
+        with open(filepath, "w") as f:
+            f.write(brief)
+        print(f"\n[Brief] Saved to: {filepath}")
+
+    return brief
+
+
+if __name__ == "__main__":
+    DB_PATH = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+        "youtube_intelligence.db"
+    )
+    OUTPUT_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "output")
+    from dotenv import load_dotenv
+    load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
+    YT_API_KEY = os.getenv("YOUTUBE_API_KEY", "")
+
+    brief = generate_daily_brief(
+        vertical=VERTICAL_ID,
+        hours_back=24,
+        db_path=DB_PATH,
+        youtube_api_key=YT_API_KEY,
+        output_dir=OUTPUT_DIR,
+    )
+
+    print("\n" + "=" * 60)
+    print(brief)
+    print("=" * 60)

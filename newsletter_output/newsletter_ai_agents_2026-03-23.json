@@ -1,0 +1,31 @@
+{
+  "headline": "Skills are eating reasoning chains\u2014and security just became non-negotiable",
+  "subtitle": "Plus: structured prompts cut costs 46%, and agents are starting to hire each other",
+  "editorial_intro": "The agent market is crystallizing around three connected truths: reliability beats capability, composition beats monoliths, and the era of trusting frameworks with production access is over. This week's signals show where real builders are placing their bets.",
+  "signals": [
+    {
+      "headline": "Skills are the new foundation layer",
+      "body": "Multiple frameworks are moving from reasoning chains to composable skills\u2014discrete, pre-validated units that don't hallucinate. The shift is architectural: instead of asking \"can the model reason about this?\" builders are asking \"can I compose validated skills into workflows that actually work?\" Agent reliability now scales through skill libraries, not through better base models.",
+      "whycare": "Adopt a skills-first framework if you're building production agents. This is where reliability lives\u2014and it's where the market is moving."
+    },
+    {
+      "headline": "Security vulnerabilities are pushing builders toward local infrastructure",
+      "body": "OpenClaw's critical authorization flaw (security theater, not actual guards) sent teams running to Claude Code Channels and local alternatives like Ollama. The signal is clear: frameworks that bolt security on after the fact are losing to those with security embedded in the architecture. Teams deploying agents with real system access can't afford to gamble on third-party guardrails.",
+      "whycare": "Evaluate whether your agent framework owns security or outsources it. If it's outsourced, budget for custom guardrails or migrate to a local-first stack."
+    },
+    {
+      "headline": "Agent-to-agent transactions are moving from theory to production",
+      "body": "Builders are shipping systems where agents autonomously negotiate with each other, acquire resources, and execute transactions without human mediation. This isn't orchestration\u2014it's autonomous economic systems. Distributed task allocation (agent A contracts agent B for a job) is happening now, which means agent networks need incentive mechanisms, not just APIs.",
+      "whycare": "Start thinking about how incentives shape agent behavior in multi-agent systems. The next wave of competitive advantage is building agent networks that scale beyond human control."
+    }
+  ],
+  "bigger_picture": "The agent market is inverting its priorities: operational reliability now beats capability, which beats cost. A year ago builders chased reasoning benchmarks; today they chase frameworks that survive restarts, stay within budget, and embed security by design. Two distinct models are emerging\u2014ambient agents for SMB automation (Claude Code, browser integration) and distributed agent networks for enterprise coordination. Local-first deployment is winning on unit economics: cloud API dependency is becoming a liability, not a feature. The teams shipping agents with real production contracts aren't the ones with the best reasoning\u2014they're the ones with the best reliability infrastructure.",
+  "_meta": {
+    "vertical": "ai_agents",
+    "brief_id": 104,
+    "brief_date": "2026-03-23 01:31:52",
+    "signal_count": 236,
+    "source_count": 7,
+    "generated_at": "2026-03-22T22:00:20.209795"
+  }
+}

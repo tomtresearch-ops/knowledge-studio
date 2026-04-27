@@ -1,0 +1,77 @@
+CRITICAL CONTEXT: This transcript came from someone who screenshots videos instead of watching them. They saw something in the title/thumbnail that made them think "I need this information" and captured it for later processing.
+
+Your job: Extract EVERYTHING valuable and organize it using the speaker's own frameworks, terminology, and natural structure. This is a massive transcript - you must be exhaustively comprehensive.
+
+## MANDATE: DISCOVER THE SPEAKER'S INHERENT STRUCTURE
+
+**SURFACE THEIR FRAMEWORKS:**
+- Look for acronyms, systems, or frameworks they mention (like "FACE RIPS", "MAP-MAD", etc.)
+- Find their natural organizational logic (phases, stages, before/after, etc.)
+- Extract their specific terminology and use it for section headers
+- Discover their mental models and present them as they do
+
+**EXTRACT EVERYTHING:**
+- Every specific prediction with exact timeline
+- Every percentage, statistic, number, date mentioned
+- Every named person, company, book, framework, system
+- Every step-by-step process or methodology explained
+- Every personal anecdote, story, or example
+- Every contrarian position or controversial claim
+- Every warning, risk factor, or preparation advice
+- Every technical detail or specification
+
+## STRUCTURAL DISCOVERY PROCESS:
+
+**1. IDENTIFY THEIR FRAMEWORKS:**
+- Listen for any acronyms, systems, or named methodologies
+- Find their natural phases, stages, or progression
+- Extract their specific terminology and concepts
+- Use THEIR language for section headers, not generic ones
+
+**2. ORGANIZE BY THEIR LOGIC:**
+- If they describe "three phases" - organize around those phases
+- If they use acronyms - break down each component
+- If they frame it as "before and after" - use that structure
+- Let their natural organization drive the structure
+
+**3. COMPREHENSIVE EXTRACTION WITHIN THEIR STRUCTURE:**
+- Once you identify their frameworks, extract exhaustively within each
+- Use numbered points for major claims
+- Use bullet points for supporting details
+- Include sub-bullets for examples and evidence
+- Extract every supporting argument, not just conclusions
+
+## EXTRACTION RULES:
+
+**AGGRESSIVE SPECIFICITY:**
+- Extract exact quotes for key claims
+- Include every percentage, date, timeline mentioned
+- List every specific example they give
+- Preserve their exact language and terminology
+
+**COMPREHENSIVE COVERAGE:**
+- Extract every prediction, even minor ones
+- Include every supporting detail and evidence
+- Mine every section of the transcript thoroughly
+- Don't stop at main points - get sub-points and examples
+
+**DENSITY REQUIREMENT:**
+- This should be substantially longer than previous attempts
+- Each section should have multiple detailed bullet points
+- Include context, supporting evidence, and implications
+- Extract every supporting argument and piece of evidence
+
+## QUALITY STANDARDS:
+
+**BENCHMARK:** Your output should be so comprehensive that someone could skip the video entirely and be fully informed about every prediction, claim, story, example, and detail made. The structure should feel like it came from the speaker's own organization, not imposed on it.
+
+**FORMATTING:**
+- Use Roman numerals for major sections
+- Use numbered lists for main points within sections
+- Use bullet points for supporting details
+- Use sub-bullets for examples and evidence
+- Bold key terms and concepts
+- Extract exact quotes in quotation marks
+
+Video Title: {title}
+Transcript: {transcript}

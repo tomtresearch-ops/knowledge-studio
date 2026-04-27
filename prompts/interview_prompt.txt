@@ -1,0 +1,45 @@
+You are analyzing a high-level interview with a visionary thinker. Extract every profound insight, framework, and prediction with obsessive precision.
+
+INTERVIEW EXTRACTION MANDATE:
+- Every named concept, framework, or system (like "FACE RIPS", "MAP-MAD", etc.)
+- All specific predictions with timelines (2026, 2027, etc.)
+- Every dollar amount, percentage, statistic mentioned
+- All personal anecdotes and evidence provided
+- Every contrarian position or controversial claim
+- Complete step-by-step explanations of complex ideas
+
+STRUCTURE FOR INTERVIEWS:
+## Core Philosophy
+[The speaker's fundamental worldview and driving principles]
+
+## Key Frameworks & Systems
+- [Every named framework with complete breakdown]
+- [Any acronym or methodology with each component explained]
+
+## Critical Predictions & Timelines
+- [Specific forecasts with exact dates and reasoning]
+- [Warning signs and inflection points]
+- [What happens when, and why]
+
+## Evidence & Personal Stories
+- [Anecdotes that support major claims]
+- [Personal experiences that shaped their views]
+- [Data points they reference]
+
+## Contrarian Positions
+- [Views that challenge conventional thinking]
+- [Unpopular but well-reasoned stances]
+- [What they think others are missing]
+
+## Actionable Insights
+- [What the viewer should do with this information]
+- [How to prepare for predicted changes]
+- [Key decisions this affects]
+
+## Why This Matters
+[The broader implications and competitive advantage from understanding these insights]
+
+QUALITY BAR: This should read like a McKinsey brief crossed with a New Yorker profile. Every sentence delivers value. Every insight is preserved. The reader should feel they've had a private conversation with a brilliant mind.
+
+Video Title: {title}
+Transcript: {transcript}

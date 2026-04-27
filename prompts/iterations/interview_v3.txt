@@ -1,0 +1,135 @@
+CRITICAL CONTEXT: This transcript came from someone who screenshots videos instead of watching them. They saw something in the title/thumbnail that made them think "I need this information" and captured it for later processing.
+
+Your job: Extract EVERYTHING valuable from this massive transcript. This is a 2+ million character transcript - you must be exhaustively comprehensive.
+
+CONTENT TYPE: Future/Vision/Prediction content
+OUTPUT STANDARD: Visionary CEO quality - dense, specific, scannable, COMPREHENSIVE
+
+## MANDATE: EXTRACT EVERYTHING
+
+This is not a summary. This is a complete intelligence extraction. You must:
+
+**EXTRACT EVERY SINGLE:**
+- Specific prediction with exact timeline
+- Dollar amount, percentage, statistic, number
+- Named person, company, book, framework, system
+- Step-by-step process or methodology explained
+- Personal anecdote or story
+- Contrarian position or controversial claim
+- Specific example or case study
+- Warning or risk factor
+- Recommended action or preparation
+- Technical detail or specification
+
+**LENGTH REQUIREMENT:**
+- This should be SUBSTANTIALLY longer than previous attempts
+- Each major topic should have 10-20 bullet points minimum
+- Include sub-bullets for supporting details
+- Extract every supporting argument, not just main points
+- Mine every section of the transcript thoroughly
+
+## EXTRACTION RULES:
+
+**AGGRESSIVE SPECIFICITY - NEVER SUMMARIZE:**
+- If they say "80% of jobs will disappear by 2030" → Use exactly "80% of jobs will disappear by 2030"
+- If they say "next 12-15 years" → Use exactly "next 12-15 years" 
+- If they give specific examples → List each one explicitly
+- If they name percentages, dates, numbers → Include ALL of them
+- Extract EVERY supporting detail they mention
+
+**EXTRACT EXACT LANGUAGE:**
+- Use their actual phrases in quotes when making bold claims
+- Don't paraphrase "fundamental change" when they said "complete elimination"
+- Preserve their urgency and specific word choices
+- Include direct quotes for key predictions
+- Extract their exact explanations, not summaries
+
+**MINE FOR BURIED SPECIFICS:**
+- Find concrete claims hidden in rambling explanations
+- Extract specific timelines mentioned anywhere in the content
+- Pull out exact numbers, percentages, dates mentioned
+- Surface specific examples they give but don't emphasize
+- Extract every supporting argument and piece of evidence
+
+## STRUCTURAL ORGANIZATION:
+
+**DISCOVER THE NATURAL STRUCTURE:** 
+- Listen for how the speaker organizes their thoughts
+- Identify their frameworks, stages, or logical progression
+- Use THEIR language for section headers, not generic templates
+- If they say "three phases" or "two scenarios" - organize around that
+- Let the content's inherent logic drive the structure
+
+**ORGANIC SECTION CREATION:**
+- Section titles should use the speaker's actual language/concepts
+- If they frame it as "before and after" - use that structure
+- If they describe "stages of transformation" - follow their stages
+- Headers should feel like they came from the transcript, not imposed on it
+
+**HIERARCHICAL EXTRACTION WITHIN ORGANIC STRUCTURE:**
+- Once you identify their natural sections, extract comprehensively within each
+- Use numbered points for major claims within each section
+- Use bullet points for supporting details and evidence
+- Maintain their logical flow while adding extraction density
+- Include sub-bullets for sub-points and examples
+
+## QUALITY STANDARDS:
+
+**COMPREHENSIVE EXTRACTION - LEAVE NOTHING BEHIND:**
+- Extract EVERY prediction mentioned, even minor ones
+- Include ALL supporting details and evidence given
+- Mine the transcript exhaustively - if they spent time on it, extract it
+- Don't stop at main points - get the sub-points and examples too
+- Extract every personal story, anecdote, or example
+- Include every technical detail or specification mentioned
+
+**DENSITY REQUIREMENT:**
+- Output should be substantially longer than a quick summary
+- Each section should have multiple bullet points with details
+- Include context, supporting evidence, and implications they mention
+- If they give examples, list every single one
+- Extract every supporting argument, not just conclusions
+
+**ORGANIZATION FOR SCANNING:**
+- Break complex topics into logical sub-sections
+- Use clear hierarchical structure (main points → supporting details)
+- Group related concepts together for easy consumption
+- Make it easy to find specific information quickly
+- Use numbered lists for major points, bullets for details
+
+**BENCHMARK:** Your output should be so comprehensive that someone could skip the video entirely and be fully informed about every prediction, claim, story, example, and detail made. This should be a complete intelligence extraction, not a summary.
+
+## SPECIFIC EXTRACTION TARGETS:
+
+**PREDICTIONS & TIMELINES:**
+- Every specific prediction with exact dates/timelines
+- Every percentage, statistic, or number mentioned
+- Every "by 202X" or "in the next X years" statement
+- Every stage or phase described with specific details
+
+**PERSONAL STORIES & EXAMPLES:**
+- Every anecdote or personal story told
+- Every specific example or case study mentioned
+- Every "when I was at..." or "in my experience..." story
+- Every concrete illustration of a concept
+
+**TECHNICAL DETAILS:**
+- Every technical specification or detail
+- Every methodology or process explained step-by-step
+- Every framework, system, or model described
+- Every tool, platform, or technology mentioned
+
+**CONTRARIAN VIEWS:**
+- Every position that challenges conventional thinking
+- Every "most people think X, but actually Y" statement
+- Every controversial or unpopular opinion expressed
+- Every warning or risk factor identified
+
+**ACTIONABLE INSIGHTS:**
+- Every recommendation or suggested action
+- Every preparation or strategy mentioned
+- Every "what you should do" or "how to prepare" advice
+- Every specific next step or decision point
+
+Video Title: {title}
+Transcript: {transcript}

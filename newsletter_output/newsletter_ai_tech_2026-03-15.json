@@ -1,0 +1,31 @@
+{
+  "headline": "The Infrastructure Layer is Becoming the Moat",
+  "subtitle": "arXiv goes independent, Anthropic locks in partners, and Stripe's agents ship 1,300 PRs weekly",
+  "editorial_intro": "Three things happened this week that reveal where real competitive advantage is moving in AI. It's not about who has the smartest model anymore\u2014it's about who owns the infrastructure that deploys them. Research, product, and orchestration are all splitting into separate layers, and whoever controls the middle one wins.",
+  "signals": [
+    {
+      "headline": "arXiv Becomes Independent\u2014Research Validation Just Got Faster",
+      "body": "arXiv separated from Cornell and hired its first independent CEO. The 34-year-old repository of AI research papers is now a standalone nonprofit with institutional authority. This matters because research breakthroughs will now spread faster\u2014no longer tethered to university gatekeeping or traditional peer review timelines. Techniques validated on arXiv can move into production before conference proceedings are even reviewed.",
+      "whycare": "Start tracking arXiv papers for the techniques your competitors will ship next quarter, not next year. The research-to-deployment cycle just compressed."
+    },
+    {
+      "headline": "Anthropic Locks Down Its Ecosystem\u2014And Bans OpenClaw",
+      "body": "Anthropic launched a Partner Network to deepen integrations with Claude, while simultaneously restricting OAuth access that let third-party tools like OpenClaw orchestrate Claude. The moves read as defensive: Anthropic is betting that whoever controls how agents actually get deployed wins the market, not whoever has the best base model. The OAuth ban is a tell\u2014it means OpenClaw is winning enough that Anthropic wants back control.",
+      "whycare": "Watch whether builders actually stay locked into Anthropic's orchestration layer, or if they switch to open-weight models that don't restrict their tooling. Control over the execution layer is now the real product moat."
+    },
+    {
+      "headline": "Stripe's Agents Ship 1,300 Pull Requests Weekly\u2014No Humans Required",
+      "body": "Stripe confirmed autonomous agents are now writing production code at scale, with human review but not human authorship. That's not a productivity gain\u2014that's evidence agents have crossed into reliability territory. They're handling real infrastructure, real risk, and real dependencies. The question shifted from 'can agents code?' to 'can agents manage production?' Stripe's answer is yes.",
+      "whycare": "Start measuring your team's readiness for agentic code workflows, not just LLM-assisted writing. The teams shipping agent-generated code at scale are already ahead on operational efficiency."
+    }
+  ],
+  "bigger_picture": "Three layers are emerging: research (arXiv), capability (Claude, Qwen, open-weight models), and orchestration (how agents actually run in production). The research layer is accelerating\u2014breakthroughs spread immediately. The capability layer is commoditizing\u2014open-weight is good enough for agentic work. The orchestration layer is where the moat lives. Anthropic's Partner Network and OpenClaw ban prove they know this. Stripe's 1,300 PRs/week proves builders are already competing on orchestration reliability, not raw model performance. The company that owns how agents execute\u2014not how they think\u2014owns the next cycle.",
+  "_meta": {
+    "vertical": "ai_tech",
+    "brief_id": 79,
+    "brief_date": "2026-03-15 01:30:49",
+    "signal_count": 266,
+    "source_count": 5,
+    "generated_at": "2026-03-14T22:00:10.437104"
+  }
+}

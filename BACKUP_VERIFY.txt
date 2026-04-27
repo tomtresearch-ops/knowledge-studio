@@ -1,0 +1,12 @@
+This file confirms the backup script should have run.
+Check the backups directory for a folder with "document_view_buttons_fixed_event_listeners" in the name.
+
+
+
+
+
+
+
+
+
+

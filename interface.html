@@ -1,0 +1,1423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Knowledge Studio - Your Second Brain (DEV MODE)</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 40px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: #8b5cf6;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .logo-text h1 {
+            font-size: 24px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .logo-text p {
+            font-size: 14px;
+            color: #a1a1aa;
+            margin: 0;
+        }
+
+        .nav {
+            display: flex;
+            gap: 32px;
+        }
+
+        .nav a {
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .nav a:hover {
+            color: #8b5cf6;
+        }
+
+        .nav a.active {
+            color: #8b5cf6;
+        }
+
+        /* Main Content */
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 60px 40px;
+        }
+
+        /* Hero Section */
+        .hero {
+            text-align: center;
+            margin-bottom: 60px;
+        }
+
+        .hero h2 {
+            font-size: 48px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            line-height: 1.2;
+        }
+
+        .hero .highlight {
+            color: #8b5cf6;
+        }
+
+        .hero p {
+            font-size: 18px;
+            color: #a1a1aa;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Upload Area */
+        .upload-section {
+            margin-bottom: 60px;
+        }
+
+        .upload-area {
+            border: 2px dashed #374151;
+            border-radius: 16px;
+            padding: 60px 40px;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.02);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .upload-area:hover {
+            border-color: #8b5cf6;
+            background: rgba(139, 92, 246, 0.05);
+        }
+
+        .upload-area.dragover {
+            border-color: #8b5cf6;
+            background: rgba(139, 92, 246, 0.1);
+            transform: scale(1.02);
+        }
+
+        /* Article/URL Input Styles */
+        .article-input-area {
+            border: 2px dashed #374151;
+            border-radius: 16px;
+            padding: 60px 40px;
+            text-align: center;
+            background: rgba(255, 255, 255, 0.02);
+            transition: all 0.3s ease;
+        }
+
+        .article-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 20px;
+            background: #8b5cf6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+            font-size: 32px;
+        }
+
+        .article-input-container {
+            display: flex;
+            gap: 12px;
+            max-width: 600px;
+            margin: 0 auto 32px;
+        }
+
+        .article-url-input {
+            flex: 1;
+            padding: 16px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: #ffffff;
+            font-size: 16px;
+            transition: all 0.2s;
+        }
+
+        .article-url-input:focus {
+            outline: none;
+            border-color: #8b5cf6;
+            background: rgba(139, 92, 246, 0.05);
+        }
+
+        .article-url-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .article-submit-btn {
+            padding: 16px 24px;
+            background: #8b5cf6;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .article-submit-btn:hover {
+            background: #7c3aed;
+            transform: translateY(-1px);
+        }
+
+        /* Article Text Input Styles */
+        .article-text-area {
+            max-width: 600px;
+            margin: 0 auto 32px;
+        }
+
+        .article-text-input {
+            width: 100%;
+            min-height: 200px;
+            padding: 16px 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: #ffffff;
+            font-size: 14px;
+            line-height: 1.6;
+            resize: vertical;
+            transition: all 0.2s;
+            margin-bottom: 12px;
+        }
+
+        .article-text-input:focus {
+            outline: none;
+            border-color: #8b5cf6;
+            background: rgba(139, 92, 246, 0.05);
+        }
+
+        .article-text-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .article-title-input {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: #ffffff;
+            font-size: 16px;
+            transition: all 0.2s;
+            margin-bottom: 16px;
+        }
+
+        .article-title-input:focus {
+            outline: none;
+            border-color: #8b5cf6;
+            background: rgba(139, 92, 246, 0.05);
+        }
+
+        .article-title-input::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .upload-icon {
+            width: 80px;
+            height: 80px;
+            background: #8b5cf6;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+            font-size: 32px;
+            color: white;
+        }
+
+        .upload-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .upload-subtitle {
+            font-size: 16px;
+            color: #a1a1aa;
+            margin-bottom: 32px;
+        }
+
+        .file-types {
+            display: flex;
+            justify-content: center;
+            gap: 32px;
+            margin-bottom: 32px;
+        }
+
+        .file-type {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .file-type-icon {
+            width: 48px;
+            height: 48px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .file-type-label {
+            font-size: 14px;
+            color: #a1a1aa;
+        }
+
+        .upload-input {
+            display: none;
+        }
+
+        /* Feature Cards */
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 32px;
+        }
+
+        .feature-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 32px;
+            text-align: center;
+            transition: transform 0.2s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-4px);
+        }
+
+        .feature-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            font-size: 24px;
+            color: white;
+        }
+
+        .feature-icon.batch {
+            background: #8b5cf6;
+        }
+
+        .feature-icon.ai {
+            background: #8b5cf6;
+        }
+
+        .feature-icon.search {
+            background: #10b981;
+        }
+
+        .feature-title {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .feature-description {
+            color: #a1a1aa;
+            font-size: 14px;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #8b5cf6, #3b82f6);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            text-align: center;
+            margin-top: 12px;
+            color: #a1a1aa;
+            font-size: 14px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header {
+                padding: 20px;
+            }
+
+            .main-content {
+                padding: 40px 20px;
+            }
+
+            .hero h2 {
+                font-size: 36px;
+            }
+
+            .upload-area {
+                padding: 40px 20px;
+            }
+
+            .file-types {
+                flex-direction: column;
+                gap: 20px;
+            }
+
+            .features {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">
+            <div class="logo-icon">Φ</div>
+            <div class="logo-text">
+                <h1>Knowledge Studio</h1>
+                <p>Your Second Brain</p>
+            </div>
+        </div>
+        <nav class="nav">
+            <a href="#" class="active">Capture</a>
+            <a href="/library">Library</a>
+            <a href="/channels">Channels</a>
+            <a href="/briefing">Briefing Room</a>
+            <a href="/intelligence">Intelligence</a>
+            <a href="/stats">Stats</a>
+            <a href="/studio">Studio</a>
+        </nav>
+        <div id="serverStatus" style="display: flex; align-items: center; gap: 12px; margin-left: 20px;">
+            <div id="statusIndicator" style="width: 12px; height: 12px; border-radius: 50%; background: #ef4444; animation: pulse 2s infinite;"></div>
+            <span id="statusText" style="font-size: 14px; color: #a1a1aa;">Checking...</span>
+            <button id="startStopBtn" onclick="toggleServer()" style="padding: 6px 12px; background: #8b5cf6; border: none; border-radius: 6px; color: white; cursor: pointer; font-size: 12px; font-weight: 500;">Start Server</button>
+            <button id="restartBtn" style="display: none; padding: 6px 12px; background: #8b5cf6; border: none; border-radius: 6px; color: white; cursor: pointer; font-size: 12px; font-weight: 500;">Restart Server</button>
+            <button id="backupBtn" onclick="createBackup()" style="padding: 6px 12px; background: #10b981; border: none; border-radius: 6px; color: white; cursor: pointer; font-size: 12px; font-weight: 500;">💾 Create Backup</button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Hero Section -->
+        <section class="hero">
+            <h2>Add to Your<br><span class="highlight">Knowledge Base</span></h2>
+            <p>Drop any file or paste a URL. AI auto-detects the content type and processes it.</p>
+        </section>
+
+        <!-- Universal Drop Zone -->
+        <section class="upload-section">
+            <div class="upload-area" id="uploadArea">
+                <div class="upload-icon">↑</div>
+                <h3 class="upload-title">Drop Any File</h3>
+                <p class="upload-subtitle">Screenshots, images, PDFs, or audio files</p>
+
+                <div class="file-types">
+                    <div class="file-type">
+                        <div class="file-type-icon">🎥</div>
+                        <span class="file-type-label">Video Screenshots</span>
+                    </div>
+                    <div class="file-type">
+                        <div class="file-type-icon">📄</div>
+                        <span class="file-type-label">Articles & PDFs</span>
+                    </div>
+                    <div class="file-type">
+                        <div class="file-type-icon">🎧</div>
+                        <span class="file-type-label">Audio & Podcasts</span>
+                    </div>
+                </div>
+
+                <input type="file" id="fileInput" class="upload-input" multiple accept="image/*,.pdf,audio/*,video/*" />
+
+                <div class="progress-container" id="progressContainer">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <div class="progress-text" id="progressText">Processing...</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- URL Input Section -->
+        <section class="upload-section" style="margin-top: -20px;">
+            <div class="article-input-area" style="padding: 30px 40px;">
+                <div class="article-input-container">
+                    <input type="url" id="urlInput" placeholder="Paste any URL — YouTube, article, or podcast" class="article-url-input" style="flex: 1;">
+                    <button onclick="processUrl()" class="article-submit-btn">Process URL</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Expandable Text Paste Section -->
+        <section class="upload-section" style="margin-top: -20px;">
+            <details class="text-paste-details" style="background: rgba(255, 255, 255, 0.02); border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.1);">
+                <summary style="padding: 16px 24px; cursor: pointer; color: #a1a1aa; font-size: 14px; list-style: none; display: flex; align-items: center; gap: 8px;">
+                    <span style="transition: transform 0.2s;">▶</span> Paste text directly (for articles without URLs)
+                </summary>
+                <div style="padding: 0 24px 24px;">
+                    <textarea id="articleText" placeholder="Paste article text here..." class="article-text-input" style="margin-bottom: 12px;"></textarea>
+                    <div style="display: flex; gap: 12px;">
+                        <input type="text" id="articleTitle" placeholder="Title (optional)" class="article-title-input" style="flex: 1;">
+                        <button onclick="processArticleText()" class="article-submit-btn">Summarize</button>
+                    </div>
+                </div>
+            </details>
+        </section>
+
+        <!-- Progress Container for URL/Text processing -->
+        <div class="progress-container" id="urlProgressContainer" style="display: none; max-width: 600px; margin: 20px auto;">
+            <div class="progress-bar">
+                <div class="progress-fill" id="urlProgressFill"></div>
+            </div>
+            <p class="progress-text" id="urlProgressText">Processing...</p>
+        </div>
+
+        <!-- Feature Cards -->
+        <section class="features" style="margin-top: 40px;">
+            <div class="feature-card">
+                <div class="feature-icon batch">↑</div>
+                <h3 class="feature-title">Batch Upload</h3>
+                <p class="feature-description">Select multiple screenshots for efficient processing</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon ai">Φ</div>
+                <h3 class="feature-title">AI Processing</h3>
+                <p class="feature-description">Automatic extraction and NBLM-quality summarization</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon search">⚡</div>
+                <h3 class="feature-title">Instant Search</h3>
+                <p class="feature-description">Natural language queries across your knowledge base</p>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // Prevent Safari from opening dropped files - must be at top
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            document.addEventListener(eventName, (e) => {
+                // Only prevent if not over the upload area
+                const isUploadArea = e.target.closest('.upload-area');
+                if (!isUploadArea) {
+                    e.preventDefault();
+                }
+            }, { capture: true });
+        });
+        window.addEventListener('dragover', (e) => { e.preventDefault(); }, { capture: true });
+        window.addEventListener('drop', (e) => {
+            const isUploadArea = e.target.closest('.upload-area');
+            if (!isUploadArea) {
+                e.preventDefault();
+            }
+        }, { capture: true });
+
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressFill = document.getElementById('progressFill');
+        const progressText = document.getElementById('progressText');
+
+        // Click to upload
+        uploadArea.addEventListener('click', () => {
+            fileInput.click();
+        });
+
+        // Drag and drop
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            handleFiles(files);
+        });
+
+        // File input change
+        fileInput.addEventListener('change', (e) => {
+            handleFiles(e.target.files);
+        });
+
+        // Navigate to library without triggering file upload
+        function goToLibrary() {
+            window.location.href = '/library';
+        }
+
+        // Universal URL processor - auto-detects content type
+        async function processUrl() {
+            const url = document.getElementById('urlInput').value.trim();
+            if (!url) {
+                alert('Please enter a URL');
+                return;
+            }
+
+            const progressContainer = document.getElementById('urlProgressContainer');
+            const progressFill = document.getElementById('urlProgressFill');
+            const progressText = document.getElementById('urlProgressText');
+
+            progressContainer.style.display = 'block';
+            progressText.textContent = 'Detecting content type...';
+            progressFill.style.width = '10%';
+
+            try {
+                // Detect URL type
+                const isYouTube = url.includes('youtube.com') || url.includes('youtu.be');
+                const isAudio = url.match(/\.(mp3|m4a|wav|flac|ogg)$/i) || url.includes('podcast');
+
+                if (isYouTube) {
+                    progressText.textContent = 'Processing YouTube video...';
+                    progressFill.style.width = '30%';
+                    // YouTube URLs get processed through the video queue
+                    const response = await fetch('/api/add-video-url', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ url: url })
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        progressFill.style.width = '100%';
+                        progressText.innerHTML = '✅ Video added to queue! <button onclick="goToLibrary()" style="margin-left: 10px; padding: 5px 10px; background: #8b5cf6; color: white; border: none; border-radius: 4px; cursor: pointer;">View Library</button>';
+                    } else {
+                        throw new Error(data.error || 'Failed to add video');
+                    }
+                } else if (isAudio) {
+                    progressText.textContent = 'Processing audio URL...';
+                    progressFill.style.width = '30%';
+                    const response = await fetch('/api/process-audio-url', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ url: url })
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        progressFill.style.width = '100%';
+                        progressText.innerHTML = '✅ Audio processing! <button onclick="goToLibrary()" style="margin-left: 10px; padding: 5px 10px; background: #8b5cf6; color: white; border: none; border-radius: 4px; cursor: pointer;">View Library</button>';
+                    } else {
+                        throw new Error(data.error || 'Failed to process audio');
+                    }
+                } else {
+                    // Assume it's an article
+                    progressText.textContent = 'Processing article...';
+                    progressFill.style.width = '30%';
+                    const response = await fetch('/api/process-article', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ url: url })
+                    });
+                    if (response.ok) {
+                        progressFill.style.width = '100%';
+                        progressText.innerHTML = '✅ Article processed! <button onclick="goToLibrary()" style="margin-left: 10px; padding: 5px 10px; background: #8b5cf6; color: white; border: none; border-radius: 4px; cursor: pointer;">View Library</button>';
+                    } else {
+                        const data = await response.json();
+                        throw new Error(data.error || 'Failed to process article');
+                    }
+                }
+                document.getElementById('urlInput').value = '';
+            } catch (error) {
+                progressText.textContent = 'Error: ' + error.message;
+                console.error('URL processing error:', error);
+            }
+        }
+
+        // Process article from pasted text
+        async function processArticleText() {
+            const text = document.getElementById('articleText').value.trim();
+            const title = document.getElementById('articleTitle').value.trim();
+
+            if (!text) {
+                alert('Please paste article text');
+                return;
+            }
+
+            const progressContainer = document.getElementById('urlProgressContainer');
+            const progressFill = document.getElementById('urlProgressFill');
+            const progressText = document.getElementById('urlProgressText');
+
+            progressContainer.style.display = 'block';
+            progressText.textContent = 'Processing text...';
+            progressFill.style.width = '20%';
+
+            try {
+                const response = await fetch('/api/process-article-text', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ 
+                        text: text,
+                        title: title || 'Pasted Article',
+                        url: 'text-input'
+                    })
+                });
+
+                if (response.ok) {
+                    progressFill.style.width = '100%';
+
+                    // Clear the form
+                    document.getElementById('articleText').value = '';
+                    document.getElementById('articleTitle').value = '';
+
+                    progressText.innerHTML = '✅ Text processed! <button onclick="goToLibrary()" style="margin-left: 10px; padding: 5px 10px; background: #8b5cf6; color: white; border: none; border-radius: 4px; cursor: pointer;">View Library</button>';
+                } else {
+                    throw new Error('Failed to process article text');
+                }
+            } catch (error) {
+                progressText.textContent = 'Failed to process. Please try again.';
+                console.error('Article text processing error:', error);
+            }
+        }
+
+        // Legacy function for backwards compatibility
+        async function processAudioUrl() {
+            const url = document.getElementById('audioUrl')?.value?.trim();
+            if (!url) return;
+            // Route through universal processor
+            document.getElementById('urlInput').value = url;
+            processUrl();
+        }
+
+        // Check for duplicates before uploading
+        async function checkForDuplicates(files) {
+            const duplicates = [];
+            
+            for (let file of files) {
+                try {
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    
+                    const response = await fetch('/api/check-duplicate', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (data.success && data.is_duplicate && data.existing_video) {
+                        duplicates.push({
+                            filename: file.name,
+                            existing: data.existing_video,
+                            metadata: data.metadata
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error checking duplicate:', error);
+                    // Continue anyway if check fails
+                }
+            }
+            
+            return duplicates;
+        }
+
+        // Handle file uploads - auto-detects file type
+        async function handleFiles(files) {
+            if (files.length === 0) return;
+
+            // Separate audio files from other files
+            const audioFiles = Array.from(files).filter(f =>
+                f.type.startsWith('audio/') ||
+                f.name.match(/\.(mp3|m4a|wav|flac|ogg|aac|wma)$/i)
+            );
+            const otherFiles = Array.from(files).filter(f =>
+                !f.type.startsWith('audio/') &&
+                !f.name.match(/\.(mp3|m4a|wav|flac|ogg|aac|wma)$/i)
+            );
+
+            // Process audio files separately
+            if (audioFiles.length > 0) {
+                for (const audioFile of audioFiles) {
+                    await handleAudioFile(audioFile);
+                }
+            }
+
+            // If only audio files, we're done
+            if (otherFiles.length === 0) return;
+
+            // Check for duplicates first (for non-audio files)
+            progressContainer.style.display = 'block';
+            progressText.textContent = `Checking for duplicates...`;
+            progressFill.style.width = '10%';
+
+            const duplicates = await checkForDuplicates(otherFiles);
+
+            if (duplicates.length > 0) {
+                // Show duplicate warning
+                let message = `⚠️ Duplicate detected!\n\n`;
+                duplicates.forEach((dup, idx) => {
+                    message += `${idx + 1}. "${dup.metadata?.title || dup.filename}"\n`;
+                    message += `   Already processed as: "${dup.existing.title}"\n`;
+                    message += `   (ID: ${dup.existing.id}, Channel: ${dup.existing.channel})\n\n`;
+                });
+                message += `If you want to reprocess, use the "Reprocess" button in the library instead.\n\nContinue anyway?`;
+
+                const proceed = confirm(message);
+                if (!proceed) {
+                    progressContainer.style.display = 'none';
+                    return;
+                }
+            }
+
+            progressText.textContent = `Uploading ${otherFiles.length} file(s)...`;
+            progressFill.style.width = '30%';
+
+            const formData = new FormData();
+            for (let file of otherFiles) {
+                formData.append('files', file);
+            }
+
+            try {
+                const response = await fetch('/api/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    progressFill.style.width = '100%';
+                    
+                    // Check processing results
+                    if (data.processing && data.processing.length > 0) {
+                        const results = data.processing;
+                        const queued = results.filter(r => r.status === 'queued');
+                        const duplicates = results.filter(r => r.status === 'duplicate');
+                        const errors = results.filter(r => r.status === 'error');
+                        
+                        let message = '';
+                        if (queued.length > 0) {
+                            message += `✅ ${queued.length} file(s) added to processing queue. `;
+                        }
+                        if (duplicates.length > 0) {
+                            message += `⚠️ ${duplicates.length} duplicate(s) skipped. `;
+                        }
+                        if (errors.length > 0) {
+                            message += `❌ ${errors.length} error(s). `;
+                        }
+                        
+                        progressText.textContent = message || 'Upload complete!';
+                    } else {
+                        progressText.textContent = 'Upload complete! Processing...';
+                    }
+                    
+                    // Show success message with option to view library
+                    setTimeout(() => {
+                        // Disable file input to prevent conflicts
+                        fileInput.disabled = true;
+                        fileInput.style.display = 'none';
+                        
+                        const queuedCount = data.processing ? data.processing.filter(r => r.status === 'queued').length : 0;
+                        if (queuedCount > 0) {
+                            progressText.innerHTML = `✅ ${queuedCount} screenshot(s) queued for processing! <button onclick="goToLibrary()" style="margin-left: 10px; padding: 5px 10px; background: #8b5cf6; color: white; border: none; border-radius: 4px; cursor: pointer;">View Library</button>`;
+                        } else {
+                            progressText.innerHTML = '✅ Upload complete! <button onclick="goToLibrary()" style="margin-left: 10px; padding: 5px 10px; background: #8b5cf6; color: white; border: none; border-radius: 4px; cursor: pointer;">View Library</button>';
+                        }
+                    }, 2000);
+                } else {
+                    const errorData = await response.json().catch(() => ({ error: 'Upload failed' }));
+                    throw new Error(errorData.error || 'Upload failed');
+                }
+            } catch (error) {
+                progressText.textContent = 'Upload failed. Please try again.';
+                console.error('Upload error:', error);
+            }
+        }
+
+        // Process audio file (called from handleFiles for audio files)
+        async function handleAudioFile(file) {
+            const formData = new FormData();
+            formData.append('audio', file);
+
+            // Use universal progress container
+            progressContainer.style.display = 'block';
+            progressText.textContent = `🎧 Uploading ${file.name}...`;
+            progressFill.style.width = '10%';
+
+            try {
+                const response = await fetch('/api/process-audio', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    progressFill.style.width = '30%';
+                    progressText.textContent = '🎧 File uploaded! Transcribing with Whisper...';
+
+                    // Poll for completion using universal progress
+                    checkAudioStatus(data.audio_id);
+                } else {
+                    throw new Error(data.error || 'Failed to upload audio');
+                }
+            } catch (error) {
+                progressText.textContent = '🎧 Error: ' + error.message;
+                console.error('Audio upload error:', error);
+            }
+        }
+
+        // Poll for audio processing status
+        async function checkAudioStatus(audioId) {
+            const maxAttempts = 300; // 5 minutes max (1 second intervals)
+            let attempts = 0;
+
+            const pollInterval = setInterval(async () => {
+                attempts++;
+
+                try {
+                    const response = await fetch(`/api/audio/${audioId}/status`);
+                    const data = await response.json();
+
+                    if (data.status === 'processing') {
+                        // Update progress (rough estimate: 30% upload, 70% transcription)
+                        const progress = 30 + Math.min(70, (attempts / maxAttempts) * 70);
+                        progressFill.style.width = progress + '%';
+                        progressText.textContent = `🎧 Transcribing... (${Math.round(progress)}%)`;
+                    } else if (data.status === 'completed') {
+                        clearInterval(pollInterval);
+                        progressFill.style.width = '100%';
+                        progressText.innerHTML = '✅ Audio processed successfully! <button onclick="goToLibrary()" style="margin-left: 10px; padding: 5px 10px; background: #8b5cf6; color: white; border: none; border-radius: 4px; cursor: pointer;">View Library</button>';
+                    } else if (data.status === 'error') {
+                        clearInterval(pollInterval);
+                        progressText.textContent = '🎧 Error: ' + (data.error || 'Processing failed');
+                    }
+                } catch (error) {
+                    console.error('Status check error:', error);
+                }
+
+                if (attempts >= maxAttempts) {
+                    clearInterval(pollInterval);
+                    progressText.textContent = '🎧 Processing is taking longer than expected. Check library for updates.';
+                }
+            }, 1000);
+        }
+
+        // Server status checking and control
+        let statusCheckInterval = null;
+
+        async function checkServerStatus() {
+            try {
+                const response = await fetch('/api/server-status');
+                
+                // Check if we got a response at all
+                if (!response.ok && response.status >= 500) {
+                    console.error('Server error:', response.status, response.statusText);
+                    // Server is returning error, show as down
+                    const indicator = document.getElementById('statusIndicator');
+                    const statusText = document.getElementById('statusText');
+                    const startStopBtn = document.getElementById('startStopBtn');
+                    
+                    if (indicator && statusText && startStopBtn) {
+                        indicator.style.background = '#ef4444';
+                        indicator.style.animation = 'pulse 2s infinite';
+                        statusText.textContent = 'Server Error';
+                        statusText.style.color = '#ef4444';
+                        startStopBtn.textContent = 'Start Server';
+                        startStopBtn.style.background = '#10b981';
+                        startStopBtn.disabled = false;
+                        startStopBtn.onclick = () => startServer();
+                    }
+                    return;
+                }
+                
+                // Check if response is JSON
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    const text = await response.text();
+                    console.error('Non-JSON response from status check:', text.substring(0, 200));
+                    // Treat as server error
+                    const indicator = document.getElementById('statusIndicator');
+                    const statusText = document.getElementById('statusText');
+                    const startStopBtn = document.getElementById('startStopBtn');
+                    
+                    if (indicator && statusText && startStopBtn) {
+                        indicator.style.background = '#ef4444';
+                        indicator.style.animation = 'pulse 2s infinite';
+                        statusText.textContent = 'Server Error';
+                        statusText.style.color = '#ef4444';
+                        startStopBtn.textContent = 'Start Server';
+                        startStopBtn.style.background = '#10b981';
+                        startStopBtn.disabled = false;
+                        startStopBtn.onclick = () => startServer();
+                    }
+                    return;
+                }
+                
+                const data = await response.json();
+                
+                const indicator = document.getElementById('statusIndicator');
+                const statusText = document.getElementById('statusText');
+                const startStopBtn = document.getElementById('startStopBtn');
+                
+                // Check if Port Authority is starting the server
+                if (data.starting) {
+                    indicator.style.background = '#f59e0b'; // Yellow/amber for starting
+                    indicator.style.animation = 'pulse 2s infinite';
+                    statusText.textContent = 'Starting via Port Authority...';
+                    statusText.style.color = '#f59e0b';
+                    startStopBtn.textContent = 'Starting...';
+                    startStopBtn.style.background = '#6b7280'; // Gray, disabled
+                    startStopBtn.disabled = true;
+                    startStopBtn.onclick = null;
+                    // Hide restart button when starting via Port Authority
+                    const restartBtn = document.getElementById('restartBtn');
+                    if (restartBtn) {
+                        restartBtn.style.display = 'none';
+                    }
+                    hideServerDownBanner();
+                } else if (data.server_running) {
+                    indicator.style.background = '#10b981';
+                    indicator.style.animation = 'none';
+                    statusText.textContent = 'Server Running';
+                    statusText.style.color = '#10b981';
+                    startStopBtn.textContent = 'Stop Server';
+                    startStopBtn.style.background = '#ef4444';
+                    startStopBtn.disabled = false;
+                    startStopBtn.onclick = () => stopServer();
+                    // Show restart button when server is running
+                    const restartBtn = document.getElementById('restartBtn');
+                    if (restartBtn) {
+                        restartBtn.style.display = 'inline-block';
+                        restartBtn.onclick = () => restartServer();
+                        restartBtn.disabled = false;
+                    }
+                    hideServerDownBanner();
+                } else {
+                    indicator.style.background = '#ef4444';
+                    indicator.style.animation = 'pulse 2s infinite';
+                    statusText.textContent = 'Server Stopped';
+                    statusText.style.color = '#ef4444';
+                    startStopBtn.textContent = 'Start Server';
+                    startStopBtn.style.background = '#10b981';
+                    startStopBtn.disabled = false;
+                    startStopBtn.onclick = () => startServer();
+                    // Hide restart button when server is stopped
+                    const restartBtn = document.getElementById('restartBtn');
+                    if (restartBtn) {
+                        restartBtn.style.display = 'none';
+                    }
+                    // Server is down
+                }
+            } catch (error) {
+                // Server is definitely down if we can't reach the API
+                const indicator = document.getElementById('statusIndicator');
+                const statusText = document.getElementById('statusText');
+                const startStopBtn = document.getElementById('startStopBtn');
+                
+                indicator.style.background = '#ef4444';
+                indicator.style.animation = 'pulse 2s infinite';
+                statusText.textContent = 'Server Down';
+                statusText.style.color = '#ef4444';
+                startStopBtn.textContent = 'Start Server';
+                startStopBtn.style.background = '#10b981';
+                startStopBtn.disabled = false;
+                startStopBtn.onclick = () => startServer();
+                // Hide restart button when server is down
+                const restartBtn = document.getElementById('restartBtn');
+                if (restartBtn) {
+                    restartBtn.style.display = 'none';
+                }
+                
+                showServerDownBanner();
+            }
+        }
+
+        function showServerDownBanner() {
+            // Remove existing banner if any
+            const existingBanner = document.getElementById('serverDownBanner');
+            if (existingBanner) {
+                existingBanner.remove();
+            }
+            
+            const banner = document.createElement('div');
+            banner.id = 'serverDownBanner';
+            banner.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; background: #ef4444; color: white; padding: 12px 20px; text-align: center; z-index: 10000; box-shadow: 0 2px 8px rgba(0,0,0,0.2);';
+            banner.innerHTML = `
+                <strong>⚠️ Server is Down</strong> - Knowledge Studio is not running. 
+                <button onclick="startServer()" style="margin-left: 12px; padding: 6px 12px; background: white; color: #ef4444; border: none; border-radius: 4px; cursor: pointer; font-weight: 600;">Start Server Now</button>
+            `;
+            document.body.insertBefore(banner, document.body.firstChild);
+        }
+
+        function hideServerDownBanner() {
+            const banner = document.getElementById('serverDownBanner');
+            if (banner) {
+                banner.remove();
+            }
+        }
+
+        async function startServer() {
+            const startStopBtn = document.getElementById('startStopBtn');
+            startStopBtn.disabled = true;
+            startStopBtn.textContent = 'Starting...';
+            
+            try {
+                const response = await fetch('/api/server-start', {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    hideServerDownBanner();
+                    setTimeout(() => {
+                        checkServerStatus();
+                        startStopBtn.disabled = false;
+                    }, 3000);
+                } else {
+                    alert('Failed to start server: ' + (data.error || data.message));
+                    startStopBtn.disabled = false;
+                    checkServerStatus();
+                }
+            } catch (error) {
+                alert('Cannot reach server API. The server may need to be started manually.\n\nRun: ./start_and_keep_running.sh');
+                startStopBtn.disabled = false;
+                checkServerStatus();
+            }
+        }
+
+        async function stopServer() {
+            if (!confirm('Are you sure you want to stop the server? This will interrupt any processing.')) {
+                return;
+            }
+            
+            const startStopBtn = document.getElementById('startStopBtn');
+            const restartBtn = document.getElementById('restartBtn');
+            startStopBtn.disabled = true;
+            if (restartBtn) restartBtn.disabled = true;
+            startStopBtn.textContent = 'Stopping...';
+            
+            try {
+                const response = await fetch('/api/server-stop', {
+                    method: 'POST'
+                });
+                
+                // Check if response is JSON
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    const text = await response.text();
+                    console.error('Non-JSON response from stop:', text);
+                    throw new Error('Server returned an error page. Check console for details.');
+                }
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    setTimeout(() => {
+                        checkServerStatus();
+                        startStopBtn.disabled = false;
+                        if (restartBtn) restartBtn.disabled = false;
+                    }, 2000);
+                } else {
+                    alert('Failed to stop server: ' + (data.error || data.message));
+                    startStopBtn.disabled = false;
+                    if (restartBtn) restartBtn.disabled = false;
+                    checkServerStatus();
+                }
+            } catch (error) {
+                console.error('Stop server error:', error);
+                let errorMessage = error.message || 'Unknown error';
+                
+                // Handle network errors - if server stops, we'll get a network error
+                // This is actually expected behavior when stopping the server
+                if (errorMessage.includes('Load failed') || errorMessage.includes('Failed to fetch') || errorMessage.includes('NetworkError')) {
+                    // Server stopping causes network error - this is actually success!
+                    console.log('Network error after stop request - server likely stopped successfully');
+                    setTimeout(() => {
+                        checkServerStatus();
+                        startStopBtn.disabled = false;
+                        if (restartBtn) restartBtn.disabled = false;
+                    }, 2000);
+                    return; // Don't show error, just update status
+                }
+                
+                // Only show error for non-network errors
+                alert('Error stopping server: ' + errorMessage);
+                startStopBtn.disabled = false;
+                if (restartBtn) restartBtn.disabled = false;
+                checkServerStatus();
+            }
+        }
+
+        async function restartServer() {
+            if (!confirm('Are you sure you want to restart the server? This will interrupt any processing.')) {
+                return;
+            }
+            
+            const startStopBtn = document.getElementById('startStopBtn');
+            const restartBtn = document.getElementById('restartBtn');
+            startStopBtn.disabled = true;
+            if (restartBtn) {
+                restartBtn.disabled = true;
+                restartBtn.textContent = 'Restarting...';
+            }
+            
+            try {
+                const response = await fetch('/api/server-restart', {
+                    method: 'POST'
+                });
+                
+                // Check if response is JSON
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    const text = await response.text();
+                    console.error('Non-JSON response from restart:', text);
+                    throw new Error('Server returned an error page. Check console for details.');
+                }
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Update UI to show restarting state
+                    const indicator = document.getElementById('statusIndicator');
+                    const statusText = document.getElementById('statusText');
+                    indicator.style.background = '#f59e0b';
+                    indicator.style.animation = 'pulse 2s infinite';
+                    statusText.textContent = 'Restarting...';
+                    statusText.style.color = '#f59e0b';
+                    
+                    // Poll for server to come back up
+                    let attempts = 0;
+                    const maxAttempts = 30; // 30 seconds
+                    const pollInterval = setInterval(async () => {
+                        attempts++;
+                        try {
+                            const statusResponse = await fetch('/api/server-status');
+                            const statusData = await statusResponse.json();
+                            
+                            if (statusData.server_running) {
+                                clearInterval(pollInterval);
+                                checkServerStatus();
+                                startStopBtn.disabled = false;
+                                if (restartBtn) restartBtn.disabled = false;
+                            } else if (attempts >= maxAttempts) {
+                                clearInterval(pollInterval);
+                                alert('Server restart is taking longer than expected. Please check manually.');
+                                checkServerStatus();
+                                startStopBtn.disabled = false;
+                                if (restartBtn) restartBtn.disabled = false;
+                            }
+                        } catch (error) {
+                            // Continue polling
+                        }
+                    }, 1000);
+                } else {
+                    alert('Failed to restart server: ' + (data.error || data.message));
+                    startStopBtn.disabled = false;
+                    if (restartBtn) {
+                        restartBtn.disabled = false;
+                        restartBtn.textContent = 'Restart Server';
+                    }
+                    checkServerStatus();
+                }
+            } catch (error) {
+                console.error('Restart server error:', error);
+                let errorMessage = error.message || 'Unknown error';
+                
+                // Handle network errors - if server stops, we'll get a network error
+                // This is actually expected behavior when restarting the server
+                if (errorMessage.includes('Load failed') || errorMessage.includes('Failed to fetch') || errorMessage.includes('NetworkError')) {
+                    // Server restarting causes network error - this is actually success!
+                    console.log('Network error after restart request - server likely restarting successfully');
+                    
+                    // Update UI to show restarting state
+                    const indicator = document.getElementById('statusIndicator');
+                    const statusText = document.getElementById('statusText');
+                    indicator.style.background = '#f59e0b';
+                    indicator.style.animation = 'pulse 2s infinite';
+                    statusText.textContent = 'Restarting...';
+                    statusText.style.color = '#f59e0b';
+                    
+                    // Start polling for server to come back up
+                    let attempts = 0;
+                    const maxAttempts = 30; // 30 seconds
+                    const pollInterval = setInterval(async () => {
+                        attempts++;
+                        try {
+                            const statusResponse = await fetch('/api/server-status');
+                            const statusData = await statusResponse.json();
+                            
+                            if (statusData.server_running) {
+                                clearInterval(pollInterval);
+                                checkServerStatus();
+                                startStopBtn.disabled = false;
+                                if (restartBtn) restartBtn.disabled = false;
+                                return;
+                            } else if (attempts >= maxAttempts) {
+                                clearInterval(pollInterval);
+                                alert('Server restart is taking longer than expected. Please check manually.');
+                                checkServerStatus();
+                                startStopBtn.disabled = false;
+                                if (restartBtn) restartBtn.disabled = false;
+                            }
+                        } catch (error) {
+                            // Continue polling
+                        }
+                    }, 1000);
+                    return; // Don't show error, just poll
+                }
+                
+                // Only show error for non-network errors
+                alert('Error restarting server: ' + errorMessage);
+                startStopBtn.disabled = false;
+                if (restartBtn) {
+                    restartBtn.disabled = false;
+                    restartBtn.textContent = 'Restart Server';
+                }
+                checkServerStatus();
+            }
+        }
+
+        async function createBackup() {
+            const backupBtn = document.getElementById('backupBtn');
+            if (!backupBtn) return;
+            
+            const originalText = backupBtn.textContent;
+            backupBtn.disabled = true;
+            backupBtn.textContent = 'Creating Backup...';
+            backupBtn.style.background = '#6b7280';
+            
+            try {
+                const response = await fetch('/api/create-backup', {
+                    method: 'POST'
+                });
+                
+                // Check if response is JSON
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    const text = await response.text();
+                    console.error('Non-JSON response:', text);
+                    throw new Error('Server returned an error page. Check console for details.');
+                }
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Show success message with details first
+                    const message = `Backup created successfully!\n\n` +
+                        `Location: ${data.backup_dir}\n` +
+                        `Files: ${data.copied_files.length} copied\n` +
+                        `Total items: ${data.total_items}`;
+                    alert(message);
+                    
+                    // Update button after alert is closed
+                    backupBtn.textContent = '✓ Backup Created!';
+                    backupBtn.style.background = '#10b981';
+                    backupBtn.disabled = false;
+                    
+                    // Reset button after 3 seconds
+                    setTimeout(() => {
+                        backupBtn.textContent = originalText;
+                        backupBtn.style.background = '#10b981';
+                    }, 3000);
+                } else {
+                    throw new Error(data.error || 'Failed to create backup');
+                }
+            } catch (error) {
+                console.error('Backup error:', error);
+                console.error('Error details:', error.stack);
+                backupBtn.textContent = '✗ Backup Failed';
+                backupBtn.style.background = '#ef4444';
+                
+                let errorMessage = error.message || 'Unknown error';
+                if (errorMessage.includes('JSON') || errorMessage.includes('pattern')) {
+                    errorMessage = 'Server returned an error. Please restart the server and try again. Check console for details.';
+                }
+                
+                alert('Failed to create backup: ' + errorMessage);
+                
+                setTimeout(() => {
+                    backupBtn.textContent = originalText;
+                    backupBtn.style.background = '#10b981';
+                    backupBtn.disabled = false;
+                }, 3000);
+            }
+        }
+
+        function toggleServer() {
+            const startStopBtn = document.getElementById('startStopBtn');
+            if (startStopBtn.textContent.includes('Start')) {
+                startServer();
+            } else {
+                stopServer();
+            }
+        }
+
+        // Check status on page load and every 10 seconds
+        checkServerStatus();
+        statusCheckInterval = setInterval(checkServerStatus, 10000);
+
+        // Add CSS for pulse animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes pulse {
+                0%, 100% { opacity: 1; }
+                50% { opacity: 0.5; }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>

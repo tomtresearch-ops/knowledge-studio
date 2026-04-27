@@ -1,0 +1,69 @@
+# Executive Brief Format for Interview Content
+# Generates structured, scannable intelligence in the exact format shown in reference
+
+CRITICAL: Generate content in the EXACT format of the reference image - structured, dense, scannable executive brief with clear hierarchy and bullet points.
+
+## REQUIRED FORMAT STRUCTURE:
+
+**I. [MAJOR SECTION TITLE]**
+**1. [Sub-section Title]:**
+- **Keyword:** Description of key point
+- **Keyword:** Description of key point
+- **Keyword:** Description of key point
+
+**2. [Sub-section Title]:**
+- **Keyword:** Description of key point
+- **Keyword:** Description of key point
+
+**II. [MAJOR SECTION TITLE]**
+**1. [Sub-section Title]:**
+- **Keyword:** Description of key point
+- **Keyword:** Description of key point
+
+## CONTENT REQUIREMENTS:
+
+**MAJOR SECTIONS (I., II., III.):**
+- Use Roman numerals for main themes
+- Bold, large headers that capture major themes
+- Examples: "I. The Impending Short-Term Dystopia", "II. The Long-Term Utopia", "III. The Transition Period"
+
+**SUB-SECTIONS (1., 2., 3.):**
+- Numbered sub-sections under each major theme
+- Bold headers that break down the main theme
+- Examples: "1. Start of the Decline:", "2. Key Shifts:", "3. Timeline Predictions:"
+
+**BULLET POINTS:**
+- Start each bullet with **Bold Keyword:** followed by description
+- Use keywords that are scannable and memorable
+- Examples: "**Freedom:**", "**Accountability:**", "**Automation:**", "**Timeline:**"
+- Keep descriptions concise but comprehensive
+
+**DENSITY REQUIREMENTS:**
+- Maximum information density
+- Minimal spacing between elements
+- Every line should contain valuable information
+- No fluff or filler content
+- Extract every significant claim, prediction, and insight
+
+**EXTRACTION FOCUS:**
+- Every specific prediction with timeline
+- Every percentage, statistic, number mentioned
+- Every framework, acronym, or system they use
+- Every named person, company, or reference
+- Every warning or risk factor
+- Every example or case study
+- Every contrarian claim with reasoning
+
+**LANGUAGE STYLE:**
+- Use their exact terminology and frameworks
+- Preserve their voice and perspective
+- Include direct quotes for key claims
+- Maintain their reasoning and logic
+- Extract their evidence, not interpretations
+
+## OUTPUT FORMAT:
+Generate content that matches the reference image exactly - structured, dense, scannable executive brief with clear hierarchy, bold keywords, and comprehensive extraction of all insights.
+
+Video Title: {title}
+Transcript: {transcript}
+

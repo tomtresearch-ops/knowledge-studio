@@ -1,0 +1,106 @@
+CRITICAL CONTEXT: This transcript came from someone who screenshots videos instead of watching them. They saw something in the title/thumbnail that made them think "I need this expert's thinking" and captured it for later processing.
+
+Your job: Create a comprehensive, scannable analysis that captures everything essential from this expert conversation.
+
+---
+
+## EXECUTIVE SUMMARY
+Write 2-3 paragraphs establishing the expert's core thesis, key predictions, and why this conversation matters. Include specific timelines, claims, and contrarian insights to orient the reader.
+
+---
+
+## KEY TOPICS COVERED
+Provide a bullet list of the major themes/topics discussed in this interview. Use format:
+- **Topic Name:** Brief one-line description of what the expert argues about this topic
+
+List 6-9 major topics in order of coverage or significance.
+
+---
+
+## DETAILED ANALYSIS
+
+Organize the interview into 6-9 numbered sections based on the major themes discussed. For each section:
+
+**[NUMBER]. [SECTION TITLE]: [Key Insight or Main Point]**
+
+Then break down each section using these four subsections:
+
+**Factual Details:**
+- Use bullets for specific claims, data points, predictions, timelines
+- Extract: percentages, dollar amounts, dates, named entities, statistics
+- Include: framework components, system definitions, technical terms
+- Format: Clean bullets with key information clearly stated
+
+**Expert Commentary:**
+- Use direct quotes (2-3 per section) that capture their key reasoning
+- Include their exact words for major predictions and insights  
+- Preserve their unique terminology and conceptual language
+- Show their analytical perspective and logic
+
+**Strategic Analysis:**
+- Write 2-3 narrative paragraphs synthesizing what this means
+- Explain why this matters and what to watch for
+- Connect to broader trends or other expert perspectives
+- Identify implications for different audiences or stakeholders
+
+**Key Predictions/Recommendations:**
+- Use bullets for specific forecasts with timelines
+- Extract "what you should do" guidance
+- Include warnings, risks, and preparation strategies
+- Note any contrarian takes or surprising claims
+
+---
+
+## CONCLUSION
+
+**The Argument Wrapped Up:**
+Write 2-3 paragraphs synthesizing the expert's overall thesis and how they connect their major themes together.
+
+**Key Takeaways They Emphasize:**
+List 4-6 bullets of the most important points the expert wants you to remember, based on their own emphasis and conclusions.
+
+**Final Assessment & Call to Action:**
+Capture their ultimate message, what they want viewers to do, and their final perspective on implications.
+
+**Why This Thinking Matters:**
+Brief paragraph on the unique value or contrarian insight this expert provides.
+
+---
+
+## EXTRACTION REQUIREMENTS:
+
+**Comprehensiveness:** Target 1,500-2,000 words. This should be substantial enough to capture all major frameworks, predictions, and insights, but tight enough to remain scannable.
+
+**Structure Balance:** 
+- Lead with narrative in Strategic Analysis sections (2-3 flowing paragraphs)
+- Use bullets for Factual Details and Predictions (scannable lists)
+- Mix quotes throughout Expert Commentary
+- This creates rhythm: bullets → quotes → narrative → bullets
+
+**Information Density:**
+- Every framework mentioned gets complete breakdown
+- Every prediction includes timeline and reasoning
+- Every statistic includes context
+- Every recommendation includes implementation detail
+- No filler or generic statements
+
+**Scannability:**
+- Clear visual hierarchy with section numbers and bold headings
+- Subsection labels (Factual Details / Expert Commentary / etc.) make it easy to jump to specific types of information
+- Mix of bullets and paragraphs prevents wall-of-text fatigue
+- Short paragraphs (3-4 sentences max) in Strategic Analysis sections
+
+**Quality Bar:** 
+After reading this, someone should understand the expert's complete argument better than if they watched the video. They should be able to scan section headings and subsection labels to quickly find specific types of information (facts vs. analysis vs. predictions).
+
+---
+
+## FORMATTING:
+- Use numbered sections (1, 2, 3...) for major themes
+- Use consistent subsection labels (Factual Details / Expert Commentary / Strategic Analysis / Key Predictions) 
+- Bold all section titles and subsection labels
+- Keep spacing tight but readable
+- Make every line count - no wasted words
+
+Video Title: {title}
+Transcript: {transcript}

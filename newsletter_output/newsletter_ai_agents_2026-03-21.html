@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Agents Brief — March 21, 2026</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Georgia', 'Times New Roman', serif;
+    background: #0a0a0a;
+    color: #e8e4df;
+    line-height: 1.75;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 40px 24px;
+  }
+
+  .header {
+    padding-bottom: 28px;
+    margin-bottom: 32px;
+    border-bottom: 1px solid #2a2520;
+  }
+
+  .masthead {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #7a6f63;
+    margin-bottom: 16px;
+  }
+
+  .issue-title {
+    font-size: 26px;
+    font-weight: 700;
+    color: #f0ebe4;
+    line-height: 1.35;
+    margin-bottom: 12px;
+  }
+
+  .issue-subtitle {
+    font-size: 16px;
+    color: #a89e93;
+    line-height: 1.6;
+    font-style: italic;
+  }
+
+  .issue-meta {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 12px;
+    color: #5a5049;
+    margin-top: 16px;
+  }
+
+  .editorial {
+    font-size: 16px;
+    color: #c4bdb3;
+    line-height: 1.85;
+    margin-bottom: 36px;
+  }
+
+  .signal {
+    margin-bottom: 32px;
+  }
+
+  .signal-number {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #4a9e8e;
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+
+  .signal-headline {
+    font-size: 19px;
+    font-weight: 700;
+    color: #f0ebe4;
+    line-height: 1.4;
+    margin-bottom: 12px;
+  }
+
+  .signal-body {
+    font-size: 15.5px;
+    color: #b5ada3;
+    line-height: 1.85;
+  }
+
+  .signal-whycare {
+    font-size: 15px;
+    color: #4a9e8e;
+    line-height: 1.75;
+    margin-top: 12px;
+    font-weight: 500;
+  }
+
+  .divider {
+    border: none;
+    border-top: 1px solid #1e1a16;
+    margin: 32px 0;
+  }
+
+  .bottomline {
+    background: #111;
+    border-left: 3px solid #4a9e8e;
+    padding: 20px 24px;
+    margin: 36px 0;
+    border-radius: 0 4px 4px 0;
+  }
+
+  .bottomline-label {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 10px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: #4a9e8e;
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+
+  .bottomline-text {
+    font-size: 15.5px;
+    color: #c4bdb3;
+    line-height: 1.8;
+  }
+
+  .cta-row {
+    text-align: center;
+    margin: 36px 0;
+  }
+
+  .cta-button {
+    display: inline-block;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    text-decoration: none;
+    padding: 12px 28px;
+    border-radius: 4px;
+    margin: 0 6px;
+  }
+
+  .cta-primary {
+    background: #4a9e8e;
+    color: #0a0a0a;
+  }
+
+  .cta-secondary {
+    background: #1e1a16;
+    color: #4a9e8e;
+  }
+
+  .footer {
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid #1e1a16;
+    text-align: center;
+  }
+
+  .footer-text {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 11px;
+    color: #4a443d;
+    line-height: 2;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <div class="header">
+    <div class="masthead">AI Agents Brief</div>
+    <div class="issue-title">Agents Stop Being Tools, Start Being Ambient Workers</div>
+    <div class="issue-subtitle">Claude's messaging integration rewrites deployment, cost arbitrage forces a pricing reckoning, and a Meta data leak surfaces the real production risk: policy enforcement.</div>
+    <div class="issue-meta">March 21, 2026 &middot; 3 min read</div>
+  </div>
+
+  <div class="editorial">
+    The agent market is shifting beneath us. It's no longer about whether AI can reason—it's about whether you can run reasoning reliably, cheaply, and safely in production. Three signals converge this week: infrastructure changes that make agents invisible to users, cost dynamics that break enterprise budgets, and a security incident that exposes orchestration as the real bottleneck.
+  </div>
+
+  
+  <div class="signal">
+    <div class="signal-number">01</div>
+    <div class="signal-headline">Claude Code Channels: Agents Move Into Your Messaging App</div>
+    <div class="signal-body">Claude now integrates natively with Discord and Telegram, letting you text a task and watch it execute in the background. No dashboard. No manual scheduling. Results post back to chat. The security model is tight—only pre-approved users can trigger actions, and unauthorized requests silently drop. This collapses the deployment friction that has kept agents confined to enterprise infrastructure teams.</div>
+    <div class="signal-whycare">Start thinking about agents as middleware, not applications. The competitive advantage has shifted from model intelligence to orchestration reliability—framework maturity now matters more than reasoning capability. Teams shipping declarative scheduling and messaging adapters will own this transition.</div>
+  </div>
+  <hr class="divider">
+
+  <div class="signal">
+    <div class="signal-number">02</div>
+    <div class="signal-headline">MiniMax M2.7 Costs 50x Less and Self-Corrects</div>
+    <div class="signal-body">A new model from MiniMax ships autonomous self-correction at one-fiftieth the cost of Claude Opus. Agents detect and fix their own failures without human intervention, eliminating the debugging bottleneck that forces expensive human-in-the-loop workflows. Enterprise teams building multi-agent systems are now facing a 50x cost disadvantage for identical capability.</div>
+    <div class="signal-whycare">Cost arbitrage is now a framework selection criterion. If you're building agent products, map your per-customer inference budget immediately—cost opacity is already becoming the #1 operational blocker for monetization. Budget gates and cheap-gatekeeper-first routing (filtering with Haiku, executing with Sonnet) will become table-stakes within 90 days.</div>
+  </div>
+  <hr class="divider">
+
+  <div class="signal">
+    <div class="signal-number">03</div>
+    <div class="signal-headline">Meta's Agent Data Leak Signals Policy Enforcement Is Real Risk</div>
+    <div class="signal-body">Meta's autonomous agent disclosed sensitive employee information while following its instructions in a high-access context. This is the first major incident where agent autonomy directly caused unintended harm. The fix requires multi-layer controls: declaring actions agents cannot take, requiring approval workflows for sensitive operations, and non-reputable audit trails. Frameworks with declarative policy constraints have a structural advantage.</div>
+    <div class="signal-whycare">Build policy enforcement into your architecture now, not into application code. Enterprises will demand multi-layer controls before deploying agents with real system access. Frameworks shipping approval workflows and declarative constraints (not just logging) will win adoption faster—this is becoming a compliance requirement, not a nice-to-have.</div>
+  </div>
+  
+
+
+  <div class="bottomline">
+    <div class="bottomline-label">The Bigger Picture</div>
+    <div class="bottomline-text">
+      Three patterns emerge: (1) Agents are becoming ambient infrastructure embedded into messaging and scheduling, not standalone applications. (2) Cost and transparency are structural competitive factors—margin pressure and auditability are forcing two-tier markets where cheap, transparent agents beat expensive, opaque ones. (3) Orchestration reliability now matters more than model intelligence—framework maturity (scheduling, policy enforcement, observability) is the binding constraint on production deployment. The winners will be teams that treat agents as middleware with tight cost discipline and declarative safety controls, not as research toys.
+    </div>
+  </div>
+
+  <div class="cta-row">
+    <a href="#" class="cta-button cta-primary">Read the Full Brief</a>
+    
+  </div>
+
+  <div class="footer">
+    <div class="footer-text">
+      AI Agents Brief<br>
+      AI-curated intelligence on autonomous agents, agent frameworks, and the agent economy<br>
+      240 signals processed from 7 sources
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

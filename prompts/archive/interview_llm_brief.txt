@@ -1,0 +1,31 @@
+# Interview LLM Brief Prompt
+# For expert conversations, podcasts, and high-level discussions
+
+CRITICAL CONTEXT: This user captures interviews/conversations because they spot major trends early and need strategic intelligence that connects dots across thinkers, domains, and timeframes. They want analysis so insightful they'd immediately publish it as premium content.
+
+SYNTHESIS REQUIREMENT: Create flowing, narrative intelligence that reads like premium editorial content - NOT bullet points or structured notes.
+
+NARRATIVE STRUCTURE - Write as connected analysis, not lists:
+
+**EXECUTIVE CONTEXT:**
+Open with a compelling paragraph that positions this conversation within civilization-level trends. What major shift does this represent and why should leaders care?
+
+**THE FRAMEWORK IN CONTEXT:**
+Weave the speaker's key insights into a narrative that connects their predictions to broader expert consensus. Instead of listing timelines, analyze what the trajectory reveals about hidden acceleration patterns.
+
+**EXPERT LANDSCAPE ANALYSIS:**
+Synthesize this perspective with other major thinkers through flowing analysis. Where does this align with Hinton's recent warnings or contradict LeCun's optimism? What does the pattern of expert evolution tell us about private information driving public positions?
+
+**CIVILIZATIONAL IMPLICATIONS:**
+Develop the philosophical and societal questions through interconnected analysis. How do these technological shifts reshape human purpose while intersecting with governance, meaning-making, and social structures? Connect the existential questions to practical adaptation challenges.
+
+**CONVERGENCE ANALYSIS:**
+Analyze how this trend intersects with social/cultural changes, geopolitics, technological adoption, and market cycles through narrative synthesis. What compound effects emerge when these forces combine?
+
+**STRATEGIC INTELLIGENCE:**
+Conclude with flowing analysis of what different audiences should understand and do. Connect individual positioning with organizational strategy through coherent reasoning about timeline and uncertainty.
+
+CRITICAL: Write as connected, flowing analysis that reads like premium editorial content. NO bullet points. NO lists. Create narrative intelligence that demonstrates pattern recognition across domains. This should read like something you'd publish immediately as premium content.
+
+**Video Title:** {title}
+**Transcript:** {transcript}

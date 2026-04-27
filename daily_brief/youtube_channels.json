@@ -1,0 +1,232 @@
+[
+  {
+    "channel_id": "UCbfYPyITQ-7l4upoX8nvctg",
+    "channel_name": "Two Minute Papers",
+    "category": "research"
+  },
+  {
+    "channel_id": "UCZHmQk67mSJgfCCTn7xBfew",
+    "channel_name": "Matthew Berman",
+    "category": "news"
+  },
+  {
+    "channel_id": "UCWN3xxRkmTPphYit_FYl6Ag",
+    "channel_name": "Wes Roth",
+    "category": "news"
+  },
+  {
+    "channel_id": "UCp-e3yHHKVNjJkl5GSwGnbg",
+    "channel_name": "AI Explained",
+    "category": "news"
+  },
+  {
+    "channel_id": "UCMLtBahI5DMrt0NPvDSoIRQ",
+    "channel_name": "Machine Learning Street Talk",
+    "category": "research"
+  },
+  {
+    "channel_id": "UCZeYlEYpOdLgmmqPO167hOA",
+    "channel_name": "The AI Advantage",
+    "category": "applied"
+  },
+  {
+    "channel_id": "UCp3-40gJkVFsOnM80Gy7GPQ",
+    "channel_name": "Yannic Kilcher",
+    "category": "research"
+  },
+  {
+    "channel_id": "UCsBjURrPoezykLs9EqgamOA",
+    "channel_name": "Fireship",
+    "category": "applied"
+  },
+  {
+    "channel_id": "UC0vBXGSyV14uvJ4hECDOl0Q",
+    "channel_name": "Andrej Karpathy",
+    "category": "technical"
+  },
+  {
+    "channel_id": "UCYO_jab_esuFRV4b17AJtAw",
+    "channel_name": "3Blue1Brown",
+    "category": "technical"
+  },
+  {
+    "channel_id": "UC9-y-6csu5WGm29I7JiwpnA",
+    "channel_name": "Computerphile",
+    "category": "technical"
+  },
+  {
+    "channel_id": "UCSHZKyawb77ixDdsGog4iWA",
+    "channel_name": "Lex Fridman",
+    "category": "technical"
+  },
+  {
+    "channel_id": "UCbRP3c757lWg9M-U7TyEkXA",
+    "channel_name": "OpenAI",
+    "category": "company"
+  },
+  {
+    "channel_id": "UCVHFbqXqoYvEWM1Ddxl0QDg",
+    "channel_name": "Google DeepMind",
+    "category": "company"
+  },
+  {
+    "channel_id": "UCHuiy8bXnmK5nisYHUd1J5g",
+    "channel_name": "NVIDIA",
+    "category": "company"
+  },
+  {
+    "channel_id": "UCnUYZLuoy1rq1aVMwx4aTzw",
+    "channel_name": "Google",
+    "category": "company"
+  },
+  {
+    "channel_id": "UCVr-TViHN1MBpaPGMkinWEg",
+    "channel_name": "Microsoft",
+    "category": "company"
+  },
+  {
+    "channel_id": "UCvKRFNawVcuz4b9ihUTApCg",
+    "channel_name": "David Shapiro",
+    "category": "applied"
+  },
+  {
+    "channel_id": "UC8butISFwT-Wl7EV0hUK0BQ",
+    "channel_name": "freeCodeCamp.org",
+    "category": "technical"
+  },
+  {
+    "channel_id": "UCG-KntY7aVnIGXYEBQvmBAQ",
+    "channel_name": "TheAIGRID",
+    "category": "news"
+  },
+  {
+    "channel_id": "UCknLrEdhRCp1aegoMqRaCZg",
+    "channel_name": "Igor Pogany",
+    "category": "news"
+  },
+  {
+    "channel_id": "UCLkd0KNjH0x5Mq5RKBRLFmw",
+    "channel_name": "Sam Witteveen",
+    "category": "technical"
+  },
+  {
+    "channel_id": "UCqw2_-OJCGvmf0LXTmWTPXA",
+    "channel_name": "NetworkChuck",
+    "category": "applied"
+  },
+  {
+    "channel_id": "UCJ24N4O0bP7LGLBDvye7oC8",
+    "channel_name": "Matt Wolfe",
+    "category": "news"
+  },
+  {
+    "channel_id": "UCHnyfMqiRRG1u-2MsSQLbXA",
+    "channel_name": "Veritasium",
+    "category": "technical"
+  },
+  {
+    "channel_id": "UCR1IuLEqb6UEA0zDis7zkzA",
+    "channel_name": "Anthropic",
+    "category": "company"
+  },
+  {
+    "channel_id": "UCtxCXg-UvSnTKPOzLH4wJaQ",
+    "channel_name": "Coding with Lewis",
+    "category": "applied"
+  },
+  {
+    "channel_id": "UC_x5XG1OV2P6uZZ5FSM9Ttw",
+    "channel_name": "Google for Developers",
+    "category": "company"
+  },
+  {
+    "channel_id": "UCXZCJLdBc09xxGOn1J-OZIA",
+    "channel_name": "All About AI",
+    "category": "applied"
+  },
+  {
+    "channel_id": "UCB0JSO6d5ysH2Mmqz5I9rIw",
+    "channel_name": "The AI Epiphany",
+    "category": "research"
+  },
+  {
+    "channel_id": "UCHBs0OIDGmEdgIzWsSWRVng",
+    "channel_name": "Prompt Engineering",
+    "category": "applied"
+  },
+  {
+    "channel_id": "UCaO6VoaYJv4kS-TQO_M-N_g",
+    "channel_name": "WorldofAI",
+    "category": "news"
+  },
+  {
+    "channel_id": "UC4JX40jDee_tINbkjycV4Sg",
+    "channel_name": "Tech With Tim",
+    "category": "applied"
+  },
+  {
+    "channel_id": "UCxQKHvKbmSzGMvUrVtJYnUA",
+    "channel_name": "LearnOpenCV",
+    "category": "technical"
+  },
+  {
+    "channel_id": "UCEBb1b_L6zDS3xTUrIALZOw",
+    "channel_name": "MIT OpenCourseWare",
+    "category": "technical"
+  },
+  {
+    "channel_id": "UCiT9RITQ9PW6BhXK0y2jaeg",
+    "channel_name": "Ken Jee",
+    "category": "applied"
+  },
+  {
+    "channel_id": "UCgBzU5MXbMnfJQPQEchOBKQ",
+    "channel_name": "AI Jason",
+    "category": "applied"
+  },
+  {
+    "channel_id": "UCfzlCWGWYyIQ0aLC5w48gBQ",
+    "channel_name": "Sentdex",
+    "category": "technical"
+  },
+  {
+    "channel_id": "UC2D2CMWXMOVWx7giW1n3LIg",
+    "channel_name": "Abhishek Thakur",
+    "category": "technical"
+  },
+  {
+    "channel_id": "UCEqkKGwFLGBRbKYBZ0IivKQ",
+    "channel_name": "Tesla AI",
+    "category": "company"
+  },
+  {
+    "channel_id": "UCi7GJNg51C3jgmYTUwqoUXA",
+    "channel_name": "Hugging Face",
+    "category": "company"
+  },
+  {
+    "channel_id": "UCXv1JCOwgl2SCbM-E4III8g",
+    "channel_name": "AI Foundations",
+    "category": "research"
+  },
+  {
+    "channel_id": "UCddiUEpeqJcYeBxX1IVBKvQ",
+    "channel_name": "The Robot Brains Podcast",
+    "category": "research"
+  },
+  {
+    "channel_id": "UCR6RFahfsYAGhFnQIR55ASQ",
+    "channel_name": "Mina Ghashami",
+    "category": "technical"
+  },
+  {
+    "channel_id": "UCWv7vMbMWH4-V0ZXdmDpPBA",
+    "channel_name": "Pixel Caffeine",
+    "category": "news"
+  },
+  {
+    "channel_id": "UCwF-SmnzzP7VpfBFR1e2SzA",
+    "channel_name": "bycloud",
+    "category": "research"
+  }
+]

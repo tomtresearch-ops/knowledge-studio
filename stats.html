@@ -1,0 +1,1097 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stats - YouTube Intelligence</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a;
+            color: #ffffff;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #333;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 20px;
+        }
+
+        .nav-links a {
+            color: #a0a0a0;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: #ffffff;
+        }
+
+        .nav-links a.active {
+            color: #8b5cf6;
+        }
+
+        .page-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #8b5cf6, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .stat-card.clickable {
+            cursor: pointer;
+            position: relative;
+        }
+        .stat-card.clickable:hover {
+            border-color: #8b5cf6;
+        }
+        .stat-card.clickable::after {
+            content: '▾';
+            position: absolute;
+            top: 12px;
+            right: 14px;
+            color: #555;
+            font-size: 14px;
+        }
+        .stat-card.clickable.expanded::after {
+            content: '▴';
+            color: #8b5cf6;
+        }
+
+        .drilldown {
+            display: none;
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            animation: slideDown 0.2s ease-out;
+        }
+        .drilldown.open { display: block; }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .drilldown h3 {
+            font-size: 1.1rem;
+            margin-bottom: 14px;
+            color: #ccc;
+        }
+
+        .drilldown table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        .drilldown th {
+            text-align: left;
+            padding: 8px 10px;
+            color: #888;
+            border-bottom: 1px solid #333;
+            font-weight: 500;
+        }
+        .drilldown td {
+            padding: 7px 10px;
+            border-bottom: 1px solid #1a1a1a;
+        }
+        .drilldown tr:hover td {
+            background: #1a1a1a;
+        }
+
+        .mini-bar {
+            display: inline-block;
+            height: 6px;
+            background: #8b5cf6;
+            border-radius: 3px;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+
+        .pill {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            background: #222;
+            color: #aaa;
+        }
+        .pill.explainer { background: #1a2a1a; color: #6b8; }
+        .pill.interview { background: #2a1a2a; color: #b6b; }
+        .pill.tools_workflows { background: #1a1a2a; color: #68b; }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: #1a1a1a;
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid #333;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(139, 92, 246, 0.1);
+        }
+
+        .stat-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #8b5cf6, #a855f7);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+
+        .stat-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #8b5cf6;
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            color: #a0a0a0;
+            font-size: 0.9rem;
+        }
+
+        .stat-change {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 12px;
+            font-size: 0.9rem;
+        }
+
+        .stat-change.positive {
+            color: #10b981;
+        }
+
+        .stat-change.negative {
+            color: #ef4444;
+        }
+
+        .chart-section {
+            background: #1a1a1a;
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid #333;
+            margin-bottom: 30px;
+        }
+
+        .chart-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #ffffff;
+        }
+
+        .chart-placeholder {
+            height: 300px;
+            background: #0f0f0f;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            font-size: 1.1rem;
+            border: 2px dashed #333;
+        }
+
+        #chartContainer {
+            position: relative;
+            cursor: crosshair;
+        }
+
+        .chart-tooltip {
+            position: absolute;
+            background: rgba(26, 26, 26, 0.95);
+            border: 1px solid #8b5cf6;
+            border-radius: 6px;
+            padding: 8px 12px;
+            color: #ffffff;
+            font-size: 0.85rem;
+            pointer-events: none;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            display: none;
+        }
+
+        .chart-tooltip .tooltip-date {
+            color: #a0a0a0;
+            font-size: 0.75rem;
+            margin-bottom: 4px;
+        }
+
+        .chart-tooltip .tooltip-value {
+            color: #8b5cf6;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .recent-activity {
+            background: #1a1a1a;
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid #333;
+        }
+
+        .activity-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #ffffff;
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px 0;
+            border-bottom: 1px solid #333;
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+        }
+
+        .activity-icon {
+            width: 32px;
+            height: 32px;
+            background: #8b5cf6;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+        }
+
+        .activity-content {
+            flex: 1;
+        }
+
+        .activity-text {
+            color: #ffffff;
+            font-size: 0.95rem;
+            margin-bottom: 4px;
+        }
+
+        .activity-time {
+            color: #a0a0a0;
+            font-size: 0.8rem;
+        }
+
+        .activity-cost {
+            color: #8b5cf6;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .page-title {
+                font-size: 2rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stat-value {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="nav-links">
+                <a href="/">Capture</a>
+                <a href="/library">Library</a>
+                <a href="/channels">Channels</a>
+                <a href="/intelligence">Intelligence</a>
+                <a href="/stats" class="active">Stats</a>
+                <a href="/studio">Studio</a>
+                <a href="/workflowy">Workflowy</a>
+                <a href="/whiteboard">Whiteboard</a>
+            </div>
+        </div>
+
+        <h1 class="page-title">API Usage & Costs</h1>
+
+        <div id="dataSourceBanner" style="display:none; background:#2a2a1a; border:1px solid #555522; border-radius:8px; padding:10px 16px; margin-bottom:20px; font-size:13px; color:#cccc88;">
+            No API calls logged yet. Real token data will appear after the next processing run.
+        </div>
+
+        <!-- Cost Cards -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon">💰</div>
+                    <div class="stat-title">This Month</div>
+                </div>
+                <div class="stat-value" id="monthCost">$0.00</div>
+                <div class="stat-label" id="monthCalls">0 API calls</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon">📅</div>
+                    <div class="stat-title">Last Month</div>
+                </div>
+                <div class="stat-value" id="lastMonthCost">$0.00</div>
+                <div class="stat-label">Previous month</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon">📊</div>
+                    <div class="stat-title">Year to Date</div>
+                </div>
+                <div class="stat-value" id="yearCost">$0.00</div>
+                <div class="stat-label">2026 total</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-icon">💎</div>
+                    <div class="stat-title">All Time</div>
+                </div>
+                <div class="stat-value" id="totalCost">$0.00</div>
+                <div class="stat-label" id="totalCalls">0 calls total</div>
+            </div>
+        </div>
+
+        <!-- Processing Activity (clickable) -->
+        <div class="stats-grid">
+            <div class="stat-card clickable" onclick="toggleDrilldown('videos')">
+                <div class="stat-header">
+                    <div class="stat-icon">🎥</div>
+                    <div class="stat-title">Videos This Month</div>
+                </div>
+                <div class="stat-value" id="monthVideos">0</div>
+                <div class="stat-label" id="totalVideos">0 total</div>
+            </div>
+
+            <div class="stat-card clickable" onclick="toggleDrilldown('briefs')">
+                <div class="stat-header">
+                    <div class="stat-icon">📰</div>
+                    <div class="stat-title">Briefs This Month</div>
+                </div>
+                <div class="stat-value" id="monthBriefs">0</div>
+                <div class="stat-label">Daily intelligence</div>
+            </div>
+
+            <div class="stat-card clickable" onclick="toggleDrilldown('podcasts')">
+                <div class="stat-header">
+                    <div class="stat-icon">🎙️</div>
+                    <div class="stat-title">Podcasts This Month</div>
+                </div>
+                <div class="stat-value" id="monthPodcasts">0</div>
+                <div class="stat-label" id="podcastDuration"></div>
+            </div>
+
+            <div class="stat-card clickable" onclick="toggleDrilldown('channels')">
+                <div class="stat-header">
+                    <div class="stat-icon">📡</div>
+                    <div class="stat-title">Auto Channels</div>
+                </div>
+                <div class="stat-value" id="autoChannels">0</div>
+                <div class="stat-label">Auto-processing</div>
+            </div>
+        </div>
+
+        <!-- Drill-down panels (hidden by default) -->
+        <div id="drilldown-videos" class="drilldown"></div>
+        <div id="drilldown-briefs" class="drilldown"></div>
+        <div id="drilldown-podcasts" class="drilldown"></div>
+        <div id="drilldown-channels" class="drilldown"></div>
+
+        <!-- Token Summary -->
+        <div id="tokenSummary" class="stat-card" style="margin-bottom:30px; display:grid; grid-template-columns:1fr 1fr; gap:12px; padding:20px;">
+            <div><span style="color:#a0a0a0">Month input:</span> <span id="monthInputTokens" style="color:#6ba3e8">—</span></div>
+            <div><span style="color:#a0a0a0">Month output:</span> <span id="monthOutputTokens" style="color:#e8a86b">—</span></div>
+            <div><span style="color:#a0a0a0">Avg cost/call:</span> <span id="avgCostPerCall">—</span></div>
+            <div><span style="color:#a0a0a0">Avg cost/video:</span> <span id="avgCostPerVideo">—</span></div>
+        </div>
+
+        <!-- Chart -->
+        <div class="chart-section">
+            <h2 class="chart-title">Daily Costs (Last 30 Days)</h2>
+            <div id="chartContainer" style="height: 300px; position: relative;">
+                <canvas id="costChart" style="width: 100%; height: 100%;"></canvas>
+                <div id="chartTooltip" class="chart-tooltip">
+                    <div class="tooltip-date"></div>
+                    <div class="tooltip-value"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Category Breakdown -->
+        <div id="categorySection" class="recent-activity" style="margin-bottom:30px; display:none;">
+            <h2 class="activity-title">Cost by Category (This Month)</h2>
+            <table id="categoryTable" style="width:100%; border-collapse:collapse; font-size:14px;">
+                <thead>
+                    <tr style="border-bottom:1px solid #333; color:#a0a0a0; text-align:left;">
+                        <th style="padding:10px 12px">Category</th>
+                        <th style="padding:10px 12px; text-align:right">Calls</th>
+                        <th style="padding:10px 12px; text-align:right">Cost</th>
+                        <th style="padding:10px 12px; text-align:right">Avg In</th>
+                        <th style="padding:10px 12px; text-align:right">Avg Out</th>
+                    </tr>
+                </thead>
+                <tbody id="categoryBody"></tbody>
+            </table>
+        </div>
+
+        <!-- Model Breakdown -->
+        <div id="modelSection" style="margin-bottom:30px; display:none;">
+            <h2 style="font-size:1.3rem; font-weight:600; margin-bottom:16px;">Cost by Model (This Month)</h2>
+            <div id="modelCards" class="stats-grid"></div>
+        </div>
+
+        <!-- Recent API Calls -->
+        <div id="recentSection" class="recent-activity" style="display:none;">
+            <h2 class="activity-title">Recent API Calls</h2>
+            <div style="max-height:350px; overflow-y:auto;">
+                <table style="width:100%; border-collapse:collapse; font-size:13px;">
+                    <thead>
+                        <tr style="border-bottom:1px solid #333; color:#a0a0a0; text-align:left; position:sticky; top:0; background:#1a1a1a;">
+                            <th style="padding:8px 10px">When</th>
+                            <th style="padding:8px 10px">Type</th>
+                            <th style="padding:8px 10px">Model</th>
+                            <th style="padding:8px 10px; text-align:right">Tokens</th>
+                            <th style="padding:8px 10px; text-align:right">Cost</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recentBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Tracking info -->
+        <div id="trackingSince" style="text-align:center; color:#555; font-size:12px; margin-top:20px; padding:10px;"></div>
+    </div>
+
+    <script>
+        function formatTokens(n) {
+            if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
+            if (n >= 1000) return (n / 1000).toFixed(1) + 'K';
+            return n.toString();
+        }
+
+        function formatCallType(type) {
+            return type.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+        }
+
+        function formatModel(model) {
+            if (model.includes('haiku')) return 'Haiku 4.5';
+            if (model.includes('sonnet')) return 'Sonnet';
+            if (model.includes('opus')) return 'Opus';
+            return model;
+        }
+
+        function timeAgo(timestamp) {
+            const diff = Date.now() - new Date(timestamp).getTime();
+            const mins = Math.floor(diff / 60000);
+            if (mins < 1) return 'just now';
+            if (mins < 60) return mins + 'm ago';
+            const hours = Math.floor(mins / 60);
+            if (hours < 24) return hours + 'h ago';
+            return Math.floor(hours / 24) + 'd ago';
+        }
+
+        async function loadStats() {
+            try {
+                const response = await fetch('/api/stats');
+                const data = await response.json();
+                if (!data.success) return;
+                const s = data.stats;
+
+                // Cost cards
+                document.getElementById('monthCost').textContent = '$' + s.month_cost.toFixed(2);
+                document.getElementById('monthCalls').textContent = s.month_calls.toLocaleString() + ' API calls';
+                document.getElementById('lastMonthCost').textContent = '$' + s.last_month_cost.toFixed(2);
+                document.getElementById('yearCost').textContent = '$' + s.year_cost.toFixed(2);
+                document.getElementById('totalCost').textContent = '$' + s.total_cost.toFixed(2);
+                document.getElementById('totalCalls').textContent = s.total_calls.toLocaleString() + ' calls total';
+
+                // Processing activity
+                document.getElementById('monthVideos').textContent = s.this_month_videos;
+                document.getElementById('totalVideos').textContent = s.total_videos.toLocaleString() + ' total';
+                document.getElementById('monthBriefs').textContent = s.this_month_briefs;
+                document.getElementById('monthPodcasts').textContent = s.this_month_podcasts;
+                document.getElementById('podcastDuration').textContent = 'Generated episodes';
+                document.getElementById('autoChannels').textContent = s.auto_channels;
+
+                // Token summary
+                if (s.data_source === 'real') {
+                    document.getElementById('monthInputTokens').textContent = formatTokens(s.month_input_tokens) + ' tokens';
+                    document.getElementById('monthOutputTokens').textContent = formatTokens(s.month_output_tokens) + ' tokens';
+                    document.getElementById('avgCostPerCall').textContent = s.month_calls > 0
+                        ? '$' + (s.month_cost / s.month_calls).toFixed(4) : '$0.00';
+                    document.getElementById('avgCostPerVideo').textContent = s.this_month_videos > 0
+                        ? '$' + (s.month_cost / s.this_month_videos).toFixed(3) : '$0.00';
+                } else {
+                    document.getElementById('dataSourceBanner').style.display = 'block';
+                    document.getElementById('tokenSummary').style.display = 'none';
+                }
+
+                // Category breakdown
+                const cats = Object.entries(s.category_breakdown || {});
+                if (cats.length > 0) {
+                    document.getElementById('categorySection').style.display = 'block';
+                    const tbody = document.getElementById('categoryBody');
+                    tbody.innerHTML = cats.map(([type, d]) => {
+                        const pct = s.month_cost > 0 ? (d.cost / s.month_cost) * 100 : 0;
+                        return `<tr style="border-bottom:1px solid #222">
+                            <td style="padding:10px 12px">
+                                <div style="display:flex;align-items:center;gap:8px">
+                                    <div style="width:${Math.max(pct, 2)}%;height:4px;background:#8b5cf6;border-radius:2px;min-width:4px;max-width:80px"></div>
+                                    ${formatCallType(type)}
+                                </div>
+                            </td>
+                            <td style="padding:10px 12px;text-align:right;color:#a0a0a0">${d.calls}</td>
+                            <td style="padding:10px 12px;text-align:right;font-weight:500">$${d.cost.toFixed(4)}</td>
+                            <td style="padding:10px 12px;text-align:right;color:#6ba3e8">${formatTokens(d.avg_input)}</td>
+                            <td style="padding:10px 12px;text-align:right;color:#e8a86b">${formatTokens(d.avg_output)}</td>
+                        </tr>`;
+                    }).join('');
+                }
+
+                // Model breakdown
+                const models = Object.entries(s.model_breakdown || {});
+                if (models.length > 0) {
+                    document.getElementById('modelSection').style.display = 'block';
+                    document.getElementById('modelCards').innerHTML = models.map(([model, d]) => `
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div class="stat-title">${formatModel(model)}</div>
+                            </div>
+                            <div class="stat-value" style="font-size:2rem">$${d.cost.toFixed(2)}</div>
+                            <div class="stat-label">${d.calls} calls &middot; ${formatTokens(d.input_tokens)} in &middot; ${formatTokens(d.output_tokens)} out</div>
+                        </div>
+                    `).join('');
+                }
+
+                // Recent API calls
+                if (s.recent_calls && s.recent_calls.length > 0) {
+                    document.getElementById('recentSection').style.display = 'block';
+                    document.getElementById('recentBody').innerHTML = s.recent_calls.map(c => `
+                        <tr style="border-bottom:1px solid #222">
+                            <td style="padding:8px 10px;color:#a0a0a0">${timeAgo(c.timestamp)}</td>
+                            <td style="padding:8px 10px">${formatCallType(c.call_type)}</td>
+                            <td style="padding:8px 10px;color:#a0a0a0">${formatModel(c.model)}</td>
+                            <td style="padding:8px 10px;text-align:right">
+                                <span style="color:#6ba3e8">${formatTokens(c.input_tokens)}</span>
+                                <span style="color:#555"> / </span>
+                                <span style="color:#e8a86b">${formatTokens(c.output_tokens)}</span>
+                            </td>
+                            <td style="padding:8px 10px;text-align:right">$${c.cost.toFixed(4)}</td>
+                        </tr>
+                    `).join('');
+                }
+
+                // Tracking since
+                if (s.logging_since) {
+                    document.getElementById('trackingSince').textContent =
+                        'Tracking since ' + new Date(s.logging_since).toLocaleDateString();
+                }
+
+                // Chart
+                renderChart(s.chart_data);
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+        
+        // Store chart data and config for tooltip interactions
+        let currentChartData = [];
+        let chartConfig = {
+            width: 0,
+            height: 0,
+            padding: 40,
+            maxCost: 0
+        };
+        let tooltipSetup = false;
+
+        // Render cost trend chart
+        function renderChart(chartData) {
+            const canvas = document.getElementById('costChart');
+            const ctx = canvas.getContext('2d');
+            const container = document.getElementById('chartContainer');
+            
+            canvas.width = container.offsetWidth;
+            canvas.height = 300;
+            
+            const width = canvas.width;
+            const height = canvas.height;
+            const padding = 40;
+            const chartWidth = width - (padding * 2);
+            const chartHeight = height - (padding * 2);
+            
+            // Find max cost for scaling
+            const maxCost = Math.max(...chartData.map(d => d.cost), 0.01);
+            
+            // Store chart data and config for tooltip
+            currentChartData = chartData;
+            chartConfig = { width, height, padding, maxCost, chartWidth, chartHeight };
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, width, height);
+            
+            // Draw grid
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 1;
+            for (let i = 0; i <= 5; i++) {
+                const y = padding + (chartHeight / 5) * i;
+                ctx.beginPath();
+                ctx.moveTo(padding, y);
+                ctx.lineTo(width - padding, y);
+                ctx.stroke();
+            }
+            
+            // Draw line chart
+            ctx.strokeStyle = '#8b5cf6';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            
+            chartData.forEach((point, index) => {
+                const x = padding + (chartWidth / (chartData.length - 1)) * index;
+                const y = height - padding - (point.cost / maxCost) * chartHeight;
+                
+                if (index === 0) {
+                    ctx.moveTo(x, y);
+                } else {
+                    ctx.lineTo(x, y);
+                }
+            });
+            
+            ctx.stroke();
+            
+            // Draw points
+            ctx.fillStyle = '#8b5cf6';
+            chartData.forEach((point, index) => {
+                const x = padding + (chartWidth / (chartData.length - 1)) * index;
+                const y = height - padding - (point.cost / maxCost) * chartHeight;
+                
+                ctx.beginPath();
+                ctx.arc(x, y, 3, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            
+            // Draw labels
+            ctx.fillStyle = '#a0a0a0';
+            ctx.font = '12px sans-serif';
+            ctx.textAlign = 'center';
+            
+            // X-axis labels (show every 5th day)
+            chartData.forEach((point, index) => {
+                if (index % 5 === 0) {
+                    const x = padding + (chartWidth / (chartData.length - 1)) * index;
+                    const date = new Date(point.date);
+                    const label = `${date.getMonth() + 1}/${date.getDate()}`;
+                    ctx.fillText(label, x, height - 10);
+                }
+            });
+            
+            // Y-axis labels
+            ctx.textAlign = 'right';
+            for (let i = 0; i <= 5; i++) {
+                const y = padding + (chartHeight / 5) * i;
+                const value = maxCost - (maxCost / 5) * i;
+                ctx.fillText(`$${value.toFixed(2)}`, padding - 10, y + 4);
+            }
+            
+            // Setup tooltip interactions (only once)
+            if (!tooltipSetup) {
+                setupChartTooltip(canvas, container);
+                tooltipSetup = true;
+            }
+        }
+        
+        // Setup tooltip interactions
+        function setupChartTooltip(canvas, container) {
+            const tooltip = document.getElementById('chartTooltip');
+            const tooltipDate = tooltip.querySelector('.tooltip-date');
+            const tooltipValue = tooltip.querySelector('.tooltip-value');
+            
+            // Get canvas bounding rect for accurate mouse position
+            function getMousePos(e) {
+                const rect = canvas.getBoundingClientRect();
+                return {
+                    x: e.clientX - rect.left,
+                    y: e.clientY - rect.top
+                };
+            }
+            
+            // Find closest data point to mouse position
+            function findClosestPoint(mouseX, mouseY) {
+                if (currentChartData.length === 0) return null;
+                
+                const { padding, chartWidth, height, maxCost, chartHeight } = chartConfig;
+                let closestPoint = null;
+                let closestDistance = Infinity;
+                const hoverRadius = 20; // Pixels
+                
+                currentChartData.forEach((point, index) => {
+                    const x = padding + (chartWidth / (currentChartData.length - 1)) * index;
+                    const y = height - padding - (point.cost / maxCost) * chartHeight;
+                    
+                    const distance = Math.sqrt(
+                        Math.pow(mouseX - x, 2) + Math.pow(mouseY - y, 2)
+                    );
+                    
+                    if (distance < closestDistance && distance < hoverRadius) {
+                        closestDistance = distance;
+                        closestPoint = { point, index, x, y };
+                    }
+                });
+                
+                return closestPoint;
+            }
+            
+            // Format date for tooltip
+            function formatDate(dateString) {
+                const date = new Date(dateString);
+                const month = date.toLocaleString('en-US', { month: 'short' });
+                const day = date.getDate();
+                const year = date.getFullYear();
+                return `${month} ${day}, ${year}`;
+            }
+            
+            // Show tooltip
+            function showTooltip(point, x, y) {
+                const date = formatDate(point.date);
+                const value = `$${point.cost.toFixed(4)}` + (point.calls ? ` (${point.calls} calls)` : '');
+                
+                tooltipDate.textContent = date;
+                tooltipValue.textContent = value;
+                
+                tooltip.style.display = 'block';
+                
+                // Position tooltip above the point, but keep it within container bounds
+                const tooltipWidth = tooltip.offsetWidth;
+                const tooltipHeight = tooltip.offsetHeight;
+                const containerRect = container.getBoundingClientRect();
+                const canvasRect = canvas.getBoundingClientRect();
+                
+                let tooltipX = canvasRect.left + x - (tooltipWidth / 2);
+                let tooltipY = canvasRect.top + y - tooltipHeight - 10;
+                
+                // Keep tooltip within container bounds
+                if (tooltipX < containerRect.left + 10) {
+                    tooltipX = containerRect.left + 10;
+                } else if (tooltipX + tooltipWidth > containerRect.right - 10) {
+                    tooltipX = containerRect.right - tooltipWidth - 10;
+                }
+                
+                if (tooltipY < containerRect.top) {
+                    tooltipY = canvasRect.top + y + 15; // Show below point instead
+                }
+                
+                tooltip.style.left = (tooltipX - containerRect.left) + 'px';
+                tooltip.style.top = (tooltipY - containerRect.top) + 'px';
+            }
+            
+            // Hide tooltip
+            function hideTooltip() {
+                tooltip.style.display = 'none';
+            }
+            
+            // Mouse move handler
+            canvas.addEventListener('mousemove', (e) => {
+                const mousePos = getMousePos(e);
+                const closest = findClosestPoint(mousePos.x, mousePos.y);
+                
+                if (closest) {
+                    showTooltip(closest.point, closest.x, closest.y);
+                } else {
+                    hideTooltip();
+                }
+            });
+            
+            // Mouse leave handler
+            canvas.addEventListener('mouseleave', () => {
+                hideTooltip();
+            });
+        }
+        
+        // --- DRILL-DOWN SYSTEM ---
+        const drilldownCache = {};
+
+        function toggleDrilldown(type) {
+            const panel = document.getElementById('drilldown-' + type);
+            const cards = document.querySelectorAll('.stat-card.clickable');
+
+            // Close all other panels
+            document.querySelectorAll('.drilldown.open').forEach(el => {
+                if (el.id !== 'drilldown-' + type) {
+                    el.classList.remove('open');
+                }
+            });
+            cards.forEach(c => {
+                if (!c.onclick.toString().includes(type)) {
+                    c.classList.remove('expanded');
+                }
+            });
+
+            // Toggle this panel
+            const isOpen = panel.classList.toggle('open');
+            // Find the card that was clicked
+            const card = [...cards].find(c => c.onclick.toString().includes(type));
+            if (card) card.classList.toggle('expanded', isOpen);
+
+            if (isOpen && !drilldownCache[type]) {
+                panel.innerHTML = '<div style="text-align:center;color:#666;padding:20px">Loading...</div>';
+                loadDrilldown(type);
+            }
+        }
+
+        async function loadDrilldown(type) {
+            try {
+                const resp = await fetch(`/api/stats/${type}`);
+                const data = await resp.json();
+                if (!data.success) return;
+                drilldownCache[type] = data;
+                renderDrilldown(type, data);
+            } catch (e) {
+                document.getElementById('drilldown-' + type).innerHTML =
+                    '<div style="color:#f66;padding:10px">Failed to load: ' + e.message + '</div>';
+            }
+        }
+
+        function renderDrilldown(type, data) {
+            const panel = document.getElementById('drilldown-' + type);
+            if (type === 'videos') renderVideosDrilldown(panel, data);
+            else if (type === 'briefs') renderBriefsDrilldown(panel, data);
+            else if (type === 'podcasts') renderPodcastsDrilldown(panel, data);
+            else if (type === 'channels') renderChannelsDrilldown(panel, data);
+        }
+
+        function renderVideosDrilldown(panel, data) {
+            const maxCh = data.by_channel.length > 0 ? data.by_channel[0][1] : 1;
+            let html = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">';
+
+            // By channel
+            html += '<div><h3>By Channel</h3><table>';
+            data.by_channel.forEach(([ch, count]) => {
+                const pct = (count / maxCh) * 100;
+                html += `<tr>
+                    <td><div class="mini-bar" style="width:${Math.max(pct, 3)}%;max-width:60px"></div>${ch}</td>
+                    <td style="text-align:right;color:#8b5cf6;font-weight:500">${count}</td>
+                </tr>`;
+            });
+            html += '</table></div>';
+
+            // By type
+            html += '<div><h3>By Content Type</h3><table>';
+            const types = Object.entries(data.by_type).sort((a, b) => b[1] - a[1]);
+            types.forEach(([t, count]) => {
+                html += `<tr>
+                    <td><span class="pill ${t}">${formatCallType(t)}</span></td>
+                    <td style="text-align:right;font-weight:500">${count}</td>
+                </tr>`;
+            });
+            html += '</table>';
+
+            // By day mini chart
+            const days = Object.entries(data.by_day);
+            if (days.length > 0) {
+                const maxDay = Math.max(...days.map(d => d[1]));
+                html += '<h3 style="margin-top:16px">By Day</h3><div style="display:flex;align-items:flex-end;gap:3px;height:60px">';
+                days.forEach(([day, count]) => {
+                    const h = (count / maxDay) * 100;
+                    const label = day.slice(8);
+                    html += `<div style="flex:1;display:flex;flex-direction:column;align-items:center">
+                        <div style="width:100%;background:#8b5cf6;border-radius:2px;height:${h}%" title="${day}: ${count} videos"></div>
+                        <div style="font-size:10px;color:#666;margin-top:2px">${parseInt(label)}</div>
+                    </div>`;
+                });
+                html += '</div>';
+            }
+            html += '</div></div>';
+
+            // Recent videos table
+            html += '<h3 style="margin-top:20px">Recent Videos</h3>';
+            html += '<div style="max-height:300px;overflow-y:auto"><table>';
+            html += '<thead><tr><th>Title</th><th>Channel</th><th>Type</th><th style="text-align:right">Date</th></tr></thead><tbody>';
+            data.videos.slice(0, 50).forEach(v => {
+                const day = v.date ? v.date.slice(5, 10) : '—';
+                html += `<tr>
+                    <td style="max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${v.title}</td>
+                    <td style="color:#aaa">${v.channel}</td>
+                    <td><span class="pill ${v.content_type}">${v.content_type}</span></td>
+                    <td style="text-align:right;color:#888">${day}</td>
+                </tr>`;
+            });
+            html += '</tbody></table></div>';
+            panel.innerHTML = html;
+        }
+
+        function renderBriefsDrilldown(panel, data) {
+            let html = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">';
+
+            // By vertical
+            html += '<div><h3>By Vertical</h3><table>';
+            const verts = Object.entries(data.by_vertical).sort((a, b) => b[1].count - a[1].count);
+            const maxV = verts.length > 0 ? verts[0][1].count : 1;
+            verts.forEach(([v, d]) => {
+                const pct = (d.count / maxV) * 100;
+                html += `<tr>
+                    <td><div class="mini-bar" style="width:${Math.max(pct, 3)}%;max-width:60px"></div>${formatCallType(v)}</td>
+                    <td style="text-align:right;font-weight:500">${d.count}</td>
+                    <td style="text-align:right;color:#888">${d.total_signals} signals</td>
+                </tr>`;
+            });
+            html += '</table></div>';
+
+            // Stats
+            const totalSignals = data.briefs.reduce((s, b) => s + (b.signal_count || 0), 0);
+            const avgSignals = data.count > 0 ? (totalSignals / data.count).toFixed(0) : 0;
+            html += `<div><h3>Summary</h3>
+                <div style="font-size:2rem;font-weight:700;color:#8b5cf6">${totalSignals}</div>
+                <div style="color:#888;margin-bottom:12px">Total signals extracted</div>
+                <div style="color:#aaa">${avgSignals} avg signals per brief</div>
+                <div style="color:#aaa">${data.count} briefs across ${verts.length} verticals</div>
+            </div>`;
+            html += '</div>';
+
+            // Brief list
+            html += '<h3 style="margin-top:20px">All Briefs</h3>';
+            html += '<div style="max-height:300px;overflow-y:auto"><table>';
+            html += '<thead><tr><th>Vertical</th><th>Title</th><th style="text-align:right">Signals</th><th style="text-align:right">Sources</th><th style="text-align:right">Date</th></tr></thead><tbody>';
+            data.briefs.forEach(b => {
+                const day = b.date ? b.date.slice(5, 10) : '—';
+                html += `<tr>
+                    <td><span class="pill">${b.vertical}</span></td>
+                    <td style="max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${b.title}</td>
+                    <td style="text-align:right;color:#8b5cf6;font-weight:500">${b.signal_count}</td>
+                    <td style="text-align:right;color:#888">${b.source_count}</td>
+                    <td style="text-align:right;color:#888">${day}</td>
+                </tr>`;
+            });
+            html += '</tbody></table></div>';
+            panel.innerHTML = html;
+        }
+
+        function renderPodcastsDrilldown(panel, data) {
+            let html = '<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">';
+
+            // By vertical
+            html += '<div><h3>By Vertical</h3><table>';
+            const verts = Object.entries(data.by_vertical).sort((a, b) => b[1].count - a[1].count);
+            verts.forEach(([v, d]) => {
+                const dur = `${Math.floor(d.total_duration / 60)}m`;
+                html += `<tr>
+                    <td>${formatCallType(v)}</td>
+                    <td style="text-align:right;font-weight:500">${d.count}</td>
+                    <td style="text-align:right;color:#888">${dur}</td>
+                </tr>`;
+            });
+            html += '</table></div>';
+
+            // Stats
+            html += `<div><h3>Summary</h3>
+                <div style="font-size:2rem;font-weight:700;color:#8b5cf6">${data.total_duration_display}</div>
+                <div style="color:#888;margin-bottom:12px">Total audio generated</div>
+                <div style="color:#aaa">${data.count} episodes across ${verts.length} verticals</div>
+            </div>`;
+            html += '</div>';
+
+            // Episode list
+            html += '<h3 style="margin-top:20px">All Episodes</h3>';
+            html += '<div style="max-height:300px;overflow-y:auto"><table>';
+            html += '<thead><tr><th>Vertical</th><th>Title</th><th style="text-align:right">Duration</th><th style="text-align:right">Size</th><th style="text-align:right">Date</th></tr></thead><tbody>';
+            data.podcasts.forEach(p => {
+                const day = p.date ? p.date.slice(5, 10) : '—';
+                html += `<tr>
+                    <td><span class="pill">${p.vertical}</span></td>
+                    <td style="max-width:250px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.title}</td>
+                    <td style="text-align:right">${p.duration_display}</td>
+                    <td style="text-align:right;color:#888">${p.audio_size_mb}MB</td>
+                    <td style="text-align:right;color:#888">${day}</td>
+                </tr>`;
+            });
+            html += '</tbody></table></div>';
+            panel.innerHTML = html;
+        }
+
+        function renderChannelsDrilldown(panel, data) {
+            const maxVids = data.channels.length > 0 ? Math.max(...data.channels.map(c => c.videos_this_month)) : 1;
+
+            let html = '<h3>' + data.count + ' Channels with Auto-Processing</h3>';
+            html += '<table>';
+            html += '<thead><tr><th>Channel</th><th style="text-align:right">Subscribers</th><th style="text-align:right">This Month</th><th style="text-align:right">All Time</th><th style="text-align:right">Last Checked</th></tr></thead><tbody>';
+            data.channels.forEach(ch => {
+                const pct = maxVids > 0 ? (ch.videos_this_month / maxVids) * 100 : 0;
+                const lastChecked = ch.last_checked ? timeAgo(ch.last_checked) : '—';
+                html += `<tr>
+                    <td><div class="mini-bar" style="width:${Math.max(pct, 2)}%;max-width:60px"></div>${ch.name}</td>
+                    <td style="text-align:right;color:#bbb">${ch.subscribers_display}</td>
+                    <td style="text-align:right;color:#8b5cf6;font-weight:600">${ch.videos_this_month}</td>
+                    <td style="text-align:right;color:#bbb">${ch.videos_total}</td>
+                    <td style="text-align:right;color:#999">${lastChecked}</td>
+                </tr>`;
+            });
+            html += '</tbody></table>';
+            panel.innerHTML = html;
+        }
+
+        // Load stats on page load
+        loadStats();
+
+        // Refresh every 60 seconds
+        setInterval(loadStats, 60000);
+    </script>
+</body>
+</html>

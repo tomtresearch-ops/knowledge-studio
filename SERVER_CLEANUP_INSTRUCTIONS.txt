@@ -1,0 +1,24 @@
+SERVER CLEANUP INSTRUCTIONS
+===========================
+
+1. FULL SERVER SHUTDOWN:
+   - Find the Python process: ps aux | grep "python.*app.py"
+   - Kill it: kill -9 <PID>
+   - Or: pkill -9 -f "python.*app.py"
+
+2. CLEAR CACHE ARTIFACTS:
+   - Remove Python cache: find . -type d -name "__pycache__" -exec rm -r {} + 2>/dev/null
+   - Remove .pyc files: find . -name "*.pyc" -delete
+   - Clear Flask session files (if any): rm -rf instance/ sessions/ tmp/
+
+3. RESTART SERVER:
+   - python3 app.py
+
+4. BROWSER CLEANUP:
+   - Open a NEW private/incognito window
+   - Navigate to http://localhost:5001/library
+   - Hard refresh: Cmd+Shift+R (Mac) or Ctrl+Shift+R (Windows/Linux)
+
+5. VERIFY CODE LOADING:
+   - Look for: "[!!!FRESH CODE RUNNING!!!] Recent Knowledge" in the header
+   - If you see this, the new code is loaded!

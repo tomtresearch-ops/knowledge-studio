@@ -1,0 +1,55 @@
+Extract actionable intelligence from this health, fitness, or personal development video with focus on practical implementation.
+
+Create a comprehensive, scannable summary that captures everything essential from this content.
+
+---
+
+## SUMMARY
+**LENGTH TARGET: 800-1200 words.** This must be comprehensive yet scannable - readable in 3-4 minutes. The goal is to give the user complete understanding without needing to watch the video.
+
+**STRUCTURE:**
+
+**1. BRIEF CONTEXT (ONLY IF ADDITIVE - 1 clause max)**
+- Half a sentence (a clause) about the presenter - e.g., "Health researcher explains..." - ONLY if it adds context. Skip if obvious or redundant.
+
+**2. MAIN CONTENT (600-1000 words)**
+Provide comprehensive information in flowing narrative paragraphs:
+- Core claim and main protocol/method (2-3 sentences)
+- **Complete research/evidence cited** - key studies with methodologies and implications
+- **Complete protocol steps and dosing/timing** - all variations and modifications (integrated into narrative)
+- Most important quantified benefits (weave into narrative)
+- **Complete safety considerations** - all contraindications, warnings, and side effects (integrated)
+- Getting started and main recommendations (narrative paragraphs)
+- Key cost considerations and resources needed (integrated)
+- Extended reasoning behind protocols and implementation strategies
+
+**3. PROMISED LISTS (IF APPLICABLE)**
+- **If video promises specific deliverables** (e.g., "5 protocols for X", "10 supplements for Y"): List ALL promised items
+- **If it's a descriptive/metaphorical number** (e.g., "what I learned from 500 studies"): Extract the takeaways, NOT a list of 500 studies
+- **Distinguish:** Promised deliverables = list them. Descriptive numbers = extract insights.
+
+**4. CONCLUSION (ONLY IF ADDITIVE)**
+Brief wrap-up (1-2 sentences) if it adds value - skip if redundant.
+
+**CRITICAL RULES:**
+- **DO include complete protocol details** - all steps, dosing, timing, and variations
+- **DO include complete safety information** - all contraindications, warnings, and side effects
+- **DO include complete research context** - key studies with methodologies and implications
+- **DO use narrative paragraphs** - flowing, readable prose that weaves information together
+- **DO prioritize the most actionable information** - what matters most for implementation, but include complete context
+- **DO keep it scannable** - use clear headings, short paragraphs (3-4 sentences max)
+- **DO be smart about lists** - promised deliverables get listed completely, descriptive numbers get insights extracted
+
+**QUALITY BAR:** After reading this summary (3-4 minutes), the user should have complete understanding of the core claim, complete protocol, key evidence, and actionable steps. They should feel fully informed without needing to watch the video.
+
+---
+
+## FORMATTING:
+- Comprehensive but scannable - use headings, bullets, and clear structure
+- Extract only what the presenter actually discusses
+- Focus on implementation details over theory
+- Capture exact protocols, dosages, and timing mentioned
+- Write densely but readably - include every specific worth knowing
+
+Video Title: {title}
+Transcript: {transcript}

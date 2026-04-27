@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI & Tech Brief — March 21, 2026</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Georgia', 'Times New Roman', serif;
+    background: #0a0a0a;
+    color: #e8e4df;
+    line-height: 1.75;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 40px 24px;
+  }
+
+  .header {
+    padding-bottom: 28px;
+    margin-bottom: 32px;
+    border-bottom: 1px solid #2a2520;
+  }
+
+  .masthead {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #7a6f63;
+    margin-bottom: 16px;
+  }
+
+  .issue-title {
+    font-size: 26px;
+    font-weight: 700;
+    color: #f0ebe4;
+    line-height: 1.35;
+    margin-bottom: 12px;
+  }
+
+  .issue-subtitle {
+    font-size: 16px;
+    color: #a89e93;
+    line-height: 1.6;
+    font-style: italic;
+  }
+
+  .issue-meta {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 12px;
+    color: #5a5049;
+    margin-top: 16px;
+  }
+
+  .editorial {
+    font-size: 16px;
+    color: #c4bdb3;
+    line-height: 1.85;
+    margin-bottom: 36px;
+  }
+
+  .signal {
+    margin-bottom: 32px;
+  }
+
+  .signal-number {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #6a9ec4;
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+
+  .signal-headline {
+    font-size: 19px;
+    font-weight: 700;
+    color: #f0ebe4;
+    line-height: 1.4;
+    margin-bottom: 12px;
+  }
+
+  .signal-body {
+    font-size: 15.5px;
+    color: #b5ada3;
+    line-height: 1.85;
+  }
+
+  .signal-whycare {
+    font-size: 15px;
+    color: #6a9ec4;
+    line-height: 1.75;
+    margin-top: 12px;
+    font-weight: 500;
+  }
+
+  .divider {
+    border: none;
+    border-top: 1px solid #1e1a16;
+    margin: 32px 0;
+  }
+
+  .bottomline {
+    background: #111;
+    border-left: 3px solid #6a9ec4;
+    padding: 20px 24px;
+    margin: 36px 0;
+    border-radius: 0 4px 4px 0;
+  }
+
+  .bottomline-label {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 10px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: #6a9ec4;
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+
+  .bottomline-text {
+    font-size: 15.5px;
+    color: #c4bdb3;
+    line-height: 1.8;
+  }
+
+  .cta-row {
+    text-align: center;
+    margin: 36px 0;
+  }
+
+  .cta-button {
+    display: inline-block;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    text-decoration: none;
+    padding: 12px 28px;
+    border-radius: 4px;
+    margin: 0 6px;
+  }
+
+  .cta-primary {
+    background: #6a9ec4;
+    color: #0a0a0a;
+  }
+
+  .cta-secondary {
+    background: #1e1a16;
+    color: #6a9ec4;
+  }
+
+  .footer {
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid #1e1a16;
+    text-align: center;
+  }
+
+  .footer-text {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 11px;
+    color: #4a443d;
+    line-height: 2;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <div class="header">
+    <div class="masthead">AI & Tech Brief</div>
+    <div class="issue-title">The Real AI Race Isn't About Models Anymore</div>
+    <div class="issue-subtitle">Medical AI is silently failing in production, Anthropic and Google are fighting over different bottlenecks, and GPU access just became a federal crime.</div>
+    <div class="issue-meta">March 21, 2026 &middot; 3 min read</div>
+  </div>
+
+  <div class="editorial">
+    Three things happened this week that reveal what actually matters in AI right now—and it's not model capability. The constraint that wins determines who owns the next decade of AI infrastructure. Here's what you need to see.
+  </div>
+
+  
+  <div class="signal">
+    <div class="signal-number">01</div>
+    <div class="signal-headline">Medical AI Degrades 66% in the Real World—and No One's Catching It</div>
+    <div class="signal-body">A major study shows that medical AI trained on automatically-labeled data performs fine on benchmarks but fails catastrophically in production—a 66% performance drop that standard evaluations completely miss. The entire industry has optimized for measuring what's easy (benchmark scores) rather than what matters (robustness to real data). This isn't a model problem. It's a validation problem.</div>
+    <div class="signal-whycare">Start treating validation infrastructure and data quality as your competitive advantage, not an afterthought. The vendors that can credibly certify performance in *your* actual environment—not theirs—will capture enterprise deals worth $50B+ that competitors can't even bid on.</div>
+  </div>
+  <hr class="divider">
+
+  <div class="signal">
+    <div class="signal-number">02</div>
+    <div class="signal-headline">Anthropic and Google Are Betting on Completely Different Constraints</div>
+    <div class="signal-body">Anthropic shipped Claude Code Channels with permission-gating that silently blocks unauthorized users—betting that enterprises want safety over speed. Google launched AI Studio's free tier that generates full production apps in minutes—betting that adoption velocity and ecosystem lock-in matter more. These aren't competing on the same thing. They're each defending a different bottleneck.</div>
+    <div class="signal-whycare">Figure out which constraint your business actually hits first: safety and liability (Anthropic's bet) or developer velocity and cost (Google's bet). Your choice of platform partner should depend on which one is your real constraint, not which one has the fancier feature list.</div>
+  </div>
+  <hr class="divider">
+
+  <div class="signal">
+    <div class="signal-number">03</div>
+    <div class="signal-headline">Compute Access Just Became Worth Federal Prison Time</div>
+    <div class="signal-body">Supermicro's co-founder was arrested for allegedly smuggling $2.5B in GPUs to China. That someone would risk federal charges proves what the real scarcity is. Model capability is no longer the binding constraint—access to training compute is. Companies and countries are now explicitly competing for the scarce resource that actually matters.</div>
+    <div class="signal-whycare">If you're building AI strategy without securing long-term compute supply, you're building on borrowed time. Watch for M&A in compute infrastructure to accelerate in the next 90 days—that's where the real competitive moats are being built.</div>
+  </div>
+  
+
+
+  <div class="bottomline">
+    <div class="bottomline-label">The Bigger Picture</div>
+    <div class="bottomline-text">
+      Three separate battles are happening in parallel, and they all point to the same shift: infrastructure and supply chain now matter more than model capability. Anthropic is defending the permission layer. Google is defending developer experience. And companies everywhere are racing to lock in GPU supply before the scarcity becomes permanent. The winner won't be the lab with the smartest model—it'll be whoever controls the constraint that can't be worked around. For medical AI, that's validation frameworks. For developers, it's ecosystem stickiness. For everyone, it's compute access. The model race is real. But the infrastructure race is where the actual power lives.
+    </div>
+  </div>
+
+  <div class="cta-row">
+    <a href="#" class="cta-button cta-primary">Read the Full Brief</a>
+    <a href="https://tomtresearch-ops.github.io/ks-podcasts/feed_ai_tech.xml" class="cta-button cta-secondary">&#9658; Listen</a>
+  </div>
+
+  <div class="footer">
+    <div class="footer-text">
+      AI & Tech Brief<br>
+      AI-curated intelligence on artificial intelligence, machine learning, and technology<br>
+      345 signals processed from 5 sources
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

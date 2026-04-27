@@ -1,0 +1,32 @@
+{
+  "headline": "The senolytic warning, the GLP-1 breakthrough, and why precision beats blanket treatments",
+  "subtitle": "A safety crisis in anti-aging drugs, evidence that semaglutide rejuvenates aging tissues, and why one-size-fits-all longevity interventions are losing ground",
+  "editorial_intro": "This week's brief reveals a critical inflection point in aging science: the tools we thought would slow aging are forcing us to get much more selective. A major safety signal is reshaping the senolytic field, while GLP-1 drugs are consolidating as genuine rejuvenation agents\u2014not just weight-loss tools. The pattern is clear: tissue-specific precision is replacing blunt-force interventions.",
+  "signals": [
+    {
+      "headline": "Senolytics carry an unexpected cost: brain damage",
+      "body": "A new PNAS study shows that drugs designed to clear senescent cells\u2014the zombie cells we thought were purely harmful\u2014accidentally trigger demyelination in the brain. The problem: some senescent cells actually protect tissues like myelin. Indiscriminate removal backfires. This breaks the assumption that blanket senescent cell clearance is beneficial.",
+      "whycare": "Stop treating senolytics as a simple anti-aging fix. If you're considering these drugs or tracking clinical trials, demand mechanistic data on which senescent cells the treatment spares. The field is now pivoting toward selective targeting rather than nuclear-option cell removal."
+    },
+    {
+      "headline": "GLP-1 drugs rejuvenate aging tissues, not just shrink waistlines",
+      "body": "Three independent studies this month show semaglutide and related GLP-1 agonists restore function in lacrimal glands (reversing age-related dry eye), activate neuroprotective circuits in the brain, and preserve metabolic flexibility independent of weight loss. The mechanism appears tied to improved mitochondrial health. This is biology renovation, not cosmetic weight loss.",
+      "whycare": "Monitor upcoming GLP-1 trials that measure biological aging markers\u2014epigenetic clocks, inflammatory markers, mitochondrial function\u2014rather than just BMI. GLP-1 therapy may qualify as a legitimate longevity intervention. Ask your doctor whether these drugs make sense for your metabolic health even if weight isn't your primary concern."
+    },
+    {
+      "headline": "One-size-fits-all aging drugs are giving way to personalized strategies",
+      "body": "New data shows that lifespan-extending treatments produce wildly different outcomes across individuals\u2014some people benefit hugely, others barely respond. The field is learning that genetic background, baseline aging rate, and microbiota resilience all determine whether an intervention works. Successful aging therapies are starting to stratify patients and personalize dosing rather than applying uniform protocols.",
+      "whycare": "When evaluating any longevity intervention, ask for data on response variance and whether the trial included genetic or biomarker stratification. Expect clinical trials in 2026\u201327 to shift toward personalized aging protocols. Your genetics and baseline biology matter more than the headline efficacy numbers."
+    }
+  ],
+  "bigger_picture": "We're witnessing a maturation of longevity science: away from brute-force interventions and toward surgical precision. The senolytic failure teaches us that aging is not a simple enemy to eliminate; some hallmarks of aging protect us. GLP-1's success comes from its tissue-specific effects and ability to repair mitochondrial function, not a blanket mechanism. And the recognition that individuals respond differently to the same drug signals the end of one-drug-for-all aging medicine. The next phase of longevity research will be slower, more mechanistically rigorous, and more personalized\u2014but also far more likely to actually work.",
+  "newsletter_footer": "Health & Longevity brief | March 17, 2026",
+  "_meta": {
+    "vertical": "health_longevity",
+    "brief_id": 88,
+    "brief_date": "2026-03-18 01:33:50",
+    "signal_count": 536,
+    "source_count": 7,
+    "generated_at": "2026-03-20T22:00:31.591860"
+  }
+}

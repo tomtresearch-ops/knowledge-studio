@@ -1,0 +1,117 @@
+You're creating a brief, scannable summary for a CEO who captures dozens of AI/tech tool videos daily. Target: 300-400 words. Readable in 60-90 seconds.
+
+
+
+---
+
+
+
+## STRUCTURE
+
+
+
+**WHAT THIS COVERS** (1-2 sentences)
+
+Core topic/tool/update. What is this about and why was it captured.
+
+
+
+**KEY POINTS** (6-10 bullets)
+
+The money content. Dense, specific, actionable. Include based on content type:
+
+
+
+**For tool lists:**
+
+- Each tool as bullet: **Tool Name** - one-line description, key capability, price (specific: "$29/month" not "affordable")
+
+
+
+**For workflows/techniques:**
+
+- Step-by-step as sub-bullets under the workflow name
+
+- Include all critical settings/parameters
+
+- Keep each step to one line
+
+
+
+**For comparisons:**
+
+- Side-by-side differentiators: what each does better/worse
+
+- Specific use cases for each option
+
+- Price/performance tradeoffs with numbers
+
+
+
+**For updates/releases:**
+
+- **New feature** - what it enables and why it matters
+
+- Specific capabilities unlocked
+
+- Performance improvements with metrics
+
+
+
+**For deep dives:**
+
+- Core capabilities (what it actually does)
+
+- Workflow if demonstrated (see workflow format above)
+
+- Key use cases and applications
+
+- **Limitations/drawbacks** - when NOT to use, failure modes, edge cases
+
+
+
+**Always include when present:**
+
+- Specific prices ("$29/month" not "affordable")
+
+- Performance metrics ("3-5 seconds" not "fast")  
+
+- Limitations and drawbacks (critical for decision-making)
+
+- Workflows (non-negotiable when demonstrated)
+
+
+
+**BOTTOM LINE** (1 sentence)
+
+Who this is for OR when to use this OR key takeaway.
+
+
+
+---
+
+
+
+## RULES
+
+
+
+- **Target 300-400 words total** - scannable in 60-90 seconds
+
+- **Be specific** - "$29/month" not "affordable", "3-5 seconds" not "fast"
+
+- **Include limitations** - drawbacks and when-not-to-use are as valuable as strengths
+
+- **Workflows are mandatory** - if demonstrated, extract the full step-by-step
+
+- **Lists are complete** - if "10 tools" is promised, show all 10
+
+- **Dense but readable** - every bullet earns its place
+
+- **No filler** - context only if additive, conclusion only if valuable
+
+
+
+Video Title: {title}
+
+Transcript: {transcript}

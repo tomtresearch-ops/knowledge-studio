@@ -1,0 +1,97 @@
+CRITICAL CONTEXT: This transcript came from someone who screenshots videos instead of watching them. They saw something in the title/thumbnail that made them think "I need this information" and captured it for later processing.
+
+Your job: Extract EVERYTHING the speaker actually said, organized using their own frameworks, terminology, and natural structure. Stay completely faithful to source content.
+
+## EXECUTIVE SUMMARY REQUIREMENT:
+- Start with 1-3 sentence summary capturing the core prediction/thesis, timeline, and outcome
+- Include key driving factors and ultimate conclusion  
+- Give reader immediate understanding before diving into details
+
+## DISCOVER THEIR NATURAL ORGANIZATION:
+- Surface their acronyms, systems, frameworks (like "FACE RIPS", mental models)
+- Find their natural phases, stages, progressions
+- Use THEIR terminology for section headers
+- Organize by their inherent logic, not imposed templates
+- Let their thinking patterns drive the structure
+
+## COMPREHENSIVE FRAMEWORK EXTRACTION:
+- When speakers provide acronyms or frameworks, extract what each component means
+- Include ALL supporting details and examples they provide for each element
+- Extract every principle, methodology, or system they describe
+- Don't just list frameworks - extract their explanation of how each part works
+- Mine the entire transcript for scattered framework details
+
+## EXTRACT SUPPORTING ELABORATIONS:
+- When speakers make major claims or predictions, extract their explanations of what those mean
+- If they describe characteristics, features, or attributes of key concepts, capture all details
+- Mine for descriptive content that supports and explains their main statements
+- Don't just extract the conclusion - get the elaboration that makes it meaningful
+- Group supporting details immediately after the claims they explain
+
+## LOGICAL PRESENTATION ORDER:
+- Present concepts in the order that builds understanding (foundation concepts first)
+- Group supporting details immediately after the claims they explain
+- Organize by logical flow rather than transcript chronology when beneficial
+- Use natural progression (problem → analysis → solution, or timeline sequence)
+
+## EXTRACT EVERYTHING THEY ACTUALLY SAID:
+- Every specific prediction with exact timeline and supporting reasoning
+- Every percentage, statistic, number, date with their context
+- Every named person, company, book, framework they reference
+- Every methodology, process, or system they describe
+- Every personal anecdote and the point they used it to illustrate
+- Every contrarian claim with their supporting arguments
+- Every warning, risk factor, or preparation advice they give
+- Every example, case study, or evidence they cite
+- Every characteristic, feature, or attribute they list for key concepts
+
+## PERSPECTIVE EVOLUTION EXTRACTION:
+- If speaker describes how their thinking has changed over time, extract this fully
+- Include before/after positions with specific details
+- Use numbered breakdown (1. Previous Position, 2. Current Position) when applicable
+- Extract the reasoning behind their perspective shifts
+- Include timeline context for when their thinking evolved
+
+## MINE FOR SUPPORTING CONTENT:
+- Extract the reasoning and evidence behind each major claim
+- Include every specific example, data point, or reference provided
+- Capture their explanations of WHY, not just WHAT
+- Get the nuances and qualifications they add to predictions
+- Include context for how they arrived at these conclusions
+- Extract characteristics and details even when mentioned separately from main frameworks
+
+## CONTENT-SPECIFIC EXTRACTION (if applicable):
+
+**IF AI TOOL DEMO/REVIEW:**
+- Extract every feature, capability, and limitation mentioned
+- Include specific pricing, plans, and access details
+- Capture step-by-step workflows and technical specifications
+- Note competitive comparisons and positioning claims
+- Extract use cases, examples, and application scenarios
+
+**IF NEWS/ROUNDUP CONTENT:**
+- Extract every distinct development, announcement, or update
+- Include specific companies, dates, and timeline details
+- Capture implications and context provided for each story
+- Note connections between different news items mentioned
+- Extract market impacts and industry reactions discussed
+
+**IF TUTORIAL/HOW-TO CONTENT:**
+- Extract every step, tool, and specification in sequence
+- Include required settings, parameters, and configurations
+- Capture troubleshooting advice and best practices
+- Note alternative approaches or variations mentioned
+- Extract expected outcomes and success criteria
+
+## SOURCE FIDELITY REQUIREMENTS:
+- Use their exact language in quotes for key claims
+- Preserve their terminology and conceptual frameworks
+- Include their reasoning and logic, not LLM interpretations
+- Extract their evidence and examples, not generic analysis
+- Maintain their voice and perspective throughout
+
+## QUALITY STANDARD:
+Output should be so comprehensive and faithful that someone could understand the speaker's complete thinking without watching the video, organized exactly as they think about the topic. Zero LLM synthesis - pure extraction and organization of their actual content. Capture ALL frameworks, principles, supporting details, and elaborations they provide throughout the entire transcript.
+
+Video Title: {title}
+Transcript: {transcript}

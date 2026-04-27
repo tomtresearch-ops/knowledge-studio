@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Workflowy - Knowledge Studio</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 40px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: #8b5cf6;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .logo-text h1 {
+            font-size: 24px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .logo-text p {
+            font-size: 14px;
+            color: #a1a1aa;
+            margin: 0;
+        }
+
+        .nav {
+            display: flex;
+            gap: 32px;
+        }
+
+        .nav a {
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .nav a:hover {
+            color: #8b5cf6;
+        }
+
+        .nav a.active {
+            color: #8b5cf6;
+        }
+
+        /* Main Content */
+        .workflowy-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px;
+        }
+
+        .workflowy-header {
+            margin-bottom: 30px;
+        }
+
+        .workflowy-header h2 {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #ffffff;
+        }
+
+        .workflowy-header p {
+            color: #a1a1aa;
+            font-size: 14px;
+        }
+
+        /* Breadcrumb for zoom */
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 20px;
+            padding: 12px 16px;
+            background: rgba(139, 92, 246, 0.1);
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .breadcrumb-item {
+            color: #d1c4ff;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .breadcrumb-item:hover {
+            color: #ffffff;
+        }
+
+        .breadcrumb-separator {
+            color: #8b5cf6;
+        }
+
+        /* Workflowy Tree */
+        .workflowy-tree {
+            background: rgba(20, 20, 40, 0.5);
+            border-radius: 12px;
+            padding: 20px;
+            min-height: 400px;
+        }
+
+        .workflowy-item {
+            position: relative;
+            margin: 4px 0;
+            padding-left: 24px;
+        }
+
+        .workflowy-item.dragging {
+            opacity: 0.5;
+        }
+
+        .workflowy-item.drag-over {
+            border-top: 2px solid #8b5cf6;
+        }
+
+        .workflowy-bullet {
+            position: absolute;
+            left: 0;
+            top: 6px;
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #8b5cf6;
+            font-size: 12px;
+            user-select: none;
+            transition: transform 0.2s;
+        }
+
+        .workflowy-bullet:hover {
+            color: #a78bfa;
+        }
+
+        .workflowy-bullet.collapsed::before {
+            content: '▶';
+        }
+
+        .workflowy-bullet.expanded::before {
+            content: '▼';
+        }
+
+        .workflowy-bullet.no-children::before {
+            content: '•';
+        }
+
+        .workflowy-content {
+            display: flex;
+            align-items: flex-start;
+            gap: 8px;
+            min-height: 28px;
+        }
+
+        .workflowy-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #ffffff;
+            font-size: 16px;
+            font-family: inherit;
+            padding: 4px 8px;
+            border-radius: 4px;
+            outline: none;
+            min-width: 200px;
+        }
+
+        .workflowy-input:focus {
+            background: rgba(139, 92, 246, 0.1);
+        }
+
+        .workflowy-text {
+            flex: 1;
+            padding: 4px 8px;
+            border-radius: 4px;
+            cursor: text;
+            min-height: 28px;
+            display: flex;
+            align-items: center;
+        }
+
+        .workflowy-text:hover {
+            background: rgba(139, 92, 246, 0.05);
+        }
+
+        .workflowy-text.editing {
+            background: rgba(139, 92, 246, 0.1);
+        }
+
+        .workflowy-children {
+            margin-left: 24px;
+            margin-top: 4px;
+            display: block;
+        }
+
+        .workflowy-children.collapsed {
+            display: none;
+        }
+
+        /* Formatting */
+        .workflowy-text strong {
+            font-weight: 600;
+            color: #d1c4ff;
+        }
+
+        .workflowy-text del {
+            color: #71717a;
+            text-decoration: line-through;
+        }
+
+        /* Drag handle */
+        .workflowy-drag-handle {
+            opacity: 0;
+            cursor: move;
+            color: #71717a;
+            font-size: 18px;
+            padding: 4px;
+            transition: opacity 0.2s;
+        }
+
+        .workflowy-item:hover .workflowy-drag-handle {
+            opacity: 1;
+        }
+
+        .workflowy-drag-handle:hover {
+            color: #8b5cf6;
+        }
+
+        /* Zoom overlay */
+        .zoom-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(15, 15, 35, 0.95);
+            z-index: 1000;
+            display: none;
+            padding: 40px;
+            overflow-y: auto;
+        }
+
+        .zoom-overlay.active {
+            display: block;
+        }
+
+        .zoom-content {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .zoom-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(139, 92, 246, 0.2);
+            border: 1px solid rgba(139, 92, 246, 0.4);
+            color: #d1c4ff;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+
+        .zoom-close:hover {
+            background: rgba(139, 92, 246, 0.3);
+            border-color: rgba(139, 92, 246, 0.6);
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #71717a;
+        }
+
+        .empty-state h3 {
+            font-size: 20px;
+            margin-bottom: 8px;
+            color: #a1a1aa;
+        }
+
+        /* Keyboard shortcuts hint */
+        .shortcuts-hint {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(20, 20, 40, 0.9);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 12px;
+            color: #a1a1aa;
+            max-width: 200px;
+        }
+
+        .shortcuts-hint h4 {
+            color: #d1c4ff;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+
+        .shortcuts-hint kbd {
+            background: rgba(139, 92, 246, 0.2);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 11px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">
+            <div class="logo-icon">📝</div>
+            <div class="logo-text">
+                <h1>Knowledge Studio</h1>
+                <p>Your Second Brain</p>
+            </div>
+        </div>
+        <nav class="nav">
+            <a href="/">Capture</a>
+            <a href="/library">Library</a>
+            <a href="/channels">Channels</a>
+            <a href="/intelligence">Intelligence</a>
+            <a href="/stats">Stats</a>
+            <a href="/workflowy" class="active">Workflowy</a>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <div class="workflowy-container">
+        <div class="workflowy-header">
+            <h2>Workflowy</h2>
+            <p>Infinite nested outliner for your thoughts</p>
+        </div>
+
+        <!-- Breadcrumb -->
+        <div class="breadcrumb" id="breadcrumb" style="display: none;">
+            <span class="breadcrumb-item" onclick="zoomToRoot()">Root</span>
+        </div>
+
+        <!-- Workflowy Tree -->
+        <div class="workflowy-tree" id="workflowyTree">
+            <div class="empty-state" id="emptyState">
+                <h3>Start organizing your thoughts</h3>
+                <p>Press Enter to create your first item</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Zoom Overlay -->
+    <div class="zoom-overlay" id="zoomOverlay">
+        <button class="zoom-close" onclick="closeZoom()">✕ Close</button>
+        <div class="zoom-content" id="zoomContent"></div>
+    </div>
+
+    <!-- Keyboard Shortcuts Hint -->
+    <div class="shortcuts-hint">
+        <h4>Keyboard Shortcuts</h4>
+        <div><kbd>Enter</kbd> New item</div>
+        <div><kbd>Tab</kbd> Indent</div>
+        <div><kbd>Shift+Tab</kbd> Outdent</div>
+        <div><kbd>Ctrl+B</kbd> Bold</div>
+        <div><kbd>Ctrl+S</kbd> Strikethrough</div>
+        <div><kbd>Ctrl+Z</kbd> Zoom</div>
+    </div>
+
+    <script>
+        // State
+        let items = [];
+        let itemMap = {};
+        let focusedItemId = null;
+        let zoomStack = [];
+        let dragState = null;
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadItems();
+            setupKeyboardShortcuts();
+        });
+
+        // Load items from API
+        async function loadItems() {
+            try {
+                const response = await fetch('/api/workflowy/items');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                if (data.success) {
+                    items = data.items;
+                    buildItemMap();
+                    renderTree();
+                } else {
+                    console.error('API error:', data.error);
+                }
+            } catch (error) {
+                console.error('Error loading items:', error);
+                // Show user-friendly error
+                const tree = document.getElementById('workflowyTree');
+                tree.innerHTML = '<div class="empty-state"><h3>Error loading items</h3><p>Please restart the Flask server to register the new routes.</p></div>';
+            }
+        }
+
+        // Build item map for quick lookup
+        function buildItemMap() {
+            itemMap = {};
+            items.forEach(item => {
+                itemMap[item.id] = item;
+            });
+        }
+
+        // Render tree
+        function renderTree(rootId = null) {
+            const tree = document.getElementById('workflowyTree');
+            const emptyState = document.getElementById('emptyState');
+            
+            // Clear tree
+            tree.innerHTML = '';
+            
+            // Get root items (items with no parent or matching rootId)
+            const rootItems = items.filter(item => {
+                if (rootId !== null) {
+                    return item.id === rootId;
+                }
+                return item.parent_id === null;
+            }).sort((a, b) => a.position - b.position);
+            
+            if (rootItems.length === 0 && rootId === null) {
+                tree.appendChild(emptyState);
+                return;
+            }
+            
+            rootItems.forEach(item => {
+                const itemEl = createItemElement(item);
+                tree.appendChild(itemEl);
+            });
+        }
+
+        // Create item element
+        function createItemElement(item) {
+            const itemDiv = document.createElement('div');
+            itemDiv.className = 'workflowy-item';
+            itemDiv.dataset.itemId = item.id;
+            itemDiv.draggable = true;
+            
+            // Drag handle
+            const dragHandle = document.createElement('span');
+            dragHandle.className = 'workflowy-drag-handle';
+            dragHandle.innerHTML = '⋮⋮';
+            dragHandle.onmousedown = (e) => e.stopPropagation();
+            
+            // Bullet
+            const bullet = document.createElement('div');
+            bullet.className = 'workflowy-bullet';
+            const children = getChildren(item.id);
+            if (children.length > 0) {
+                bullet.className += item.collapsed ? ' collapsed' : ' expanded';
+                bullet.onclick = () => toggleCollapse(item.id);
+            } else {
+                bullet.className += ' no-children';
+            }
+            
+            // Content
+            const contentDiv = document.createElement('div');
+            contentDiv.className = 'workflowy-content';
+            
+            const textDiv = document.createElement('div');
+            textDiv.className = 'workflowy-text';
+            textDiv.innerHTML = formatText(item.content, item.formatting);
+            textDiv.onclick = () => startEditing(item.id);
+            textDiv.ondblclick = () => zoomIntoItem(item.id);
+            
+            contentDiv.appendChild(bullet);
+            contentDiv.appendChild(textDiv);
+            contentDiv.appendChild(dragHandle);
+            
+            itemDiv.appendChild(contentDiv);
+            
+            // Children
+            if (children.length > 0 && !item.collapsed) {
+                const childrenDiv = document.createElement('div');
+                childrenDiv.className = 'workflowy-children';
+                children.sort((a, b) => a.position - b.position).forEach(child => {
+                    childrenDiv.appendChild(createItemElement(child));
+                });
+                itemDiv.appendChild(childrenDiv);
+            }
+            
+            // Drag events
+            itemDiv.addEventListener('dragstart', (e) => handleDragStart(e, item.id));
+            itemDiv.addEventListener('dragover', handleDragOver);
+            itemDiv.addEventListener('drop', (e) => handleDrop(e, item.id));
+            itemDiv.addEventListener('dragend', handleDragEnd);
+            
+            return itemDiv;
+        }
+
+        // Get children of an item
+        function getChildren(parentId) {
+            return items.filter(item => item.parent_id === parentId);
+        }
+
+        // Format text with formatting
+        function formatText(text, formatting) {
+            if (!text) return '';
+            let formatted = escapeHtml(text);
+            if (formatting && formatting.bold) {
+                formatted = '<strong>' + formatted + '</strong>';
+            }
+            if (formatting && formatting.strikethrough) {
+                formatted = '<del>' + formatted + '</del>';
+            }
+            return formatted;
+        }
+
+        // Escape HTML
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Toggle collapse
+        async function toggleCollapse(itemId) {
+            const item = itemMap[itemId];
+            if (!item) return;
+            
+            const collapsed = !item.collapsed;
+            try {
+                const response = await fetch(`/api/workflowy/items/${itemId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ collapsed })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    item.collapsed = collapsed;
+                    renderTree(zoomStack.length > 0 ? zoomStack[zoomStack.length - 1] : null);
+                }
+            } catch (error) {
+                console.error('Error toggling collapse:', error);
+            }
+        }
+
+        // Start editing
+        function startEditing(itemId) {
+            const item = itemMap[itemId];
+            if (!item) return;
+            
+            const itemEl = document.querySelector(`[data-item-id="${itemId}"]`);
+            const textDiv = itemEl.querySelector('.workflowy-text');
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'workflowy-input';
+            input.value = item.content;
+            input.onblur = () => finishEditing(itemId, input.value);
+            input.onkeydown = async (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    const currentContent = input.value;
+                    await finishEditing(itemId, currentContent);
+                    // Create new sibling item and start editing it
+                    const item = itemMap[itemId];
+                    if (item) {
+                        await createItem(item.parent_id, item.position + 1);
+                    } else {
+                        await createItem();
+                    }
+                } else if (e.key === 'Escape') {
+                    e.preventDefault();
+                    cancelEditing(itemId);
+                } else if (e.key === 'Tab') {
+                    e.preventDefault();
+                    if (e.shiftKey) {
+                        outdentItem(itemId);
+                    } else {
+                        indentItem(itemId);
+                    }
+                } else if (e.key === 'Backspace') {
+                    // Check if cursor is at the beginning of the input
+                    if (input.selectionStart === 0 && input.selectionEnd === 0) {
+                        e.preventDefault();
+                        handleBackspaceAtStart(itemId, input.value);
+                    }
+                }
+            };
+            
+            textDiv.replaceWith(input);
+            input.focus();
+            input.select();
+            focusedItemId = itemId;
+        }
+
+        // Finish editing
+        async function finishEditing(itemId, newContent) {
+            const item = itemMap[itemId];
+            if (!item) return;
+            
+            try {
+                const response = await fetch(`/api/workflowy/items/${itemId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ content: newContent })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    item.content = newContent;
+                    renderTree(zoomStack.length > 0 ? zoomStack[zoomStack.length - 1] : null);
+                }
+            } catch (error) {
+                console.error('Error updating item:', error);
+            }
+            focusedItemId = null;
+        }
+
+        // Cancel editing
+        function cancelEditing(itemId) {
+            renderTree(zoomStack.length > 0 ? zoomStack[zoomStack.length - 1] : null);
+            focusedItemId = null;
+        }
+
+        // Handle backspace at start of line
+        async function handleBackspaceAtStart(itemId, currentContent) {
+            const item = itemMap[itemId];
+            if (!item) return;
+            
+            // Get children of this item
+            const children = getChildren(itemId);
+            
+            // If item has children, outdent them first (move them up one level)
+            if (children.length > 0) {
+                // Find the position where this item is
+                const itemPosition = item.position;
+                
+                // Update each child to be a sibling at the correct position
+                const outdentPromises = children.map((child, i) => {
+                    return fetch('/api/workflowy/items/reorder', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            item_id: child.id,
+                            new_parent_id: item.parent_id,
+                            new_position: itemPosition + 1 + i
+                        })
+                    });
+                });
+                
+                try {
+                    await Promise.all(outdentPromises);
+                } catch (error) {
+                    console.error('Error outdenting children:', error);
+                }
+                
+                // Reload items after outdenting children
+                await loadItems();
+            }
+            
+            // Find the previous sibling or parent
+            let targetItemId = null;
+            let targetContent = '';
+            
+            // Reload itemMap to get updated state after outdenting
+            const updatedItem = itemMap[itemId];
+            if (!updatedItem) return;
+            
+            if (updatedItem.parent_id !== null) {
+                // Find previous sibling
+                const siblings = items.filter(i => i.parent_id === updatedItem.parent_id && i.id !== itemId)
+                    .sort((a, b) => a.position - b.position);
+                
+                const prevSibling = siblings.find(s => s.position < updatedItem.position);
+                if (prevSibling) {
+                    targetItemId = prevSibling.id;
+                    targetContent = prevSibling.content || '';
+                } else {
+                    // No previous sibling, use parent
+                    targetItemId = updatedItem.parent_id;
+                    targetContent = itemMap[updatedItem.parent_id]?.content || '';
+                }
+            } else {
+                // Root item - find previous root item
+                const rootItems = items.filter(i => i.parent_id === null && i.id !== itemId)
+                    .sort((a, b) => a.position - b.position);
+                
+                const prevRoot = rootItems.find(r => r.position < updatedItem.position);
+                if (prevRoot) {
+                    targetItemId = prevRoot.id;
+                    targetContent = prevRoot.content || '';
+                }
+            }
+            
+            // Merge content if there's a target
+            if (targetItemId) {
+                const mergedContent = targetContent + (targetContent && currentContent ? ' ' : '') + currentContent;
+                
+                // Update target item with merged content
+                try {
+                    const response = await fetch(`/api/workflowy/items/${targetItemId}`, {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ content: mergedContent })
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        // Delete the current item
+                        await deleteItem(itemId, true);
+                        // Reload items to get updated state
+                        await loadItems();
+                        // Start editing the target item
+                        setTimeout(() => {
+                            const targetItem = itemMap[targetItemId];
+                            if (targetItem) {
+                                startEditing(targetItemId);
+                                // Move cursor to end after input is created
+                                setTimeout(() => {
+                                    const itemEl = document.querySelector(`[data-item-id="${targetItemId}"]`);
+                                    if (itemEl) {
+                                        const input = itemEl.querySelector('.workflowy-input');
+                                        if (input) {
+                                            input.setSelectionRange(input.value.length, input.value.length);
+                                        }
+                                    }
+                                }, 50);
+                            }
+                        }, 100);
+                    }
+                } catch (error) {
+                    console.error('Error merging items:', error);
+                }
+            } else {
+                // No target item, just delete this one
+                await deleteItem(itemId, true);
+            }
+        }
+
+        // Create new item
+        async function createItem(parentId = null, position = null) {
+            if (position === null) {
+                const siblings = items.filter(item => item.parent_id === parentId);
+                position = siblings.length;
+            }
+            
+            try {
+                const response = await fetch('/api/workflowy/items', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        parent_id: parentId,
+                        content: '',
+                        position: position
+                    })
+                });
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                if (data.success) {
+                    items.push(data.item);
+                    buildItemMap();
+                    renderTree(zoomStack.length > 0 ? zoomStack[zoomStack.length - 1] : null);
+                    // Start editing immediately and ensure focus
+                    setTimeout(() => {
+                        startEditing(data.item.id);
+                        // Ensure the input is focused and ready for Tab
+                        setTimeout(() => {
+                            const itemEl = document.querySelector(`[data-item-id="${data.item.id}"]`);
+                            if (itemEl) {
+                                const input = itemEl.querySelector('.workflowy-input');
+                                if (input) {
+                                    input.focus();
+                                }
+                            }
+                        }, 10);
+                    }, 50);
+                } else {
+                    console.error('API error:', data.error);
+                    alert('Error creating item: ' + (data.error || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Error creating item:', error);
+                alert('Error creating item. Please make sure the Flask server is running and has been restarted.');
+            }
+        }
+
+        // Indent item
+        async function indentItem(itemId) {
+            const item = itemMap[itemId];
+            if (!item) return;
+            
+            // Find previous sibling
+            const siblings = items.filter(i => i.parent_id === item.parent_id && i.id !== itemId)
+                .sort((a, b) => a.position - b.position);
+            
+            if (siblings.length === 0) return;
+            
+            const prevSibling = siblings.find(s => s.position < item.position);
+            if (!prevSibling) return;
+            
+            // Move to be last child of previous sibling
+            const prevChildren = getChildren(prevSibling.id);
+            const newPosition = prevChildren.length;
+            
+            try {
+                const response = await fetch('/api/workflowy/items/reorder', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        item_id: itemId,
+                        new_parent_id: prevSibling.id,
+                        new_position: newPosition
+                    })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    await loadItems();
+                    renderTree(zoomStack.length > 0 ? zoomStack[zoomStack.length - 1] : null);
+                }
+            } catch (error) {
+                console.error('Error indenting item:', error);
+            }
+        }
+
+        // Outdent item
+        async function outdentItem(itemId) {
+            const item = itemMap[itemId];
+            if (!item || !item.parent_id) return;
+            
+            const parent = itemMap[item.parent_id];
+            if (!parent) return;
+            
+            // Move to be sibling of parent
+            const parentSiblings = items.filter(i => i.parent_id === parent.parent_id && i.id !== parent.id)
+                .sort((a, b) => a.position - b.position);
+            const newPosition = parent.position + 1;
+            
+            try {
+                const response = await fetch('/api/workflowy/items/reorder', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        item_id: itemId,
+                        new_parent_id: parent.parent_id,
+                        new_position: newPosition
+                    })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    await loadItems();
+                    renderTree(zoomStack.length > 0 ? zoomStack[zoomStack.length - 1] : null);
+                }
+            } catch (error) {
+                console.error('Error outdenting item:', error);
+            }
+        }
+
+        // Delete item
+        async function deleteItem(itemId, skipConfirm = false) {
+            if (!skipConfirm && !confirm('Delete this item and all its children?')) return;
+            
+            try {
+                const response = await fetch(`/api/workflowy/items/${itemId}`, {
+                    method: 'DELETE'
+                });
+                const data = await response.json();
+                if (data.success) {
+                    items = items.filter(item => item.id !== itemId);
+                    buildItemMap();
+                    renderTree(zoomStack.length > 0 ? zoomStack[zoomStack.length - 1] : null);
+                }
+            } catch (error) {
+                console.error('Error deleting item:', error);
+            }
+        }
+
+        // Drag and drop
+        function handleDragStart(e, itemId) {
+            dragState = { itemId, targetId: null };
+            e.dataTransfer.effectAllowed = 'move';
+            e.currentTarget.classList.add('dragging');
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            const itemEl = e.currentTarget.closest('.workflowy-item');
+            if (itemEl) {
+                itemEl.classList.add('drag-over');
+            }
+        }
+
+        async function handleDrop(e, targetId) {
+            e.preventDefault();
+            const itemEl = e.currentTarget.closest('.workflowy-item');
+            if (itemEl) {
+                itemEl.classList.remove('drag-over');
+            }
+            
+            if (!dragState || dragState.itemId === targetId) return;
+            
+            const draggedItem = itemMap[dragState.itemId];
+            const targetItem = itemMap[targetId];
+            if (!draggedItem || !targetItem) return;
+            
+            // Determine new parent and position
+            let newParentId = targetItem.parent_id;
+            let newPosition = targetItem.position + 1;
+            
+            // If dropping on a collapsed item, make it a child
+            if (targetItem.collapsed || getChildren(targetId).length === 0) {
+                newParentId = targetId;
+                newPosition = 0;
+            }
+            
+            try {
+                const response = await fetch('/api/workflowy/items/reorder', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        item_id: dragState.itemId,
+                        new_parent_id: newParentId,
+                        new_position: newPosition
+                    })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    await loadItems();
+                    renderTree(zoomStack.length > 0 ? zoomStack[zoomStack.length - 1] : null);
+                }
+            } catch (error) {
+                console.error('Error reordering item:', error);
+            }
+            
+            dragState = null;
+        }
+
+        function handleDragEnd(e) {
+            e.currentTarget.classList.remove('dragging');
+            document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+            dragState = null;
+        }
+
+        // Zoom functionality
+        function zoomIntoItem(itemId) {
+            const item = itemMap[itemId];
+            if (!item) return;
+            
+            zoomStack.push(itemId);
+            updateBreadcrumb();
+            renderZoomView(itemId);
+            
+            const overlay = document.getElementById('zoomOverlay');
+            overlay.classList.add('active');
+        }
+
+        function renderZoomView(itemId) {
+            const zoomContent = document.getElementById('zoomContent');
+            zoomContent.innerHTML = '';
+            
+            const item = itemMap[itemId];
+            if (!item) return;
+            
+            const treeDiv = document.createElement('div');
+            treeDiv.className = 'workflowy-tree';
+            treeDiv.appendChild(createItemElement(item));
+            zoomContent.appendChild(treeDiv);
+        }
+
+        function updateBreadcrumb() {
+            const breadcrumb = document.getElementById('breadcrumb');
+            breadcrumb.innerHTML = '<span class="breadcrumb-item" onclick="zoomToRoot()">Root</span>';
+            
+            zoomStack.forEach((itemId, index) => {
+                const item = itemMap[itemId];
+                if (item) {
+                    const separator = document.createElement('span');
+                    separator.className = 'breadcrumb-separator';
+                    separator.textContent = ' › ';
+                    breadcrumb.appendChild(separator);
+                    
+                    const crumb = document.createElement('span');
+                    crumb.className = 'breadcrumb-item';
+                    crumb.textContent = item.content || 'Untitled';
+                    crumb.onclick = () => zoomToItem(itemId);
+                    breadcrumb.appendChild(crumb);
+                }
+            });
+            
+            breadcrumb.style.display = zoomStack.length > 0 ? 'flex' : 'none';
+        }
+
+        function zoomToRoot() {
+            zoomStack = [];
+            updateBreadcrumb();
+            const overlay = document.getElementById('zoomOverlay');
+            overlay.classList.remove('active');
+            renderTree();
+        }
+
+        function zoomToItem(itemId) {
+            const index = zoomStack.indexOf(itemId);
+            if (index >= 0) {
+                zoomStack = zoomStack.slice(0, index + 1);
+                updateBreadcrumb();
+                renderZoomView(itemId);
+            }
+        }
+
+        function closeZoom() {
+            zoomToRoot();
+        }
+
+        // Keyboard shortcuts
+        function setupKeyboardShortcuts() {
+            document.addEventListener('keydown', (e) => {
+                // Don't interfere with input fields - let the input's own handler deal with Enter
+                if (e.target.tagName === 'INPUT') {
+                    // Only handle global shortcuts that aren't handled by the input itself
+                    return;
+                }
+                
+                // Global shortcuts (only if not in an input field)
+                if (e.key === 'Enter' && !e.shiftKey && !e.ctrlKey && !e.metaKey) {
+                    e.preventDefault();
+                    createItem();
+                } else if (e.key === 'Delete' || e.key === 'Backspace') {
+                    if (focusedItemId && document.activeElement.tagName !== 'INPUT') {
+                        e.preventDefault();
+                        deleteItem(focusedItemId);
+                    }
+                } else if (e.key === 'Tab' && !e.shiftKey && focusedItemId) {
+                    e.preventDefault();
+                    indentItem(focusedItemId);
+                } else if (e.key === 'Tab' && e.shiftKey && focusedItemId) {
+                    e.preventDefault();
+                    outdentItem(focusedItemId);
+                } else if ((e.ctrlKey || e.metaKey) && e.key === 'b') {
+                    e.preventDefault();
+                    toggleFormatting(focusedItemId, 'bold');
+                } else if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                    e.preventDefault();
+                    toggleFormatting(focusedItemId, 'strikethrough');
+                } else if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+                    e.preventDefault();
+                    if (focusedItemId) {
+                        zoomIntoItem(focusedItemId);
+                    }
+                }
+            });
+        }
+
+        // Toggle formatting
+        async function toggleFormatting(itemId, formatType) {
+            const item = itemMap[itemId];
+            if (!item) return;
+            
+            const formatting = item.formatting || {};
+            if (formatType === 'bold') {
+                formatting.bold = !formatting.bold;
+            } else if (formatType === 'strikethrough') {
+                formatting.strikethrough = !formatting.strikethrough;
+            }
+            
+            try {
+                const response = await fetch(`/api/workflowy/items/${itemId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ formatting })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    item.formatting = formatting;
+                    renderTree(zoomStack.length > 0 ? zoomStack[zoomStack.length - 1] : null);
+                }
+            } catch (error) {
+                console.error('Error updating formatting:', error);
+            }
+        }
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,23 @@
+Create a comprehensive brief that captures everything valuable from this video.
+
+First, identify what type of content this is and what the viewer came for. Then deliver exactly that.
+
+For ANY video, include:
+- The core message/thesis
+- All specific data points (numbers, dates, percentages, costs)
+- Any frameworks, methods, or systems explained
+- Key insights and conclusions
+- Why this matters
+
+Organize logically based on the content itself:
+- Interviews: Organize by topics discussed
+- Tutorials: Step-by-step process
+- Analysis: Argument structure with evidence
+- Predictions: Timeline with reasoning
+
+Write densely but readably. Include every specific worth knowing, skip generic filler.
+
+The test: Someone reading this brief should understand the content better than someone who watched casually.
+
+Video Title: {title}
+Transcript: {transcript}

@@ -702,7 +702,9 @@ def collect_all(vertical: str = "health_longevity",
 
 if __name__ == "__main__":
     DB_PATH = "/Users/bossmdaddy/Desktop/Coding Projects Master/youtube-intelligence/youtube_intelligence.db"
-    YT_API_KEY = "AIzaSyA5VGDmqxRfYzgab5kqcRwxtLckH35BHNQ"
+    from dotenv import load_dotenv
+    load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
+    YT_API_KEY = os.getenv("YOUTUBE_API_KEY", "")
 
     data = collect_all(
         vertical="health_longevity",

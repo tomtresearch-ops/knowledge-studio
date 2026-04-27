@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>YouTube Intelligence</title>
+    <style>
+        body { background: #0f1419; color: #e6e6e6; font-family: Arial; padding: 20px; }
+        .video { 
+            background: #1a1f2e; padding: 15px; margin: 10px 0; border-radius: 8px; 
+            border: 1px solid #333;
+        }
+        .title { color: #64ffda; font-weight: bold; margin-bottom: 5px; }
+        .meta { color: #888; font-size: 12px; margin-bottom: 10px; }
+        .btn { 
+            background: #64ffda; color: #0f1419; padding: 8px 15px; margin: 5px; 
+            border: none; border-radius: 4px; cursor: pointer; font-size: 12px;
+        }
+        .analysis { 
+            background: #2a2f3e; padding: 15px; margin: 10px 0; border-radius: 8px; 
+            border-left: 3px solid #64ffda; display: none;
+        }
+    </style>
+</head>
+<body>
+    <h1>📺 YouTube Intelligence System</h1>
+    <div id="videos">Loading...</div>
+
+    <script>
+        function loadVideos() {
+            fetch('/api/videos')
+                .then(r => r.json())
+                .then(data => {
+                    document.getElementById('videos').innerHTML = 
+                        data.videos.map(v => `
+                            <div class="video">
+                                <div class="title">${v.title}</div>
+                                <div class="meta">${v.channel} • ${Math.round(v.transcriptLength/1000)}k chars</div>
+                                <button class="btn" onclick="analyze(${v.id}, 'brief')">Brief</button>
+                                <button class="btn" onclick="analyze(${v.id}, 'bullets')">Bullets</button>
+                                <button class="btn" onclick="analyze(${v.id}, 'frameworks')">Frameworks</button>
+                                <button class="btn" onclick="analyze(${v.id}, 'technical')">Technical</button>
+                                <div id="result-${v.id}" class="analysis"></div>
+                            </div>
+                        `).join('');
+                });
+        }
+
+        function analyze(videoId, type) {
+            const result = document.getElementById('result-' + videoId);
+            result.style.display = 'block';
+            result.innerHTML = 'Generating ' + type + ' analysis...';
+
+            fetch('/api/videos/' + videoId + '/analyze', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ type: type })
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    result.innerHTML = '<h4>' + type.toUpperCase() + '</h4><div>' + data.analysis + '</div>';
+                } else {
+                    result.innerHTML = 'Error: ' + data.error;
+                }
+            });
+        }
+
+        loadVideos();
+    </script>
+</body>
+</html>

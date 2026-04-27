@@ -1,0 +1,64 @@
+Create a comprehensive executive analysis following this structure:
+
+## EXECUTIVE SUMMARY
+Write 2-3 paragraphs establishing what this expert argues and predicts based on their actual statements. Include their key claims, timelines, and core thesis to orient the reader on whether to dive deeper.
+
+## STRUCTURED ANALYSIS  
+Organize content into 3-5 major sections using Roman numerals (I, II, III, etc.), following their natural argument progression.
+
+For each major section:
+- **Lead with narrative paragraphs** explaining their position using their concepts and terminology
+- **Follow with strategic bullet points** only when listing frameworks, predictions, or complex multi-part concepts
+- **Every bullet must include full explanation** - never just "Job displacement" but "Job displacement will affect software developers and designers first, with Gawdat predicting 50% unemployment in these sectors within 24 months due to AI's rapid advancement in creative tasks"
+- **Use direct quotes for major predictions and insights** - capture their exact words for key claims
+- **Extract every number, percentage, timeline, dollar amount** prominently 
+- **Break down all frameworks completely** - if they mention any models or systems, extract every single component with full explanation
+- **Include personal anecdotes with their specific purpose** - both the story and the exact point it illustrates
+- **Capture all preparation advice and recommendations** - their specific "what you should do" guidance
+
+## CONCLUSION
+Extract how THEY wrap up their argument and what THEY want you to take away. Include their final assessment, call to action, and ultimate thesis based on their actual concluding statements.
+
+## EXTRACTION DEPTH REQUIREMENTS:
+
+**Comprehensive Detail Standard**: This should be substantial (3000+ words). Extract every framework completely, every prediction with supporting reasoning, all statistics with context, named references with their relevance, specific recommendations with implementation details, and personal stories with their illustrative purpose.
+
+**Quote Integration**: Use their exact words for key insights, predictions, and frameworks. Don't paraphrase major claims - capture their precise language.
+
+**Decision-Making Focus**: Extract everything that has decision-making value - predictions, timelines, warnings, opportunities, preparation strategies.
+
+**Narrative Flow**: Write as if briefing an executive - smooth transitions, logical progression, comprehensive but engaging. Balance extraction depth with readability.
+
+Write dense, specific, executive-level extraction. Every sentence provides concrete information from the transcript.
+
+## FORMATTING REQUIREMENTS:
+
+**Structure and Spacing**: Use tight spacing between sections - minimize blank lines between headers and subsections. Keep subsection headers on same line as their bullet points.
+
+**Bullet Point Usage**: 
+- Convert dense paragraphs into bullet points wherever possible for better scannability
+- Use bullet points for: frameworks, predictions, statistics, timelines, recommendations, key concepts
+- Each bullet point should be a complete, standalone piece of information
+- Group related bullet points under clear subheadings
+
+**Visual Hierarchy**:
+- Use **bold** for key concepts, frameworks, and important terms
+- Use bullet points liberally to break up dense text
+- Keep paragraphs short (2-3 sentences max) when not using bullet points
+- Use consistent formatting for similar types of information
+
+**Scannability**: Structure content so readers can quickly find specific information - use clear headings, bullet points, and consistent formatting patterns.
+
+Video Title: {title}
+Transcript: {transcript}
+
+
+
+
+
+
+
+
+
+
+

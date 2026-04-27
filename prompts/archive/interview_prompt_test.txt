@@ -1,0 +1,54 @@
+Create a comprehensive executive analysis following this structure:
+
+## OPENING SYNTHESIS
+Write 2-3 flowing paragraphs establishing the expert's main thesis, credentials, and core argument. Include their key predictions and timelines woven into the narrative introduction.
+
+## STRUCTURED ANALYSIS  
+Organize content into 3-5 major sections using Roman numerals (I, II, III, etc.), following their natural argument progression.
+
+For each major section:
+- **Lead with narrative paragraphs** explaining their position using their concepts and terminology
+- **Follow with strategic bullet points** only when listing frameworks, predictions, or complex multi-part concepts
+- **Every bullet must include full explanation** - never just "Job displacement" but "Job displacement will affect software developers and designers first, with Gawdat predicting 50% unemployment in these sectors within 24 months due to AI's rapid advancement in creative tasks"
+
+## CONCLUSION
+Synthesize their key takeaways and final assessment. Include their ultimate thesis, call to action, preparation advice, and how they connect back to their main argument. Capture their final thoughts and overall perspective on the implications.
+
+## CONTENT EXTRACTION PRIORITIES:
+
+**Narrative Sections**: Use flowing paragraphs for:
+- Their main arguments and reasoning
+- Background context and supporting logic  
+- Transitions between major concepts
+- Personal anecdotes and illustrative stories
+
+**Strategic Bullets**: Use explanatory bullets only for:
+- Framework components (each bullet explains one element fully)
+- Specific predictions with timelines and reasoning
+- Lists of examples, industries, or categories they mention
+- Multi-step processes or recommendations
+
+**Comprehensive Detail Standard**:
+Extract every framework completely, every prediction with supporting reasoning, all statistics with context, named references with their relevance, and specific recommendations with implementation details.
+
+**Narrative Flow**: Write as if briefing an executive - smooth transitions, logical progression, comprehensive but engaging. Balance extraction depth with readability.
+
+Write dense, specific, executive-level extraction. Every sentence provides concrete information from the transcript.
+
+Video Title: {title}
+Transcript: {transcript}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

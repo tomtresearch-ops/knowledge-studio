@@ -440,6 +440,43 @@
             font-size: 0.9em;
         }
 
+        /* Content toggle tabs */
+        .content-tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 20px;
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 10px;
+            padding: 4px;
+            width: fit-content;
+        }
+
+        .content-tab {
+            padding: 6px 16px;
+            border-radius: 8px;
+            border: none;
+            background: transparent;
+            color: #71717a;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .content-tab:hover {
+            color: #a1a1aa;
+        }
+
+        .content-tab.active {
+            background: rgba(139, 92, 246, 0.2);
+            color: #a78bfa;
+        }
+
+        .content-tab:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
         /* Empty State */
         .empty-state {
             display: flex;
@@ -474,6 +511,192 @@
             color: #a1a1aa;
         }
 
+        /* Ideas Panel */
+        .ideas-panel {
+            width: 280px;
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .ideas-panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            background: rgba(245, 158, 11, 0.08);
+            border: 1px solid rgba(245, 158, 11, 0.15);
+            border-radius: 12px;
+        }
+
+        .ideas-panel-header h3 {
+            font-size: 14px;
+            font-weight: 600;
+            color: #fbbf24;
+            margin: 0;
+        }
+
+        .ideas-panel-header .idea-count {
+            font-size: 12px;
+            color: #71717a;
+        }
+
+        .idea-card {
+            background: rgba(20, 20, 40, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            padding: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .idea-card:hover {
+            border-color: rgba(245, 158, 11, 0.3);
+            background: rgba(20, 20, 40, 0.8);
+        }
+
+        .idea-card-project {
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #f59e0b;
+            margin-bottom: 6px;
+            opacity: 0.8;
+        }
+
+        .idea-card-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #e4e4e7;
+            line-height: 1.4;
+            margin-bottom: 6px;
+        }
+
+        .idea-card-summary {
+            font-size: 12px;
+            color: #71717a;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .idea-card-date {
+            font-size: 11px;
+            color: #52525b;
+            margin-top: 8px;
+        }
+
+        .ideas-empty {
+            text-align: center;
+            padding: 24px 12px;
+            color: #52525b;
+            font-size: 13px;
+        }
+
+        /* Ideas Modal */
+        .idea-modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .idea-modal-overlay.active {
+            display: flex;
+        }
+
+        .idea-modal {
+            background: #1a1a2e;
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            border-radius: 16px;
+            width: 600px;
+            max-width: 90vw;
+            max-height: 80vh;
+            overflow-y: auto;
+            padding: 32px;
+        }
+
+        .idea-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .idea-modal-header h2 {
+            font-size: 20px;
+            font-weight: 700;
+            color: #ffffff;
+            margin: 0 0 8px 0;
+        }
+
+        .idea-modal-meta {
+            display: flex;
+            gap: 12px;
+            font-size: 13px;
+        }
+
+        .idea-modal-meta .project-tag {
+            color: #f59e0b;
+            font-weight: 500;
+        }
+
+        .idea-modal-meta .date-tag {
+            color: #71717a;
+        }
+
+        .idea-modal-close {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: #a1a1aa;
+            font-size: 18px;
+            width: 36px;
+            height: 36px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-left: 16px;
+        }
+
+        .idea-modal-close:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+        }
+
+        .idea-modal-body {
+            font-size: 14px;
+            line-height: 1.8;
+            color: #d4d4d8;
+        }
+
+        .idea-modal-body strong {
+            color: #ffffff;
+        }
+
+        .idea-modal-body ul {
+            margin-left: 20px;
+            margin-bottom: 12px;
+        }
+
+        .idea-modal-body li {
+            margin-bottom: 6px;
+        }
+
         @media (max-width: 1000px) {
             .briefing-layout {
                 flex-direction: column;
@@ -485,6 +708,14 @@
             }
             .brief-card {
                 min-width: 280px;
+            }
+            .ideas-panel {
+                width: 100%;
+                flex-direction: row;
+                overflow-x: auto;
+            }
+            .idea-card {
+                min-width: 220px;
             }
         }
     </style>
@@ -506,6 +737,7 @@
             <a href="/briefing" class="active">Briefing Room</a>
             <a href="/intelligence">Intelligence</a>
             <a href="/stats">Stats</a>
+            <a href="/studio">Studio</a>
         </nav>
     </header>
 
@@ -547,8 +779,35 @@
                     <p>Or generate a new daily brief from your signal sources</p>
                 </div>
             </div>
+
+            <div class="ideas-panel" id="ideasPanel">
+                <div class="ideas-panel-header">
+                    <h3>💡 Ideas</h3>
+                    <span class="idea-count" id="ideaCount"></span>
+                </div>
+                <div id="ideasList">
+                    <div class="ideas-empty">Loading...</div>
+                </div>
+            </div>
         </div>
     </main>
+
+    <!-- Ideas Modal -->
+    <div class="idea-modal-overlay" id="ideaModalOverlay" onclick="if(event.target===this)closeIdeaModal()">
+        <div class="idea-modal">
+            <div class="idea-modal-header">
+                <div>
+                    <h2 id="ideaModalTitle"></h2>
+                    <div class="idea-modal-meta">
+                        <span class="project-tag" id="ideaModalProject"></span>
+                        <span class="date-tag" id="ideaModalDate"></span>
+                    </div>
+                </div>
+                <button class="idea-modal-close" onclick="closeIdeaModal()">✕</button>
+            </div>
+            <div class="idea-modal-body" id="ideaModalBody"></div>
+        </div>
+    </div>
 
     <script>
         const VERTICAL_META = {
@@ -649,6 +908,9 @@
             const date = new Date(brief.created_at);
             const fullDate = date.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
 
+            const hasPodcast = !!brief.podcast_script;
+            const durationStr = brief.podcast_duration ? formatDuration(brief.podcast_duration) : '';
+
             const reader = document.getElementById('briefReader');
             reader.innerHTML = `
                 <div class="reader-header">
@@ -667,10 +929,38 @@
                         <button class="action-btn delete" onclick="deleteBrief(${brief.id})" title="Delete brief">🗑</button>
                     </div>
                 </div>
-                <div class="brief-body">${renderMarkdown(brief.content)}</div>`;
+                <div class="content-tabs">
+                    <button class="content-tab active" onclick="showContent('brief', this, ${brief.id})">Brief</button>
+                    <button class="content-tab" onclick="showContent('script', this, ${brief.id})" ${hasPodcast ? '' : 'disabled title="No podcast script"'}>Podcast Script${durationStr ? ' (' + durationStr + ')' : ''}</button>
+                </div>
+                <div class="brief-body" id="briefContent">${renderMarkdown(brief.content)}</div>`;
 
             reader.scrollTop = 0;
             enrichYouTubeLinks();
+        }
+
+        function showContent(type, btn, briefId) {
+            const brief = allBriefs.find(b => b.id === briefId);
+            if (!brief) return;
+
+            document.querySelectorAll('.content-tab').forEach(t => t.classList.remove('active'));
+            btn.classList.add('active');
+
+            const container = document.getElementById('briefContent');
+            if (type === 'brief') {
+                container.innerHTML = renderMarkdown(brief.content);
+                enrichYouTubeLinks();
+            } else if (type === 'script' && brief.podcast_script) {
+                container.innerHTML = renderMarkdown(brief.podcast_script);
+            }
+
+            container.scrollTop = 0;
+        }
+
+        function formatDuration(seconds) {
+            const m = Math.floor(seconds / 60);
+            const s = seconds % 60;
+            return m + ':' + String(s).padStart(2, '0');
         }
 
         async function generateBrief() {
@@ -844,8 +1134,72 @@
             link.innerHTML = `<span class="yt-icon">▶</span> ${escapeHtml(meta.title)}${meta.channel ? ' <span class="yt-channel">— ' + escapeHtml(meta.channel) + '</span>' : ''}`;
         }
 
+        // ========== IDEAS PANEL ==========
+        let allIdeas = [];
+
+        async function loadIdeas() {
+            try {
+                const response = await fetch('/api/ideas?limit=10');
+                const data = await response.json();
+                if (data.success && data.ideas) {
+                    allIdeas = data.ideas;
+                    renderIdeas();
+                }
+            } catch (error) {
+                console.error('Failed to load ideas:', error);
+                document.getElementById('ideasList').innerHTML =
+                    '<div class="ideas-empty">Could not load ideas</div>';
+            }
+        }
+
+        function renderIdeas() {
+            const container = document.getElementById('ideasList');
+            const countEl = document.getElementById('ideaCount');
+
+            if (allIdeas.length === 0) {
+                container.innerHTML = '<div class="ideas-empty">No ideas yet</div>';
+                countEl.textContent = '';
+                return;
+            }
+
+            countEl.textContent = allIdeas.length;
+            container.innerHTML = allIdeas.map((idea, idx) => {
+                const date = new Date(idea.date + 'T12:00:00');
+                const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                return `
+                    <div class="idea-card" onclick="openIdeaModal(${idx})">
+                        ${idea.project ? `<div class="idea-card-project">${escapeHtml(idea.project)}</div>` : ''}
+                        <div class="idea-card-title">${escapeHtml(idea.title)}</div>
+                        ${idea.summary ? `<div class="idea-card-summary">${escapeHtml(idea.summary)}</div>` : ''}
+                        <div class="idea-card-date">${dateStr}</div>
+                    </div>`;
+            }).join('');
+        }
+
+        function openIdeaModal(idx) {
+            const idea = allIdeas[idx];
+            if (!idea) return;
+
+            document.getElementById('ideaModalTitle').textContent = idea.title;
+            document.getElementById('ideaModalProject').textContent = idea.project || '';
+            const date = new Date(idea.date + 'T12:00:00');
+            document.getElementById('ideaModalDate').textContent =
+                date.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            document.getElementById('ideaModalBody').innerHTML = renderMarkdown(idea.body);
+            document.getElementById('ideaModalOverlay').classList.add('active');
+        }
+
+        function closeIdeaModal() {
+            document.getElementById('ideaModalOverlay').classList.remove('active');
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeIdeaModal();
+        });
+
         // Init
         loadBriefs();
+        loadIdeas();
     </script>
 </body>
 </html>

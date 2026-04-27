@@ -1,0 +1,31 @@
+{
+  "headline": "The AI Market is Splitting Into Three Incompatible Worlds",
+  "subtitle": "World models become the new battleground, mobile AI accuracy is silently breaking, and geopolitical forks are hardening infrastructure choices",
+  "editorial_intro": "Three separate cracks are opening in the AI landscape this week\u2014and they're not independent. The race to build world models, the hidden crisis in mobile inference, and the quiet geopolitical divide around who deploys what AI all point to the same conclusion: the messy middle of AI deployment is about to become the most valuable real estate in tech. Companies solving this will own the next decade.",
+  "signals": [
+    {
+      "headline": "World Models Just Became the New Competitive Battleground",
+      "body": "World Labs raised $1B betting that spatial reasoning and environmental simulation\u2014not language or vision\u2014is the next AI moat. Fei-Fei Li's thesis is direct: if autonomous agents need to simulate consequences before acting (in trading, robotics, supply chains), then whoever controls the world model layer controls agent deployment at scale. Expect OpenAI and Anthropic to announce competing world model platforms within 60 days.",
+      "whycare": "Start building your agent strategy around world models, not just language models. This is no longer theoretical\u2014it's now venture capital's highest conviction bet."
+    },
+    {
+      "headline": "The Mobile AI Accuracy Crisis Is Real and Nobody's Talking About It",
+      "body": "The same INT8 model tested on five different Snapdragon chips produced accuracy ranging from 93% to 71%\u2014that's not a rounding error, it's a deployment stopper. Enterprise teams are discovering this catastrophe in production. The lack of cross-chip standardization means every edge AI deployment requires custom validation work, adding 6-18 months to shipping timelines.",
+      "whycare": "If you're deploying to mobile or edge devices, test your actual hardware now. Governance platforms that solve inference verification and cross-chip validation are about to become non-negotiable infrastructure."
+    },
+    {
+      "headline": "Three Geopolitical AI Stacks Are Hardening Into Incompatible Ecosystems",
+      "body": "Anthropic's quiet resistance to Pentagon capture, Fei-Fei Li's neutral global positioning, and India's emerging compute infrastructure signal a clean three-way split: US military-integrated AI, EU/UK compliance-audited AI, and neutral Asian infrastructure. Companies will soon have to choose which ecosystem to operate within. Cross-border AI deployment is about to become bureaucratically expensive.",
+      "whycare": "Map out your company's geopolitical posture now. By Q3 2026, vendor lock-in along political lines will be the dominant force shaping infrastructure choices."
+    }
+  ],
+  "bigger_picture": "These three signals converge on a single insight: the real scarcity in AI isn't model capability anymore\u2014it's reliable deployment. Fast inference is commoditizing, but trustworthy inference with audit trails, verification across hardware, and geopolitical clarity is rare. The companies winning 2026 won't be the ones with the best models. They'll be the ones solving the unglamorous work of making agents deployable at scale without legal, technical, or political risk. That's where the wedge is opening.",
+  "_meta": {
+    "vertical": "ai_tech",
+    "brief_id": 28,
+    "brief_date": "2026-02-19 02:30:36",
+    "signal_count": 218,
+    "source_count": 4,
+    "generated_at": "2026-02-18T23:29:31.959251"
+  }
+}

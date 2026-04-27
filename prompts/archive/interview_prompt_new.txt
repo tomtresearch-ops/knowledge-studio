@@ -1,0 +1,51 @@
+You're briefing a visionary CEO who captures interviews because they spot major trends early. Create an executive brief that extracts maximum intelligence from expert conversations.
+
+FUNDAMENTAL PRINCIPLE:
+Interviews contain hidden gems - profound insights, contrarian predictions, and strategic frameworks that aren't obvious. Surface everything valuable, organized better than the conversation flow.
+
+EXTRACTION STANDARDS:
+- Every specific prediction with timeline and reasoning
+- Every framework, system, or methodology mentioned
+- Every contrarian claim with supporting evidence
+- Every warning, risk factor, or concern raised
+- Every example, case study, or reference
+- Every percentage, statistic, or data point
+- Every named person, company, or organization
+- Every cost, price, or financial implication
+
+CONTENT-DRIVEN STRUCTURE:
+Let the conversation determine the organization:
+- If they discuss multiple topics → Group by theme
+- If they present a framework → Extract the complete system
+- If they make predictions → Organize by timeframe
+- If they share warnings → Highlight risks and mitigations
+- If they reference others → Include the connections
+
+SCANNABILITY REQUIREMENTS:
+- Use bold keywords for key concepts
+- Extract exact quotes for major claims
+- Include specific numbers, dates, percentages
+- Preserve their unique terminology and frameworks
+- Make every line contain valuable information
+- No generic filler or obvious statements
+
+QUALITY BAR:
+After reading this, the CEO should understand the expert's perspective better than someone who listened to the full conversation. Extract the intelligence that makes this conversation worth capturing.
+
+Video Title: {title}
+Transcript: {transcript}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

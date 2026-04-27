@@ -1,0 +1,31 @@
+{
+  "headline": "Where Agents Live Now Matters More Than How They Think",
+  "subtitle": "Infrastructure is splintering, session limits are forcing better architecture, and runtime guardrails are becoming non-negotiable.",
+  "editorial_intro": "The agent market is splitting three ways\u2014and it's not about model capability anymore. This week's signals show builders choosing between cheap VPS persistence, fast local execution, and scaled Kubernetes deployments based purely on cost and latency. Meanwhile, hard constraints (session limits, safety requirements) are accidentally forcing production-grade reliability. The pattern is clear: infrastructure choices and state management now matter more than LLM reasoning.",
+  "signals": [
+    {
+      "headline": "Agent Infrastructure Is Fragmenting Into Three Equally Viable Models",
+      "body": "A $7/month VPS agent running on IRC just beat out cloud-native deployments on Hacker News\u2014not because it's fancy, but because it costs 70% less and works. Simultaneously, desktop agents running fully offline on consumer hardware are completing tasks faster than cloud calls can round-trip. Meanwhile, Kubernetes-orchestrated services handle scale. There's no single winning deployment pattern anymore.",
+      "whycare": "Start thinking about where your agent should live before you optimize how it reasons. The cost and latency advantages of specialized deployment are outweighing model capability differences\u2014which means your choice of infrastructure is now a strategic competitive decision, not an implementation detail."
+    },
+    {
+      "headline": "Session Limits Are Forcing Better Production Architecture",
+      "body": "Claude Code's 5-hour session boundary seemed like a constraint. Instead, builders are discovering it forces the right design: splitting long workflows into discrete, recoverable steps coordinated by external state stores (databases, job queues). Agents designed to survive session boundaries are proving more reliable than agents designed for infinite context windows. The forcing function is working.",
+      "whycare": "Invest in persistent state architecture (SQLite, Postgres, Redis) before optimizing for bigger context windows. Frameworks solving state management across sessions are solving 80% of production failures\u2014this is where your reliability gains actually come from."
+    },
+    {
+      "headline": "Runtime Guardrails Are Now Table Stakes, Not Optional Safety Theater",
+      "body": "Builders shipping to production are installing access control layers *below* the agent\u2014not relying on prompts or reasoning to stay safe. The pattern is crystallizing: agent decision \u2192 access control validation \u2192 execution gate. This inverts where the safety moat actually lives. It's no longer about reasoning safety; it's about permission boundaries and execution control.",
+      "whycare": "Treat runtime guardrails as a core architectural layer, not an afterthought. If you're shipping agents to production without explicit permission checks and execution gates, you're betting on agent reasoning to prevent mistakes\u2014and that bet is already losing in the market."
+    }
+  ],
+  "bigger_picture": "Agent architecture is decoupling from LLM choice. Builders now rotate between Claude, open models, and local inference based on cost and task fit\u2014not loyalty. This commoditizes model selection and pushes competitive advantage upstack to infrastructure, state management, and safety boundaries. The real pattern: constraints (session limits, cost pressure, safety requirements) aren't weaknesses slowing down agent adoption\u2014they're accelerating production-grade reliability. The gap between demo agents and production agents is closing because builders are being forced to build the right way. Winners will own infrastructure, state, and permissions\u2014not reasoning.",
+  "_meta": {
+    "vertical": "ai_agents",
+    "brief_id": 125,
+    "brief_date": "2026-03-27 01:31:43",
+    "signal_count": 226,
+    "source_count": 7,
+    "generated_at": "2026-04-11T22:00:20.825695"
+  }
+}

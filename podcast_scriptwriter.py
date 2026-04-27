@@ -34,6 +34,7 @@ State the information, then add your read on it. Be honest about which is which.
 - "What they're doing here is [fact]. And I think this is why [interpretation]."
 - "It just feels like..." / "kind of like..." when it's conjecture
 - Confident statements land harder because the hedges are honest
+- When connecting signals into patterns, make sure each signal actually supports the conclusion. If the evidence suggests something but doesn't confirm it, frame it as a question worth investigating — that's more interesting to listen to and more credible than overstating what's known
 
 ### 3. Connect the Dots
 The brief has separate bullets. Thread them into narrative lines.
@@ -58,6 +59,10 @@ Not weakness — honesty. It makes confident claims more credible.
 - "Kind of like the market itself is waking up"
 - "I think this is why..."
 
+## Audience
+
+This is a published podcast for a general audience — not a personal briefing for one person. Write for listeners who chose to subscribe to this channel, not for a specific individual. No "here's your briefing" or "here's your transcript" framing. This is broadcast media.
+
 ## What NOT to Do
 
 - Do NOT read the brief verbatim
@@ -69,18 +74,20 @@ Not weakness — honesty. It makes confident claims more credible.
 - Do NOT include URLs or links — this is audio, the listener can't click anything
 - Do NOT use markdown formatting, headers, bullets, or any visual formatting — this is a spoken script
 - Do NOT include stage directions or speaker labels — just the words to be spoken
+- Do NOT cite YouTube creators, podcasters, or commentators by name — the analysis is yours, own it
+- Do NOT include the "Deep Reads" section — it's link-dependent and doesn't work in audio. Fold any key insights from it into your main narrative instead.
+- Do NOT include the specific date (e.g. "It's February 25th"). The content is daily and ages fast — putting the date up front compounds that. Just open with the greeting and go straight into the content. References like "today" or "this week" are fine — specific dates are not.
+- Do NOT include ANY preamble, meta-commentary, or labels before the script (no "Here's your podcast script:", no "# PODCAST SCRIPT", no separators like "---"). Your output must start with the first spoken word of the episode.
 
 ## Tone and Style
 
 Think: a smart, thoughtful analyst who's genuinely curious about what's happening. Warm but intellectually intense. Unhurried but not slow. Like David Shapiro or Nate B Jones walking through the day's developments. You have a point of view and you share it, but you're honest about what's certain and what's your read.
 
-## Structure
+## Structure (internal guide only — do NOT output these labels in the script)
 
-1. **Open** — Brief greeting, what we're covering today, hook the listener with the most interesting signal
-2. **Top Signal** — The main story, fully unpacked with your interpretation
-3. **Key Developments** — Walk through the important items, connecting them where possible, signaling relative importance
-4. **Patterns & Synthesis** — Step back and connect the dots. What do these signals mean together? This is the most valuable part.
-5. **Close** — Quick wrap-up, what to watch for tomorrow
+Start with a brief greeting, what we're covering today, hook the listener with the most interesting signal. Then unpack the main story with your interpretation. Walk through the other important items, connecting them where possible, signaling relative importance. Step back and connect the dots — what do these signals mean together? That synthesis is the most valuable part. End with a quick wrap-up and what to watch for tomorrow.
+
+Do NOT output section labels, markers, headers, or anything in brackets like [OPEN] or [CLOSE]. The script should be pure spoken words from start to finish — nothing that isn't meant to be read aloud.
 
 ## Length
 
@@ -110,6 +117,9 @@ def rewrite_brief_as_script(brief_text: str, vertical: str = "ai_tech") -> str:
         "ai_tech": "AI and technology",
         "health_longevity": "health, longevity, and life extension research",
         "futures_trends": "macro trends, geopolitics, and futures thinking",
+        "local_ai_intel": "the AI services marketplace — agencies selling AI solutions to local and small businesses",
+        "ks_youtube": "YouTube creator intelligence — trends, hot topics, and cross-channel convergence across a 53-channel monitoring network",
+        "ks_examiner": "Knowledge Studio operations — daily intelligence on processing volume, channel activity, and emerging patterns",
     }
 
     domain = vertical_context.get(vertical, "technology and trends")
@@ -131,7 +141,48 @@ Target length: 2000-3000 words.
         messages=[{"role": "user", "content": user_prompt}],
     )
 
-    return response.content[0].text
+    script = response.content[0].text
+
+    # Strip any meta-preamble the model adds before the actual script.
+    # Common patterns: "Here's your podcast script:", markdown headers, separators.
+    import re
+    lines = script.split('\n')
+    start = 0
+    for i, line in enumerate(lines):
+        stripped = line.strip()
+        if not stripped:
+            continue
+        # Skip lines that are meta-commentary, markdown headers, or separators
+        if (stripped.startswith('#') or
+            stripped == '---' or
+            stripped == '***' or
+            re.match(r"^here'?s\s+(your|the)\s+(podcast|script|transcript)", stripped, re.IGNORECASE) or
+            re.match(r"^(podcast\s+script|script|transcript)\b", stripped, re.IGNORECASE)):
+            start = i + 1
+            continue
+        break
+    script = '\n'.join(lines[start:]).strip()
+
+    # Also strip trailing separators
+    script = re.sub(r'\n---\s*$', '', script).strip()
+
+    return script
+
+
+def generate_episode_title(script: str) -> str:
+    """Generate a short descriptive episode title from the podcast script."""
+    client = anthropic.Anthropic()
+    response = client.messages.create(
+        model="claude-haiku-4-5-20251001",
+        max_tokens=60,
+        messages=[{"role": "user", "content": f"""Write a short podcast episode title (6-10 words) that captures the main story in this script.
+No show name, no date, no "Daily Brief". Just a descriptive title like a magazine cover line.
+Return only the title, nothing else.
+
+Script opening:
+{script[:600]}"""}],
+    )
+    return response.content[0].text.strip().strip('"')
 
 
 def brief_to_podcast_script(brief_id: int = None, vertical: str = None, db_path: str = None) -> dict:

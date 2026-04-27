@@ -1,0 +1,7 @@
+#!/usr/bin/osascript
+on run
+    set scriptDir to POSIX path of (path to me as alias) & "../Resources/"
+    set scriptPath to scriptDir & "start_server.sh"
+    do shell script "bash " & quoted form of scriptPath
+    display notification "Server starting..." with title "YouTube Intelligence"
+end run

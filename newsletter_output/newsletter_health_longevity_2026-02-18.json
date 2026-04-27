@@ -1,0 +1,31 @@
+{
+  "headline": "Why Your NAD+ Supplement Might Be Doing Half the Job",
+  "subtitle": "Plus: longevity and healthspan are not the same thing, and GLP-1 drugs may protect your brain.",
+  "editorial_intro": "Three emerging signals suggest we've been optimizing for the wrong targets in aging. We've been chasing lifespan when we should chase function. We've been boosting NAD+ quantity when we should balance its chemistry. And we've been overlooking tools already in the clinic that protect the aging brain. Today's brief rewires what \"longevity\" actually means\u2014and what to do about it.",
+  "signals": [
+    {
+      "headline": "NAD+ Supplements Are Incomplete Without Redox Balance",
+      "body": "A new study shows that the ratio of oxidized to reduced NAD+ matters far more than the total amount you have. Your current NMN or NR supplement might be raising NAD+ levels, but if it doesn't shift the NAD+/NADH balance, you're missing the metabolic payoff. The solution isn't a new supplement\u2014it's pairing NAD+ boosters with electron transport chain support (ubiquinol, carnitine) to actually shift the redox state.",
+      "whycare": "Audit your NAD+ protocol. If you're only taking NMN or NR, add mitochondrial electron transport support to complete the picture. By 2027, expect \"redox-balanced\" protocols to replace simple NAD+ monotherapies."
+    },
+    {
+      "headline": "Longevity and Healthspan Are Mechanistically Different",
+      "body": "Interventions that extend lifespan in mice\u2014caloric restriction, rapamycin\u2014don't always improve how you actually feel or function. A new meta-analysis shows these are separate biological pathways. Maximum lifespan means nothing if you lose mobility, cognition, and independence first. This flip changes everything about how aging research should be designed and measured.",
+      "whycare": "Stop optimizing for lifespan alone. When evaluating any longevity intervention, demand data on both healthspan outcomes (mobility, cognition, independence) and lifespan. The goal is life lived well, not life lived long."
+    },
+    {
+      "headline": "GLP-1 Drugs May Protect Your Brain\u2014Even Without Diabetes",
+      "body": "Semaglutide and tirzepatide, already prescribed to millions for weight and blood sugar, show emerging evidence of neuroprotection against Parkinson's and cognitive decline. The mechanism is real: GLP-1 signaling dampens neuroinflammation and prevents protein aggregation. Human trials are underway and Phase 2b data is expected mid-2026. If validated, expect widespread off-label use in aging populations for cognitive preservation.",
+      "whycare": "If you're already on GLP-1 agonists for metabolic reasons, recognize the emerging neuroprotective signal. If considering these drugs for longevity, track 2026 trial results\u2014this may become a primary lever for cognitive aging independent of weight loss."
+    }
+  ],
+  "bigger_picture": "A pattern is emerging: aging is not one thing, and single-target interventions won't solve it. The field is shifting from \"more of one biomarker\" (higher NAD+, longer lifespan, lower cholesterol) to systems-level balance\u2014redox equilibrium, functional outcomes over chronological ones, and multi-pathway signaling (GLP-1 acting on inflammation, mitochondria, and neuroprotection simultaneously). By 2027, expect precision aging protocols to look less like supplement stacks and more like coordinated interventions targeting specific redox and inflammatory bottlenecks. The winners will be tools already in the clinic (GLP-1 agonists, trazodone) repurposed with better science\u2014not new molecules alone.",
+  "_meta": {
+    "vertical": "health_longevity",
+    "brief_id": 27,
+    "brief_date": "2026-02-18 02:32:57",
+    "signal_count": 522,
+    "source_count": 7,
+    "generated_at": "2026-02-18T23:29:17.582327"
+  }
+}

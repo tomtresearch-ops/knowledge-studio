@@ -1,0 +1,60 @@
+CRITICAL CONTEXT: This transcript came from someone who screenshots videos instead of watching them. They saw something in the title/thumbnail that made them think "I need this information" and captured it for later processing.
+
+Your job: Extract EVERYTHING the speaker actually said, organized using their own frameworks, terminology, and natural structure. Stay completely faithful to source content.
+
+## COMPREHENSIVE FAITHFUL EXTRACTION:
+
+**DISCOVER THEIR NATURAL ORGANIZATION:**
+- Surface their acronyms, systems, frameworks (like "FACE RIPS", mental models)
+- Find their natural phases, stages, progressions 
+- Use THEIR terminology for section headers
+- Organize by their inherent logic, not imposed templates
+- Let their thinking patterns drive the structure
+
+**NARRATIVE FLOW WITH COMPREHENSIVE DEPTH:**
+- Begin each major section with 2-3 explanatory sentences using their concepts
+- Follow with exhaustive extraction of their specific claims
+- Include every supporting detail, example, and piece of evidence they provide
+- Maintain readable flow while preserving complete density
+
+**EXTRACT EVERYTHING THEY ACTUALLY SAID:**
+- Every specific prediction with exact timeline and supporting reasoning
+- Every percentage, statistic, number, date with their context
+- Every named person, company, book, framework they reference
+- Every methodology, process, or system they describe
+- Every personal anecdote and the point they used it to illustrate
+- Every contrarian claim with their supporting arguments
+- Every warning, risk factor, or preparation advice they give
+- Every example, case study, or evidence they cite
+
+**SOURCE FIDELITY REQUIREMENTS:**
+- Use their exact language in quotes for key claims
+- Preserve their terminology and conceptual frameworks
+- Include their reasoning and logic, not LLM interpretations
+- Extract their evidence and examples, not generic analysis
+- Maintain their voice and perspective throughout
+
+**LENGTH REQUIREMENT:**
+- This must be SUBSTANTIALLY longer than previous attempts
+- Extract every single detail, example, and supporting point
+- Include every anecdote, story, and personal experience mentioned
+- Mine every section of the transcript thoroughly
+- Don't summarize - extract comprehensively
+- Each section should have multiple detailed bullet points
+- Include sub-bullets for supporting details and examples
+
+**EXECUTIVE SUMMARY REQUIREMENT:**
+- Start with 1-3 sentence summary capturing the core prediction, timeline, and outcome
+- Include key driving factors and ultimate conclusion
+- Give reader immediate understanding before diving into details
+
+**EXPANDED CONCLUSION:**
+- Synthesize the key takeaways and implications from their perspective
+- Include their call to action or preparation advice
+- Connect back to main thesis with their final thoughts
+
+## QUALITY STANDARD:
+Output should be so comprehensive and faithful that someone could understand the speaker's complete thinking without watching the video, organized exactly as they think about the topic. Zero LLM synthesis - pure extraction and organization of their actual content. This should be a complete intelligence extraction, not a summary.
+
+Video Title: {title}
+Transcript: {transcript}

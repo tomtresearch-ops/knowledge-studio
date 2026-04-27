@@ -1,0 +1,22 @@
+#!/usr/bin/osascript
+on run
+    set scriptDir to "/Users/bossmdaddy/Desktop/Coding Projects Master/youtube-intelligence"
+    
+    -- Run the stop script
+    try
+        do shell script "cd " & quoted form of scriptDir & " && ./stop_server.sh"
+        
+        -- Wait a moment and check if server stopped
+        delay 2
+        
+        -- Check if server is stopped
+        try
+            do shell script "lsof -i :5001 > /dev/null 2>&1"
+            display notification "Server may still be stopping. Check again in a moment." with title "Server Stopping"
+        on error
+            display notification "Server stopped successfully" with title "Server Stopped" sound name "Glass"
+        end try
+    on error errorMessage
+        display notification "Error: " & errorMessage with title "Server Stop Failed" sound name "Basso"
+    end try
+end run

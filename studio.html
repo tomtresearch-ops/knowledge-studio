@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Studio — Knowledge Studio</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0f1a;
+            color: #e0e0e0;
+            min-height: 100vh;
+        }
+
+        .header {
+            padding: 20px 32px;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .header h1 { font-size: 20px; font-weight: 600; }
+        .header h1 span { color: #00d4aa; }
+        .header-nav a {
+            color: #888;
+            text-decoration: none;
+            font-size: 13px;
+            margin-left: 20px;
+            transition: color 0.15s;
+        }
+        .header-nav a:hover { color: #fff; }
+        .header-nav a.active { color: #00d4aa; }
+
+        .container { max-width: 800px; margin: 0 auto; padding: 32px 24px; }
+
+        .page-title { font-size: 28px; font-weight: 600; margin-bottom: 4px; }
+        .page-subtitle { color: #666; font-size: 14px; margin-bottom: 32px; }
+
+        .section { margin-bottom: 36px; }
+        .section h2 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: #ccc;
+        }
+        .section-desc { color: #666; font-size: 12px; margin-bottom: 14px; }
+
+        /* Voice Cards */
+        .voice-list { display: flex; flex-direction: column; gap: 8px; }
+
+        .voice-card {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 18px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .voice-card:hover {
+            background: rgba(255,255,255,0.06);
+            border-color: rgba(0,212,170,0.3);
+        }
+        .voice-card.playing {
+            background: rgba(0,212,170,0.08);
+            border-color: rgba(0,212,170,0.4);
+        }
+        .voice-card.selected {
+            background: rgba(0,212,170,0.12);
+            border-color: #00d4aa;
+        }
+        .voice-card.comparison { border-style: dashed; margin-top: 8px; }
+
+        .voice-num {
+            font-size: 15px;
+            font-weight: 700;
+            color: #00d4aa;
+            min-width: 30px;
+            text-align: center;
+        }
+        .voice-info { flex: 1; }
+        .voice-label { font-size: 14px; font-weight: 500; }
+        .voice-file { font-size: 11px; color: #555; margin-top: 2px; }
+        .voice-play {
+            font-size: 20px;
+            opacity: 0.5;
+            transition: opacity 0.15s;
+        }
+        .voice-card:hover .voice-play { opacity: 1; }
+
+        /* Episode Cards */
+        .episode-list { display: flex; flex-direction: column; gap: 8px; }
+
+        .episode-card {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 18px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 10px;
+        }
+        .episode-bar { width: 4px; height: 44px; border-radius: 2px; flex-shrink: 0; }
+        .episode-info { flex: 1; }
+        .episode-title { font-size: 14px; font-weight: 500; }
+        .episode-meta { font-size: 11px; color: #888; margin-top: 2px; }
+        .episode-desc { font-size: 12px; color: #555; margin-top: 4px; line-height: 1.4; }
+        .episode-play {
+            font-size: 20px;
+            opacity: 0.5;
+            cursor: pointer;
+            padding: 8px;
+            transition: opacity 0.15s;
+        }
+        .episode-play:hover { opacity: 1; }
+
+        .empty-msg { color: #555; font-size: 13px; font-style: italic; }
+
+        /* Audio progress bar */
+        .audio-progress {
+            width: 100%;
+            margin-top: 8px;
+            display: none;
+        }
+        .voice-card.playing .audio-progress,
+        .episode-card.playing .audio-progress {
+            display: block;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 3px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: #00d4aa;
+            width: 0%;
+            transition: width 0.3s linear;
+        }
+        .progress-time {
+            font-size: 10px;
+            color: #666;
+            margin-top: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Knowledge <span>Studio</span></h1>
+        <div class="header-nav">
+            <a href="/">Capture</a>
+            <a href="/library">Library</a>
+            <a href="/channels">Channels</a>
+            <a href="/briefing">Briefing Room</a>
+            <a href="/intelligence">Intelligence</a>
+            <a href="/stats">Stats</a>
+            <a href="/studio" class="active">Studio</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="page-title">Studio</div>
+        <div class="page-subtitle">Voice roster, podcast episodes, and pipeline management</div>
+
+        <!-- Voice Roster -->
+        <div class="section">
+            <h2>Voice Roster — AI & Tech Finalists</h2>
+            <div class="section-desc">Click to play/pause. These are the 5 finalist voices for the AI & Tech Daily Brief.</div>
+            <div id="voice-roster" class="voice-list">
+                <div class="empty-msg">Loading...</div>
+            </div>
+        </div>
+
+        <!-- Comparison Track -->
+        <div class="section">
+            <h2>Voice Comparison</h2>
+            <div class="section-desc">All 5 finalists back-to-back. Count the beeps (1-5) to identify each voice.</div>
+            <div id="comparison-track" class="voice-list"></div>
+        </div>
+
+        <!-- Podcast Episodes -->
+        <div class="section">
+            <h2>Podcast Episodes</h2>
+            <div id="episode-list" class="episode-list">
+                <div class="empty-msg">Loading...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin;
+        let currentAudio = null;
+        let currentCard = null;
+        let progressInterval = null;
+
+        function formatDuration(s) {
+            const m = Math.floor(s / 60);
+            const sec = Math.floor(s % 60);
+            return `${m}:${sec.toString().padStart(2, '0')}`;
+        }
+
+        function togglePlay(url, cardEl) {
+            // Stop current
+            if (currentAudio) {
+                currentAudio.pause();
+                clearInterval(progressInterval);
+                if (currentCard) currentCard.classList.remove('playing');
+            }
+
+            // If clicking same card, just stop
+            if (currentCard === cardEl && currentAudio && !currentAudio.paused === false) {
+                currentAudio = null;
+                currentCard = null;
+                return;
+            }
+            // If same URL was playing, stop
+            if (currentAudio && currentAudio.src === url) {
+                currentAudio = null;
+                currentCard = null;
+                return;
+            }
+
+            const audio = new Audio(url);
+            audio.play();
+            currentAudio = audio;
+            currentCard = cardEl;
+            cardEl.classList.add('playing');
+
+            // Update play button
+            const playBtn = cardEl.querySelector('.voice-play, .episode-play');
+            if (playBtn) playBtn.textContent = '⏸';
+
+            // Progress tracking
+            const progressFill = cardEl.querySelector('.progress-fill');
+            const progressTime = cardEl.querySelector('.progress-time');
+            progressInterval = setInterval(() => {
+                if (audio.duration && progressFill) {
+                    const pct = (audio.currentTime / audio.duration) * 100;
+                    progressFill.style.width = pct + '%';
+                }
+                if (progressTime) {
+                    progressTime.textContent = formatDuration(audio.currentTime) +
+                        (audio.duration ? ' / ' + formatDuration(audio.duration) : '');
+                }
+            }, 300);
+
+            audio.onended = () => {
+                clearInterval(progressInterval);
+                cardEl.classList.remove('playing');
+                if (playBtn) playBtn.textContent = '▶';
+                if (progressFill) progressFill.style.width = '0%';
+                currentAudio = null;
+                currentCard = null;
+            };
+        }
+
+        // Load voice roster
+        fetch(`${API_BASE}/api/studio/voice-roster`)
+            .then(r => r.json())
+            .then(data => {
+                const container = document.getElementById('voice-roster');
+                if (!data.voices || data.voices.length === 0) {
+                    container.innerHTML = '<div class="empty-msg">No voices in roster yet.</div>';
+                    return;
+                }
+                container.innerHTML = data.voices.map((v, i) => `
+                    <div class="voice-card" onclick="togglePlay('${v.url}', this)">
+                        <div class="voice-num">${i + 1}</div>
+                        <div class="voice-info">
+                            <div class="voice-label">${v.label}</div>
+                            <div class="voice-file">${v.filename}</div>
+                            <div class="audio-progress">
+                                <div class="progress-bar"><div class="progress-fill"></div></div>
+                                <div class="progress-time"></div>
+                            </div>
+                        </div>
+                        <div class="voice-play">▶</div>
+                    </div>
+                `).join('');
+            });
+
+        // Load comparison track
+        const compContainer = document.getElementById('comparison-track');
+        const compUrl = `${API_BASE}/podcast-audio/voice_final_shootout.mp3`;
+        compContainer.innerHTML = `
+            <div class="voice-card comparison" onclick="togglePlay('${compUrl}', this)">
+                <div class="voice-num">ALL</div>
+                <div class="voice-info">
+                    <div class="voice-label">Final Shootout — All 5 Voices</div>
+                    <div class="voice-file">voice_final_shootout.mp3</div>
+                    <div class="audio-progress">
+                        <div class="progress-bar"><div class="progress-fill"></div></div>
+                        <div class="progress-time"></div>
+                    </div>
+                </div>
+                <div class="voice-play">▶</div>
+            </div>
+        `;
+
+        // Load episodes
+        fetch(`${API_BASE}/api/studio/episodes`)
+            .then(r => r.json())
+            .then(data => {
+                const container = document.getElementById('episode-list');
+                if (!data.episodes || data.episodes.length === 0) {
+                    container.innerHTML = '<div class="empty-msg">No episodes generated yet.</div>';
+                    return;
+                }
+                const colors = { ai_tech: '#00d4aa', health_longevity: '#ff6b9d', futures_trends: '#7c5cfc' };
+                container.innerHTML = data.episodes.map(ep => {
+                    const audioUrl = `${API_BASE}/podcast-audio/${ep.audio_filename}`;
+                    const date = new Date(ep.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                    return `
+                        <div class="episode-card">
+                            <div class="episode-bar" style="background:${colors[ep.vertical] || '#666'}"></div>
+                            <div class="episode-info">
+                                <div class="episode-title">${ep.title}</div>
+                                <div class="episode-meta">${date} · ${formatDuration(ep.duration_seconds)} · ${ep.status}</div>
+                                <div class="episode-desc">${ep.description || ''}</div>
+                                <div class="audio-progress">
+                                    <div class="progress-bar"><div class="progress-fill"></div></div>
+                                    <div class="progress-time"></div>
+                                </div>
+                            </div>
+                            <div class="episode-play" onclick="togglePlay('${audioUrl}', this.parentElement)">▶</div>
+                        </div>
+                    `;
+                }).join('');
+            });
+    </script>
+</body>
+</html>

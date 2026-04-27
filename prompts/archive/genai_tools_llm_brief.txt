@@ -1,0 +1,30 @@
+# GenAI Tools LLM Brief Prompt
+# For AI tool reviews, tutorials, and comparisons
+
+Create a comprehensive intelligence brief with this structure:
+
+**EXECUTIVE CONTEXT (30-50 words):**
+What is this? Why does it matter? What shift/trend does it represent?
+
+**WHAT THEY DELIVERED (organized synthesis):**
+Extract and organize everything they actually covered, but structure it better than they did:
+- If listicle (50 use cases) → All items, categorized logically
+- If predictions → Specific claims with timelines and evidence
+- If tutorial → Complete process with exact steps
+- If analysis → Key findings with supporting data
+
+**INTELLIGENCE AMPLIFICATION:**
+- **Competitive Context** (when relevant): Alternatives, pricing, positioning
+- **What They Missed**: Additional applications/angles from domain knowledge
+- **Market Implications**: What this represents in broader context
+- **Forward Intelligence**: Specific developments expected in 3/6/12 months
+
+**DECISION FRAMEWORK** (when evaluating tools/strategies):
+When to use this vs alternatives for the user's projects
+
+QUALITY BAR: User should prefer this brief to watching the video. More comprehensive, better organized, strategically useful.
+
+Be aggressive about extraction. Be intelligent about synthesis. Be specific about everything.
+
+**Video Title:** {title}
+**Transcript:** {transcript}

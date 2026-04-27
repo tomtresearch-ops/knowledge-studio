@@ -1,0 +1,31 @@
+{
+  "headline": "The AI Vendor Wars Just Became a Real Estate Battle",
+  "subtitle": "Anthropic and OpenAI fight over Pentagon messaging while Apple rewrites the rules with local chips, and open-source security collapses on schedule.",
+  "editorial_intro": "Three things happened today that show the AI market is no longer competing on capability\u2014it's competing on where computation happens, who gets to serve which institutions, and who can claim they're doing it honestly. The story shifted from 'whose model is smarter' to 'whose infrastructure do you trust and why.'",
+  "signals": [
+    {
+      "headline": "Anthropic and OpenAI Are Both in the Pentagon. Now They're Just Fighting Over Messaging.",
+      "body": "Dario Amodei publicly attacked OpenAI's military statements this week, calling them 'straight up lies.' The problem: both Claude and GPT are already embedded in active military operations. Anthropic spent 18 months positioning itself as the ethical alternative, but that narrative broke the moment their own models ended up doing the same work. Now they're in scorched-earth mode on transparency because they've already lost the contract reality.",
+      "whycare": "Watch whether honesty about compromise becomes a real distribution advantage in B2B markets. Anthropic is betting enterprise customers care more about vendors admitting when they fold than about vendors never folding. That's a new competitive moat if it works."
+    },
+    {
+      "headline": "Apple Just Made Local AI Cheaper Than Cloud APIs",
+      "body": "The MacBook Neo starts at $1,299 and is explicitly positioned around running large language models on-device. Paired with the M5's claimed 4\u00d7 speedup for model inference, Apple is making it genuinely practical to run Qwen or other open models locally instead of paying per token to OpenAI or Anthropic. This inverts 18 months of cloud-first architecture. When your laptop can run a 35-billion-parameter model at acceptable speed, the entire economics of proprietary APIs change.",
+      "whycare": "Start testing local inference workflows now if you're building enterprise AI products. The hardware-software arbitrage Apple is creating could collapse API margins faster than anyone expected. In 12 months, this might be your default architecture instead of an alternative."
+    },
+    {
+      "headline": "Open-Source Agent Frameworks Are Collapsing Under Their Own Security Burden",
+      "body": "OpenClaw, a major open-source agent framework, just revealed 9 critical vulnerabilities and 2,200 malicious skills in its ecosystem\u2014all exploitable at scale. This is the first major proof that democratized agent infrastructure has a production-grade security cost. It's not fatal to the open-source thesis, but it creates a 6-to-12-month window where proprietary platforms with managed infrastructure (Claude Code, GPT-4 with orchestration) retain a defensibility moat through security assurance alone.",
+      "whycare": "If you're deploying open-source agents to production, budget for security maturity work that doesn't exist yet. The real opportunity is in orchestration layers (MCP, n8n) that let you safely compose local and hosted agents\u2014that's where the defensive moat is shifting."
+    }
+  ],
+  "bigger_picture": "The AI market just segmented into three overlapping competitions instead of one. First: where does computation happen (local chip vs. API)\u2014Apple is winning by making local viable, which helps Qwen but pressures OpenAI/Anthropic's margin story. Second: who owns which institution (Pentagon, NATO, enterprise)\u2014both labs are already in the Pentagon, so they're now competing on whether they'll be transparent about it, which is a messaging game Anthropic thinks it can win. Third: how do you safely build at scale when frameworks are breaking (OpenClaw)\u2014proprietary platforms get a temporary moat here, but only until open-source infrastructure matures. None of these are about model quality anymore. That's the real shift: capability is solved enough that distribution, trust, and infrastructure now determine winners.",
+  "_meta": {
+    "vertical": "ai_tech",
+    "brief_id": 56,
+    "brief_date": "2026-03-05 02:30:58",
+    "signal_count": 291,
+    "source_count": 5,
+    "generated_at": "2026-03-04T22:00:12.734370"
+  }
+}

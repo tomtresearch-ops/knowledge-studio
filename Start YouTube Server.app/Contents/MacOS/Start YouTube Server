@@ -1,0 +1,26 @@
+#!/usr/bin/osascript
+on run
+    set scriptDir to "/Users/bossmdaddy/Desktop/Coding Projects Master/youtube-intelligence"
+    
+    -- Show starting notification
+    display notification "Starting YouTube Intelligence Server..." with title "Server Starting"
+    
+    -- Run the start script in background using do shell script
+    -- This runs without Terminal window
+    try
+        do shell script "cd " & quoted form of scriptDir & " && nohup ./start_and_keep_running.sh > /dev/null 2>&1 &"
+        
+        -- Wait a moment and check if server started
+        delay 4
+        
+        -- Check if server is running
+        try
+            do shell script "lsof -i :5001 > /dev/null 2>&1"
+            display notification "Server is running at http://localhost:5001" with title "Server Started" sound name "Glass"
+        on error
+            display notification "Server may still be starting. Check http://localhost:5001 in a moment." with title "Server Starting"
+        end try
+    on error errorMessage
+        display notification "Error: " & errorMessage with title "Server Start Failed" sound name "Basso"
+    end try
+end run

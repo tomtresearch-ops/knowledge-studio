@@ -1,0 +1,1652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Knowledge Library - Knowledge Studio</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 40px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: #8b5cf6;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .logo-text h1 {
+            font-size: 24px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .logo-text p {
+            font-size: 14px;
+            color: #a1a1aa;
+            margin: 0;
+        }
+
+        .nav {
+            display: flex;
+            gap: 32px;
+        }
+
+        .nav a {
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .nav a:hover {
+            color: #8b5cf6;
+        }
+
+        .nav a.active {
+            color: #8b5cf6;
+        }
+
+        /* Main Layout */
+        .main-layout {
+            display: flex;
+            min-height: calc(100vh - 80px);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 300px;
+            background: rgba(255, 255, 255, 0.02);
+            border-right: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 32px 24px;
+        }
+
+        .sidebar-section {
+            margin-bottom: 32px;
+        }
+
+        .sidebar-title {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #ffffff;
+        }
+
+        .sidebar-icon {
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: #ffffff;
+            font-size: 14px;
+        }
+
+        .search-input::placeholder {
+            color: #a1a1aa;
+        }
+
+        .filter-button {
+            width: 100%;
+            padding: 12px 16px;
+            background: #8b5cf6;
+            border: none;
+            border-radius: 8px;
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .filter-button:hover {
+            background: #7c3aed;
+        }
+
+        .stats-list {
+            list-style: none;
+        }
+
+        .stats-list li {
+            padding: 8px 0;
+            color: #a1a1aa;
+            font-size: 14px;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: 32px 40px;
+        }
+
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+
+        .content-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .sort-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #a1a1aa;
+            font-size: 14px;
+        }
+
+        .sort-icon {
+            width: 16px;
+            height: 16px;
+        }
+
+        .duplicate-btn {
+            padding: 8px 16px;
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid #3b82f6;
+            border-radius: 6px;
+            color: #3b82f6;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-left: 16px;
+        }
+
+        .duplicate-btn:hover {
+            background: #3b82f6;
+            color: #ffffff;
+        }
+
+        .delete-btn {
+            padding: 6px 12px;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid #ef4444;
+            border-radius: 4px;
+            color: #ef4444;
+            font-size: 11px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-left: 8px;
+        }
+
+        .delete-btn:hover {
+            background: #ef4444;
+            color: #ffffff;
+        }
+
+        .action-btn.regenerate {
+            padding: 6px 12px;
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid #22c55e;
+            border-radius: 4px;
+            color: #22c55e;
+            font-size: 11px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-left: 8px;
+        }
+
+        .action-btn.regenerate:hover {
+            background: #22c55e;
+            color: #ffffff;
+        }
+
+        .duplicate-highlight {
+            border: 2px solid #f59e0b !important;
+            background: rgba(245, 158, 11, 0.05) !important;
+        }
+
+        /* Knowledge Grid */
+        .knowledge-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 24px;
+        }
+
+        .knowledge-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 24px;
+            transition: transform 0.2s, border-color 0.2s;
+            cursor: pointer;
+        }
+
+        .knowledge-card:hover {
+            transform: translateY(-2px);
+            border-color: #8b5cf6;
+            box-shadow: 0 8px 25px rgba(139, 92, 246, 0.15);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .knowledge-card:active {
+            transform: translateY(0px);
+            transition: transform 0.1s ease;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 4px;
+            line-height: 1.4;
+        }
+
+        .card-channel {
+            font-size: 14px;
+            color: #a1a1aa;
+        }
+
+        .card-date {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        .card-summary {
+            color: #d1d5db;
+            font-size: 14px;
+            line-height: 1.5;
+            margin-bottom: 16px;
+        }
+
+        .card-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .action-btn {
+            padding: 8px 16px;
+            background: rgba(139, 92, 246, 0.1);
+            border: 1px solid #8b5cf6;
+            border-radius: 6px;
+            color: #8b5cf6;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex: 1;
+            min-width: 80px;
+            text-align: center;
+        }
+
+        .action-btn:hover {
+            background: #8b5cf6;
+            color: #ffffff;
+        }
+
+        .action-btn.primary {
+            background: #8b5cf6;
+            color: #ffffff;
+        }
+
+        .action-btn.primary:hover {
+            background: #7c3aed;
+        }
+
+        .action-btn.secondary {
+            background: rgba(59, 130, 246, 0.1);
+            border-color: #3b82f6;
+            color: #3b82f6;
+        }
+
+        .action-btn.secondary:hover {
+            background: #3b82f6;
+            color: #ffffff;
+        }
+
+        .action-btn.tertiary {
+            background: rgba(16, 185, 129, 0.1);
+            border-color: #10b981;
+            color: #10b981;
+        }
+
+        .action-btn.tertiary:hover {
+            background: #10b981;
+            color: #ffffff;
+        }
+
+        .enhanced-preview {
+            margin-top: 12px;
+            padding: 12px;
+            background: rgba(139, 92, 246, 0.05);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            border-radius: 8px;
+        }
+
+        .preview-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 8px;
+            font-size: 13px;
+        }
+
+        .preview-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .preview-label {
+            font-weight: 600;
+            color: #8b5cf6;
+            min-width: 100px;
+            margin-right: 8px;
+        }
+
+        .preview-value {
+            color: #d1d5db;
+            flex: 1;
+        }
+
+        .enhanced-indicator {
+            margin-top: 12px;
+            padding: 8px 12px;
+            background: rgba(139, 92, 246, 0.1);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .indicator-text {
+            font-size: 12px;
+            color: #8b5cf6;
+            font-weight: 500;
+        }
+
+        /* Modal Styles */
+        .analysis-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1000;
+        }
+
+        .modal-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(20, 20, 40, 0.95);
+            backdrop-filter: blur(12px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal-content {
+            background: #0a0a1a;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+            max-width: 75vw;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 24px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            font-size: 18px;
+            font-weight: 600;
+            color: #ffffff;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: #a1a1aa;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+
+        .close-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+        }
+
+        .modal-body {
+            padding: 20px 24px;
+            color: #d1d5db;
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+
+
+        .modal-body p {
+            margin-bottom: 16px;
+        }
+
+        .modal-body p:last-child {
+            margin-bottom: 0;
+        }
+
+        .modal-footer {
+            padding: 20px 24px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            justify-content: flex-end;
+        }
+
+        .structured-summary-modal {
+            max-width: 80vw;
+            max-height: 90vh;
+        }
+
+        .summary-content h1 {
+            font-size: 18px;
+            font-weight: 500;
+            color: #ffd700;
+            margin: 0.8em 0 0.4em 0;
+            border-bottom: 2px solid #ffd700;
+            padding-bottom: 0.5rem;
+            /* FORCE RELOAD TEST */
+        }
+
+        .summary-content h2 {
+            font-size: 18px;
+            font-weight: 500;
+            color: #ffd700;
+            margin: 0.8em 0 0.4em 0;
+            border-bottom: 1px solid #ffd700;
+            padding-bottom: 0.25rem;
+        }
+
+        .summary-content h3 {
+            font-size: 18px;
+            font-weight: 500;
+            color: #ffd700;
+            margin: 0.8em 0 0.4em 0;
+        }
+
+        .summary-content strong {
+            font-weight: bold;
+            color: #ffffff;
+        }
+
+        .summary-content li {
+            margin: 0.5rem 0;
+            padding-left: 1rem;
+            line-height: 1.6;
+        }
+
+        .summary-content ul {
+            margin: 0.8rem 0;
+            padding-left: 1rem;
+        }
+
+        .summary-content ul ul {
+            margin: 0.4rem 0;
+            padding-left: 2rem;
+        }
+
+        .summary-content ul ul li {
+            margin: 0.3rem 0;
+            padding-left: 0.5rem;
+            font-size: 0.95rem;
+            color: #e0e0e0;
+        }
+
+        .summary-content li.sub-item {
+            margin: 0.3rem 0;
+            padding-left: 1.5rem;
+            font-size: 0.9rem;
+            color: #d0d0d0;
+            position: relative;
+        }
+
+        .summary-content li.sub-item::before {
+            content: "•";
+            color: #ffd700;
+            position: absolute;
+            left: 0.5rem;
+        }
+
+        .summary-content p {
+            margin: 0.8rem 0;
+            line-height: 1.6;
+            color: #f0f0f0;
+            font-size: 1rem;
+        }
+
+        .summary-content .section-spacing {
+            margin: 1.2rem 0;
+        }
+
+        .summary-content li {
+            color: #f0f0f0;
+            font-size: 1rem;
+        }
+
+        .summary-content strong {
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        .summary-content em {
+            color: #e0e0e0;
+            font-style: italic;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+        }
+
+        .empty-icon {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 24px;
+            opacity: 0.3;
+        }
+
+        .empty-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 12px;
+        }
+
+        .empty-description {
+            font-size: 16px;
+            color: #a1a1aa;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        /* Loading State */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #a1a1aa;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .main-layout {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                padding: 20px;
+            }
+
+            .main-content {
+                padding: 20px;
+            }
+
+            .knowledge-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .content-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">
+            <div class="logo-icon">📚</div>
+            <div class="logo-text">
+                <h1>Knowledge Library</h1>
+                <p id="itemCount">0 items captured</p>
+            </div>
+        </div>
+        <nav class="nav">
+            <a href="/">← Back to Capture</a>
+            <a href="/library" class="active">Library</a>
+            <a href="/stats">Stats</a>
+        </nav>
+    </header>
+
+    <!-- Main Layout -->
+    <div class="main-layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">
+                    <span class="sidebar-icon">🔍</span>
+                    Search Knowledge
+                </h3>
+                <input type="text" class="search-input" placeholder="Ask anything about your captured content" id="searchInput">
+            </div>
+
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">
+                    <span class="sidebar-icon">🔽</span>
+                    Filter by Topic
+                </h3>
+                <button class="filter-button" id="filterButton">All Topics (0)</button>
+            </div>
+
+            <div class="sidebar-section">
+                <h3 class="sidebar-title">
+                    <span class="sidebar-icon">📈</span>
+                    Knowledge Stats
+                </h3>
+                <ul class="stats-list">
+                    <li>Total Items <span id="totalItems">0</span></li>
+                    <li>This Week <span id="thisWeek">0</span></li>
+                    <li>Avg Confidence <span id="avgConfidence">0%</span></li>
+                </ul>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="content-header">
+                <h2 class="content-title">Recent Knowledge</h2>
+                <div class="sort-controls">
+                    <span class="sort-icon">📅</span>
+                    <span>Sorted by most recent</span>
+                    <button class="duplicate-btn" onclick="findDuplicates()" title="Find and remove duplicates">
+                        🔍 Find Duplicates
+                    </button>
+                </div>
+            </div>
+
+            <div id="knowledgeContainer">
+                <div class="loading">Loading knowledge...</div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        let allVideos = [];
+        let filteredVideos = [];
+
+        // Load videos on page load
+        async function loadVideos() {
+            try {
+                const response = await fetch('/api/videos');
+                const data = await response.json();
+                
+                if (data.success) {
+                    allVideos = data.videos;
+                    filteredVideos = [...allVideos];
+                    
+                    // Debug: Check which videos have enhanced summaries
+                    console.log('Loaded videos:', allVideos.length);
+                    allVideos.forEach(video => {
+                        const hasEnhanced = parseEnhancedSummary(video.ai_summary);
+                        console.log(`Video ${video.id}: ${video.title} - Enhanced: ${hasEnhanced ? 'YES' : 'NO'}`);
+                    });
+                    
+                    updateItemCount();
+                    updateStats();
+                    renderVideos();
+                } else {
+                    showEmptyState();
+                }
+            } catch (error) {
+                console.error('Error loading videos:', error);
+                showEmptyState();
+            }
+        }
+
+        // Delete individual video
+        async function deleteVideo(videoId, videoTitle) {
+            if (!confirm(`Are you sure you want to delete "${videoTitle}"? This action cannot be undone.`)) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/videos/${videoId}`, {
+                    method: 'DELETE'
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('Video deleted successfully');
+                    // Reload videos to update the display
+                    loadVideos();
+                } else {
+                    alert('Error deleting video: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Error deleting video:', error);
+                alert('Error deleting video: ' + error.message);
+            }
+        }
+
+        // Find and highlight duplicates
+        function findDuplicates() {
+            const duplicates = [];
+            const seenTitles = new Map();
+            
+            allVideos.forEach(video => {
+                const normalizedTitle = video.title.toLowerCase().trim();
+                if (seenTitles.has(normalizedTitle)) {
+                    duplicates.push({
+                        original: seenTitles.get(normalizedTitle),
+                        duplicate: video
+                    });
+                } else {
+                    seenTitles.set(normalizedTitle, video);
+                }
+            });
+            
+            if (duplicates.length === 0) {
+                alert('No duplicates found!');
+                return;
+            }
+            
+            // Highlight duplicate cards
+            document.querySelectorAll('.knowledge-card').forEach(card => {
+                card.classList.remove('duplicate-highlight');
+            });
+            
+            duplicates.forEach(dup => {
+                const duplicateCard = document.querySelector(`[data-video-id="${dup.duplicate.id}"]`);
+                if (duplicateCard) {
+                    duplicateCard.classList.add('duplicate-highlight');
+                }
+            });
+            
+            alert(`Found ${duplicates.length} duplicate(s). Highlighted in orange. You can delete individual duplicates using the 🗑️ button.`);
+        }
+
+        // Regenerate brief with new format
+        async function regenerateBrief(videoId) {
+            if (!confirm('Regenerate brief with the new structured format? This will replace the current brief.')) {
+                return;
+            }
+            
+            // Show loading state
+            const button = event.target;
+            const originalText = button.textContent;
+            button.textContent = '⏳ Processing...';
+            button.disabled = true;
+            
+            try {
+                const response = await fetch(`/api/videos/${videoId}/regenerate-brief`, {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('Brief regenerated successfully! Click "Brief" to view the new format.');
+                    // Reload videos to update the display
+                    loadVideos();
+                } else {
+                    if (data.error.includes('rate_limit_error')) {
+                        alert('API rate limit reached. Please wait a few minutes and try again. The system will automatically retry with delays.');
+                    } else {
+                        alert('Error regenerating brief: ' + data.error);
+                    }
+                }
+            } catch (error) {
+                console.error('Error regenerating brief:', error);
+                alert('Error regenerating brief: ' + error.message);
+            } finally {
+                // Restore button state
+                button.textContent = originalText;
+                button.disabled = false;
+            }
+        }
+
+        // Update item count
+        function updateItemCount() {
+            const count = allVideos.length;
+            document.getElementById('itemCount').textContent = `${count} items captured`;
+        }
+
+        // Update stats
+        function updateStats() {
+            document.getElementById('totalItems').textContent = allVideos.length;
+            document.getElementById('thisWeek').textContent = getThisWeekCount();
+            document.getElementById('avgConfidence').textContent = getAvgConfidence();
+        }
+
+        // Get this week's count
+        function getThisWeekCount() {
+            const oneWeekAgo = new Date();
+            oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+            
+            return allVideos.filter(video => {
+                const videoDate = new Date(video.date);
+                return videoDate >= oneWeekAgo;
+            }).length;
+        }
+
+        // Get average confidence
+        function getAvgConfidence() {
+            if (allVideos.length === 0) return '0%';
+            
+            const totalConfidence = allVideos.reduce((sum, video) => {
+                return sum + (video.confidence_score || 0);
+            }, 0);
+            
+            const avg = (totalConfidence / allVideos.length) * 100;
+            return `${Math.round(avg)}%`;
+        }
+
+        // Render videos
+        function renderVideos() {
+            const container = document.getElementById('knowledgeContainer');
+            
+            if (filteredVideos.length === 0) {
+                showEmptyState();
+                return;
+            }
+
+            const html = filteredVideos.map(video => {
+                const enhancedSummary = parseEnhancedSummary(video.ai_summary);
+                const briefSummary = enhancedSummary ? enhancedSummary.tldr || enhancedSummary.executive_summary : video.summary || 'No summary available';
+                
+                return `
+                    <div class="knowledge-card" data-video-id="${video.id}" onclick="viewBrief(${video.id})" style="cursor: pointer;">
+                        <div class="card-header">
+                            <div>
+                                <h3 class="card-title">${video.title}</h3>
+                                <p class="card-channel">${video.channel}</p>
+                            </div>
+                            <span class="card-date">${formatDate(video.date)}</span>
+                        </div>
+                        <div class="card-summary">
+                            <div class="summary-content">${renderMarkdown(briefSummary.length > 250 ? briefSummary.substring(0, 250) + '...' : briefSummary)}</div>
+                            ${enhancedSummary ? `
+                                <div class="enhanced-indicator">
+                                    <span class="indicator-text">📊 Enhanced Summary Available</span>
+                                </div>
+                            ` : ''}
+                        </div>
+                        <div class="card-actions">
+                        <button class="action-btn primary" onclick="event.stopPropagation(); viewBrief(${video.id})">Brief</button>
+                        <button class="action-btn secondary" onclick="event.stopPropagation(); viewLLMBrief(${video.id})">LLM Brief</button>
+                        <button class="action-btn regenerate" onclick="event.stopPropagation(); regenerateBrief(${video.id})" title="Regenerate brief with new format">🔄</button>
+                        <button class="delete-btn" onclick="event.stopPropagation(); deleteVideo(${video.id}, '${video.title.replace(/'/g, "\\'")}')" title="Delete this video">🗑️</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            container.innerHTML = `<div class="knowledge-grid">${html}</div>`;
+        }
+
+        // Show empty state
+        function showEmptyState() {
+            const container = document.getElementById('knowledgeContainer');
+            container.innerHTML = `
+                <div class="empty-state">
+                    <div class="empty-icon">🧠</div>
+                    <h3 class="empty-title">No Knowledge Found</h3>
+                    <p class="empty-description">Start capturing screenshots to build your knowledge base.</p>
+                </div>
+            `;
+        }
+
+        // Format date
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', { 
+                month: 'short', 
+                day: 'numeric',
+                year: 'numeric'
+            });
+        }
+
+        // Format summary content with better visual hierarchy
+        function formatSummaryContent(content) {
+            if (!content) return '';
+            
+            return content
+                // Bold section headers (words ending with colon at start of line or after paragraph break)
+                .replace(/^([A-Z][^:\n]*:)(?=\s)/gm, '<strong style="color: #ffffff; display: block; margin-top: 20px; margin-bottom: 8px;">$1</strong>')
+                .replace(/(\n\n)([A-Z][^:\n]*:)(?=\s)/g, '$1<strong style="color: #ffffff; display: block; margin-top: 20px; margin-bottom: 8px;">$2</strong>')
+                // Add breathing room between major sections
+                .replace(/\n\n(?=[A-Z])/g, '\n\n\n')
+                // Preserve existing structure
+                .replace(/\n/g, '<br>');
+        }
+
+        // Search functionality
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+            filteredVideos = allVideos.filter(video => 
+                video.title.toLowerCase().includes(query) ||
+                video.channel.toLowerCase().includes(query) ||
+                video.summary.toLowerCase().includes(query)
+            );
+            renderVideos();
+        });
+
+        // Analyze video
+        async function analyzeVideo(videoId, type) {
+            try {
+                const response = await fetch(`/api/videos/${videoId}/analyze`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ type: type })
+                });
+                
+                const data = await response.json();
+                if (data.success) {
+                    // Show analysis in a modal instead of alert
+                    showAnalysisModal(type, data.analysis);
+                } else {
+                    console.error('Analysis failed:', data.error);
+                }
+            } catch (error) {
+                console.error('Analysis error:', error);
+            }
+        }
+
+        // Show analysis modal
+        function showAnalysisModal(type, analysis) {
+            const modal = document.createElement('div');
+            modal.className = 'analysis-modal';
+            modal.innerHTML = `
+                <div class="modal-overlay" onclick="closeModal()">
+                    <div class="modal-content" onclick="event.stopPropagation()">
+                        <div class="modal-header">
+                            <h3>${type.toUpperCase()} Analysis</h3>
+                            <button class="close-btn" onclick="closeModal()">×</button>
+                        </div>
+                        <div class="modal-body">
+                            <p>${analysis}</p>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="action-btn" onclick="closeModal()">Close</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        // Close modal
+        function closeModal() {
+            const modal = document.querySelector('.analysis-modal');
+            if (modal) {
+                modal.remove();
+            }
+        }
+
+        // Check if summary is markdown formatted
+        function isMarkdownSummary(aiSummary) {
+            return aiSummary && aiSummary.includes('## Overview');
+        }
+
+        // Simple markdown to HTML converter
+        function markdownToHtml(markdown) {
+            // First, fix missing linebreaks around headers
+            let formatted = markdown
+                .replace(/([^#\n])##\s/g, '$1\n\n## ')  // Add linebreaks before headers
+                .replace(/##\s([^\n]+)([^#\n])/g, '## $1\n\n$2')  // Add linebreaks after headers
+                .replace(/- ([^\n]+)(?=\n##)/g, '- $1\n')  // Fix list items before headers
+                .replace(/([^-\n])- /g, '$1\n- ');  // Add linebreaks before list items
+            
+            return formatted
+                .replace(/## (.*?)$/gm, '<h2 style="color: #8b5cf6; margin: 0.8em 0 0.4em 0; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px; font-size: 18px; font-weight: 500;">$1</h2>')
+                .replace(/### (.*?)$/gm, '<h3 style="color: #a78bfa; margin: 0.8em 0 0.4em 0; font-size: 18px; font-weight: 500;">$1</h3>')
+                .replace(/\*\*(.*?)\*\*/g, '<strong style="color: #ffffff;">$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em style="color: #e5e7eb;">$1</em>')
+                .replace(/^- (.*)$/gm, '<li style="margin: 0.2rem 0; color: #d1d5db; line-height: 1.4;">$1</li>')
+                .replace(/((?:<li[^>]*>.*?<\/li>\s*)+)/g, '<ul style="margin: 0.4rem 0; padding-left: 25px; list-style-type: disc;">$1</ul>')
+                .replace(/\n\n+/g, '</p><p style="margin: 0.5rem 0; line-height: 1.4; color: #d1d5db;">')
+                .replace(/^(?!<[hul])/gm, '<p style="margin: 15px 0; line-height: 1.7; color: #d1d5db;">')
+                .replace(/<p[^>]*>(<[hul][^>]*>.*?<\/[hul]>)<\/p>/g, '$1')
+                .replace(/<p[^>]*><\/p>/g, '')
+                .replace(/^<p[^>]*>/, '')  // Remove opening p tag at start
+                .replace(/<\/p>$/, '');    // Remove closing p tag at end
+        }
+
+        // Parse enhanced summary (handles both JSON and markdown)
+        function parseEnhancedSummary(aiSummary) {
+            if (!aiSummary || aiSummary.includes('error')) {
+                return null;
+            }
+            
+            // Check if it's markdown format
+            if (isMarkdownSummary(aiSummary)) {
+                return { 
+                    markdown: true, 
+                    content: aiSummary,
+                    html: markdownToHtml(aiSummary),
+                    tldr: aiSummary.substring(0, 200) + '...'
+                };
+            }
+            
+            // Check if it looks like JSON
+            if (!aiSummary.trim().startsWith('{')) {
+                return null;
+            }
+            
+            try {
+                const parsed = JSON.parse(aiSummary);
+                console.log('Successfully parsed enhanced summary:', Object.keys(parsed));
+                return parsed;
+            } catch (e) {
+                console.error('Error parsing enhanced summary:', e);
+                console.error('Summary content:', aiSummary.substring(0, 200) + '...');
+                return null;
+            }
+        }
+
+        // View structured summary
+        function viewStructuredSummary(videoId) {
+            const video = allVideos.find(v => v.id === videoId);
+            if (!video) {
+                console.error('Video not found:', videoId);
+                return;
+            }
+            
+            const enhancedSummary = parseEnhancedSummary(video.ai_summary);
+            if (!enhancedSummary) {
+                console.error('No enhanced summary available for video:', videoId);
+                showVideoInfoModal(video);
+                return;
+            }
+            
+            console.log('Opening structured summary for video:', video.title);
+            
+            // Handle markdown format
+            if (enhancedSummary.markdown) {
+                showMarkdownSummaryModal(video, enhancedSummary);
+                return;
+            }
+            
+            // Create a new window/tab with the structured summary
+            const summaryWindow = window.open('', '_blank', 'width=1000,height=700,scrollbars=yes');
+            if (summaryWindow) {
+                summaryWindow.document.write(generateStructuredSummaryHTML(video, enhancedSummary));
+                summaryWindow.document.close();
+            } else {
+                console.error('Failed to open new window - popup blocked?');
+                // Fallback: show in modal
+                showStructuredSummaryModal(video, enhancedSummary);
+            }
+        }
+
+        // Show markdown summary in modal
+        function showMarkdownSummaryModal(video, summary) {
+            const modal = document.createElement('div');
+            modal.className = 'analysis-modal';
+            modal.innerHTML = `
+                <div class="modal-overlay" onclick="closeModal()">
+                    <div class="modal-content structured-summary-modal" onclick="event.stopPropagation()">
+                        <div class="modal-header" style="padding: 12px 20px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                            <div style="flex: 1;">
+                                <h3 style="margin: 0 0 4px 0; font-size: 16px; font-weight: 600; color: #ffffff; line-height: 1.3;">${video.title}</h3>
+                                <div style="font-size: 12px; color: #a1a1aa; display: flex; gap: 16px; flex-wrap: wrap;">
+                                    <span><strong>Channel:</strong> ${video.channel}</span>
+                                    <span><strong>Date:</strong> ${formatDate(video.date)}</span>
+                                    <span><strong>URL:</strong> <a href="${video.video_url}" target="_blank" style="color: #8b5cf6; text-decoration: none;">View Video</a></span>
+                                </div>
+                            </div>
+                            <button class="close-btn" onclick="closeModal()" style="margin-left: 16px;">×</button>
+                        </div>
+                        <div class="modal-body" style="max-height: 70vh; overflow-y: auto; padding: 16px 20px;">
+                            <div class="summary-content" style="color: #d1d5db; line-height: 1.6;">
+                                ${renderMarkdown(summary.content || video.ai_summary)}
+                            </div>
+                        </div>
+                        <div class="modal-footer" style="padding: 12px 20px; border-top: 1px solid rgba(255,255,255,0.1);">
+                            <button class="action-btn" onclick="closeModal()">Close</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        // Generate HTML for structured summary
+        function generateStructuredSummaryHTML(video, summary) {
+            return `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>${video.title} - Structured Summary</title>
+                    <style>
+                        body { 
+                            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
+                            background: #0a0a0a; 
+                            color: #ffffff; 
+                            margin: 0; 
+                            padding: 20px; 
+                            line-height: 1.6; 
+                        }
+                        .header { 
+                            border-bottom: 1px solid #333; 
+                            padding-bottom: 20px; 
+                            margin-bottom: 30px; 
+                        }
+                        .back-btn { 
+                            background: #8b5cf6; 
+                            color: white; 
+                            border: none; 
+                            padding: 10px 20px; 
+                            border-radius: 6px; 
+                            cursor: pointer; 
+                            margin-bottom: 20px; 
+                        }
+                        .title { 
+                            font-size: 24px; 
+                            font-weight: 600; 
+                            margin-bottom: 8px; 
+                        }
+                        .channel { 
+                            color: #a1a1aa; 
+                            font-size: 16px; 
+                        }
+                        .section { 
+                            margin-bottom: 30px; 
+                        }
+                        .section-title { 
+                            font-size: 18px; 
+                            font-weight: 500; 
+                            color: #8b5cf6; 
+                            margin: 0.8em 0 0.4em 0; 
+                        }
+                        .content { 
+                            background: rgba(255, 255, 255, 0.03); 
+                            padding: 20px; 
+                            border-radius: 8px; 
+                            border: 1px solid rgba(255, 255, 255, 0.1); 
+                        }
+                        .takeaway { 
+                            margin-bottom: 10px; 
+                            padding-left: 20px; 
+                            position: relative; 
+                        }
+                        .takeaway:before { 
+                            content: "•"; 
+                            color: #8b5cf6; 
+                            position: absolute; 
+                            left: 0; 
+                        }
+                        .topic { 
+                            display: inline-block; 
+                            background: rgba(139, 92, 246, 0.2); 
+                            color: #8b5cf6; 
+                            padding: 4px 8px; 
+                            border-radius: 4px; 
+                            margin: 2px; 
+                            font-size: 12px; 
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <button class="back-btn" onclick="window.close()">← Back to Library</button>
+                        <h1 class="title">${video.title}</h1>
+                        <p class="channel">${video.channel}</p>
+                    </div>
+                    
+                    ${summary.executive_summary ? `
+                        <div class="section">
+                            <h2 class="section-title">Executive Summary</h2>
+                            <div class="content">${summary.executive_summary}</div>
+                        </div>
+                    ` : ''}
+                    
+                    ${summary.key_takeaways ? `
+                        <div class="section">
+                            <h2 class="section-title">Key Takeaways</h2>
+                            <div class="content">
+                                ${summary.key_takeaways.map(takeaway => `<div class="takeaway">${takeaway}</div>`).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+                    
+                    ${summary.detailed_breakdown ? `
+                        <div class="section">
+                            <h2 class="section-title">Detailed Breakdown</h2>
+                            <div class="content">
+                                ${Object.entries(summary.detailed_breakdown).map(([key, value]) => `
+                                    <h3 style="color: #8b5cf6; margin-bottom: 10px;">${key.replace(/_/g, ' ').toUpperCase()}</h3>
+                                    <p style="margin-bottom: 15px;">${value}</p>
+                                `).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+                    
+                    ${summary.topics ? `
+                        <div class="section">
+                            <h2 class="section-title">Topics</h2>
+                            <div class="content">
+                                ${summary.topics.map(topic => `<span class="topic">${topic}</span>`).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+                    
+                    ${summary.tldr ? `
+                        <div class="section">
+                            <h2 class="section-title">TL;DR</h2>
+                            <div class="content">${summary.tldr}</div>
+                        </div>
+                    ` : ''}
+                </body>
+                </html>
+            `;
+        }
+
+        // View video details
+        function viewVideo(videoId) {
+            console.log('viewVideo called with ID:', videoId);
+            const video = allVideos.find(v => v.id === videoId);
+            if (video) {
+                console.log('Found video:', video.title);
+                const enhancedSummary = parseEnhancedSummary(video.ai_summary);
+                console.log('Enhanced summary parsed:', enhancedSummary ? 'YES' : 'NO');
+                if (enhancedSummary) {
+                    // Always show structured summary for enhanced videos
+                    viewStructuredSummary(videoId);
+                } else {
+                    // Show basic video info in modal for non-enhanced videos
+                    showVideoInfoModal(video);
+                }
+            } else {
+                console.error('Video not found with ID:', videoId);
+            }
+        }
+
+        // Show structured summary in modal (fallback)
+        function showStructuredSummaryModal(video, summary) {
+            const modal = document.createElement('div');
+            modal.className = 'analysis-modal';
+            modal.innerHTML = `
+                <div class="modal-overlay" onclick="closeModal()">
+                    <div class="modal-content structured-summary-modal" onclick="event.stopPropagation()">
+                        <div class="modal-header" style="padding: 12px 20px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                            <div style="flex: 1;">
+                                <h3 style="margin: 0 0 4px 0; font-size: 16px; font-weight: 600; color: #ffffff; line-height: 1.3;">${video.title}</h3>
+                                <div style="font-size: 12px; color: #a1a1aa; display: flex; gap: 16px;">
+                                    <span><strong>Channel:</strong> ${video.channel}</span>
+                                    <span><strong>Date:</strong> ${formatDate(video.date)}</span>
+                                </div>
+                            </div>
+                            <button class="close-btn" onclick="closeModal()" style="margin-left: 16px;">×</button>
+                        </div>
+                        <div class="modal-body" style="padding: 16px 20px;">
+                            ${summary.executive_summary ? `
+                                <h4 style="color: #8b5cf6; margin: 0 0 8px 0; font-size: 14px; font-weight: 600;">Executive Summary</h4>
+                                <p style="margin: 0 0 16px 0; line-height: 1.5;">${summary.executive_summary}</p>
+                            ` : ''}
+                            
+                            ${summary.key_takeaways ? `
+                                <h4 style="color: #8b5cf6; margin: 0 0 8px 0; font-size: 14px; font-weight: 600;">Key Takeaways</h4>
+                                <ul style="margin: 0 0 16px 0; padding-left: 20px;">
+                                    ${summary.key_takeaways.map(takeaway => `<li style="margin-bottom: 6px; line-height: 1.4;">${takeaway}</li>`).join('')}
+                                </ul>
+                            ` : ''}
+                            
+                            ${summary.tldr ? `
+                                <h4 style="color: #8b5cf6; margin: 0 0 8px 0; font-size: 14px; font-weight: 600;">TL;DR</h4>
+                                <p style="margin: 0; line-height: 1.5;">${summary.tldr}</p>
+                            ` : ''}
+                        </div>
+                        <div class="modal-footer" style="padding: 12px 20px; border-top: 1px solid rgba(255,255,255,0.1);">
+                            <button class="action-btn" onclick="closeModal()">Close</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        // Show video info modal
+        function showVideoInfoModal(video) {
+            const modal = document.createElement('div');
+            modal.className = 'analysis-modal';
+            modal.innerHTML = `
+                <div class="modal-overlay" onclick="closeModal()">
+                    <div class="modal-content" onclick="event.stopPropagation()">
+                        <div class="modal-header" style="padding: 8px 16px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                            <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 6px;">
+                                <h3 style="margin: 0; font-size: 14px; font-weight: 600; color: #ffffff;">Video Information</h3>
+                                <div style="font-size: 11px; color: #a1a1aa; display: flex; gap: 12px;">
+                                    <span><strong>Channel:</strong> ${video.channel}</span>
+                                    <span><strong>Date:</strong> ${formatDate(video.date)}</span>
+                                    ${video.video_url ? `<span><strong>URL:</strong> <a href="${video.video_url}" target="_blank" style="color: #8b5cf6; text-decoration: none;">View Video</a></span>` : ''}
+                                </div>
+                                <button class="close-btn" onclick="closeModal()" style="margin-left: auto; padding: 4px;">×</button>
+                            </div>
+                            <div style="font-size: 13px; color: #d1d5db; line-height: 1.3; font-weight: 500;">${video.title}</div>
+                        </div>
+                        <div class="modal-body" style="padding: 12px 20px; max-width: 65%; margin: 0 auto;">
+                            <div class="summary-content" style="color: #d1d5db; line-height: 1.3; font-size: 15px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">${renderMarkdown(video.summary || 'No summary available')}</div>
+                        </div>
+                        <div class="modal-footer" style="padding: 12px 20px; border-top: 1px solid rgba(255,255,255,0.1);">
+                            <button class="action-btn" onclick="closeModal()">Close</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        // View functions for different content types
+        function viewBrief(videoId) {
+            const video = allVideos.find(v => v.id === videoId);
+            if (!video) {
+                console.error('Video not found:', videoId);
+                return;
+            }
+            
+            const enhancedSummary = parseEnhancedSummary(video.ai_summary);
+            if (enhancedSummary) {
+                // Show structured summary for enhanced videos
+                viewStructuredSummary(videoId);
+            } else {
+                // Show basic video info for non-enhanced videos
+                showVideoInfoModal(video);
+            }
+        }
+
+        function viewLLMBrief(videoId) {
+            const video = allVideos.find(v => v.id === videoId);
+            if (!video) {
+                console.error('Video not found:', videoId);
+                return;
+            }
+            
+            // Show loading modal
+            showLoadingModal('Generating LLM Brief...');
+            
+            // Call backend to generate LLM brief
+            fetch(`/api/videos/${videoId}/llm-brief`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            })
+            .then(response => response.json())
+            .then(data => {
+                closeModal();
+                if (data.success) {
+                    showLLMBriefModal(video, data.brief);
+                } else {
+                    alert('Failed to generate LLM brief: ' + data.error);
+                }
+            })
+            .catch(error => {
+                closeModal();
+                console.error('Error generating LLM brief:', error);
+                alert('Error generating LLM brief');
+            });
+        }
+
+        function viewTranscript(videoId) {
+            const video = allVideos.find(v => v.id === videoId);
+            if (!video) {
+                console.error('Video not found:', videoId);
+                return;
+            }
+            
+            if (!video.full_transcript) {
+                alert('No transcript available for this video');
+                return;
+            }
+            
+            // Check if this looks like a real transcript vs description/JSON
+            if (!isRealTranscript(video.full_transcript)) {
+                alert('This video only has a description available, not a full transcript');
+                return;
+            }
+            
+            showTranscriptModal(video);
+        }
+
+        // Check if content is a real transcript vs description/JSON
+        function isRealTranscript(content) {
+            if (!content || content.length < 1000) return false;
+            
+            // Check for JSON subtitle format
+            if (content.trim().startsWith('{') && content.includes('"wireMagic"')) return false;
+            
+            // Check for video description patterns
+            if (content.includes('Please like, comment, & subscribe') || 
+                content.includes('Table of Contents:') ||
+                content.includes('Affiliate Links:') ||
+                content.includes('Gear Used to Make This Video:')) return false;
+            
+            // Check for too many URLs (description pattern)
+            const urlCount = (content.match(/https?:\/\/[^\s]+/g) || []).length;
+            if (urlCount > 5) return false;
+            
+            // Check for proper sentence structure (real transcripts have this)
+            const sentences = content.split(/[.!?]+/).filter(s => s.trim().length > 10);
+            if (sentences.length < 5) return false;
+            
+            return true;
+        }
+
+        // Show loading modal
+        function showLoadingModal(message) {
+            const modal = document.createElement('div');
+            modal.className = 'analysis-modal';
+            modal.innerHTML = `
+                <div class="modal-overlay">
+                    <div class="modal-content" onclick="event.stopPropagation()">
+                        <div class="modal-header">
+                            <h3>Processing...</h3>
+                        </div>
+                        <div class="modal-body" style="text-align: center; padding: 40px;">
+                            <div style="margin-bottom: 20px;">⏳</div>
+                            <p>${message}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        // Show LLM Brief modal
+        function showLLMBriefModal(video, brief) {
+            const modal = document.createElement('div');
+            modal.className = 'analysis-modal';
+            modal.innerHTML = `
+                <div class="modal-overlay" onclick="closeModal()">
+                    <div class="modal-content structured-summary-modal" onclick="event.stopPropagation()">
+                        <div class="modal-header" style="padding: 12px 20px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                            <div style="flex: 1;">
+                                <h3 style="margin: 0 0 4px 0; font-size: 16px; font-weight: 600; color: #ffffff; line-height: 1.3;">LLM Brief: ${video.title}</h3>
+                                <div style="font-size: 12px; color: #a1a1aa; display: flex; gap: 16px; flex-wrap: wrap;">
+                                    <span><strong>Channel:</strong> ${video.channel}</span>
+                                    <span><strong>Date:</strong> ${formatDate(video.date)}</span>
+                                    <span><strong>URL:</strong> <a href="${video.video_url}" target="_blank" style="color: #8b5cf6; text-decoration: none;">View Video</a></span>
+                                </div>
+                            </div>
+                            <button class="close-btn" onclick="closeModal()" style="margin-left: 16px;">×</button>
+                        </div>
+                        <div class="modal-body" style="max-height: 70vh; overflow-y: auto; padding: 16px 20px;">
+                            <div class="summary-content" style="color: #d1d5db; line-height: 1.6;">
+                                ${renderMarkdown(brief)}
+                            </div>
+                        </div>
+                        <div class="modal-footer" style="padding: 12px 20px; border-top: 1px solid rgba(255,255,255,0.1);">
+                            <button class="action-btn" onclick="closeModal()">Close</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        // Format transcript content for better readability
+        function formatTranscriptContent(transcript) {
+            if (!transcript) return 'No transcript available';
+            
+            return transcript
+                // Remove excessive whitespace and line breaks
+                .replace(/\n\s*\n\s*\n/g, '\n\n')
+                // Clean up common transcript artifacts
+                .replace(/\d{1,2}:\d{2}:\d{2}\.\d{3} --> \d{1,2}:\d{2}:\d{2}\.\d{3}/g, '')
+                .replace(/\d{1,2}:\d{2}:\d{2} --> \d{1,2}:\d{2}:\d{2}/g, '')
+                .replace(/\d{1,2}:\d{2}/g, '')
+                .replace(/^\d+$/gm, '')
+                // Remove HTML tags
+                .replace(/<[^>]+>/g, '')
+                // Remove common transcript markers
+                .replace(/\[.*?\]/g, '')
+                .replace(/\(.*?\)/g, '')
+                // Clean up speaker labels (if any)
+                .replace(/^[A-Z][A-Z\s]+:/gm, '')
+                // Normalize whitespace
+                .replace(/\s+/g, ' ')
+                .replace(/\n\s+/g, '\n')
+                .replace(/\s+\n/g, '\n')
+                // Add proper paragraph breaks
+                .replace(/([.!?])\s+([A-Z])/g, '$1\n\n$2')
+                // Clean up multiple line breaks
+                .replace(/\n{3,}/g, '\n\n')
+                .trim();
+        }
+
+        // Professional markdown to HTML converter
+        function renderMarkdown(text) {
+            if (!text) return '';
+            
+            // Filter out unwanted technical commentary (keep executive summary/conclusion)
+            text = text.replace(/Here's a comprehensive extraction of the key insights from the transcript:/g, '');
+            text = text.replace(/=== PART \d+ ===/g, '');
+            text = text.replace(/\(Note: This format continues but I'll stop here for length.*?\)/g, '');
+            text = text.replace(/\(Note:.*?\)/g, '');
+            text = text.replace(/This format continues but I'll stop here for length.*?$/g, '');
+            text = text.replace(/The structure follows your exact requirements.*?$/g, '');
+            text = text.replace(/Let me know if you would like me to break down any other major sections.*?$/g, '');
+            text = text.replace(/I notice this appears to be an extremely long raw transcript.*?\n\n/g, '');
+            
+            // Convert standard markdown to HTML first
+            text = text
+                .replace(/^## (.*$)/gim, '<h2 style="color: #8b5cf6; margin: 1.5em 0 0.8em 0; font-size: 20px; font-weight: 600;">$1</h2>')
+                .replace(/^### (.*$)/gim, '<h3 style="color: #a78bfa; margin: 1.2em 0 0.6em 0; font-size: 18px; font-weight: 700;">$1</h3>')
+                .replace(/^([IVX]+\.\s+.*$)/gm, '<h3 style="color: #ffffff; margin: 1.2em 0 0.6em 0; border-bottom: 2px solid #fbbf24; padding-bottom: 4px; font-size: 18px; font-weight: 700;">$1</h3>')
+                .replace(/\*\*(.*?)\*\*/g, '<strong style="color: #ffffff; font-weight: 600;">$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em style="color: #e5e7eb;">$1</em>')
+                .replace(/^- (.*)$/gm, '<li style="margin: 0.5rem 0; color: #d1d5db; line-height: 1.6;">$1</li>')
+                .replace(/((?:<li[^>]*>.*?<\/li>\s*)+)/g, '<ul style="margin: 0.8rem 0; padding-left: 25px; list-style-type: disc;">$1</ul>')
+                .replace(/\n\n+/g, '</p><p style="margin: 0.8rem 0; line-height: 1.6; color: #d1d5db;">')
+                .replace(/^(?!<[hul])/gm, '<p style="margin: 0.8rem 0; line-height: 1.6; color: #d1d5db;">')
+                .replace(/<p[^>]*>(<[hul][^>]*>.*?<\/[hul]>)<\/p>/g, '$1')
+                .replace(/<p[^>]*><\/p>/g, '')
+                .replace(/^<p[^>]*>/, '')  // Remove opening p tag at start
+                .replace(/<\/p>$/, '');    // Remove closing p tag at end
+            
+            return text;
+        }
+
+        // Show transcript modal
+        function showTranscriptModal(video) {
+            const modal = document.createElement('div');
+            modal.className = 'analysis-modal';
+            modal.innerHTML = `
+                <div class="modal-overlay" onclick="closeModal()">
+                    <div class="modal-content structured-summary-modal" onclick="event.stopPropagation()">
+                        <div class="modal-header">
+                            <h3>Transcript: ${video.title}</h3>
+                            <button class="close-btn" onclick="closeModal()">×</button>
+                        </div>
+                        <div class="modal-body" style="max-height: 70vh; overflow-y: auto;">
+                            <p><strong>Channel:</strong> ${video.channel}</p>
+                            <p><strong>Date:</strong> ${formatDate(video.date)}</p>
+                            <p><strong>URL:</strong> <a href="${video.video_url}" target="_blank" style="color: #8b5cf6;">${video.video_url}</a></p>
+                            <hr style="margin: 20px 0; border: 1px solid rgba(255,255,255,0.1);">
+                            <div style="color: #d1d5db; line-height: 1.8; font-size: 15px; max-width: none; text-align: left;">
+                                ${formatTranscriptContent(video.full_transcript)}
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="action-btn" onclick="closeModal()">Close</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+        }
+
+        // Load videos when page loads
+        loadVideos();
+    </script>
+</body>
+</html>

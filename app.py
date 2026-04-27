@@ -3,7 +3,7 @@
 Flask Backend Server for YouTube Intelligence System
 """
 
-from flask import Flask, request, jsonify, send_file
+from flask import Flask, request, jsonify, send_file, send_from_directory
 from flask_cors import CORS
 import sqlite3
 import json
@@ -15,9 +15,14 @@ from datetime import datetime, timedelta
 import threading
 import time
 import re
+import visual_processor
 
 # Load environment variables
 load_dotenv()
+
+# Enable automatic API usage logging for all Claude calls in this process
+import api_logger
+api_logger.patch()
 
 app = Flask(__name__)
 CORS(app)
@@ -156,6 +161,10 @@ class DatabaseService:
         self.init_sparks_table()
         self.init_yt_podcast_tables()
         self.init_briefs_table()
+        self.init_channel_intelligence_table()
+        self.init_creator_queries_table()
+        self.init_consulting_tables()
+        self.init_visual_captures_table()
 
     def get_connection(self):
         conn = sqlite3.connect(self.db_path, timeout=10.0)
@@ -270,71 +279,80 @@ class DatabaseService:
         conn.close()
     
     def init_intelligence_table(self):
-        """Initialize intelligence table for Claude-generated syntheses, predictions, scripts, queries, and trends"""
+        """Initialize intelligence table for syntheses, predictions, scripts, queries, trends, patterns, workflows"""
         conn = self.get_connection()
         cursor = conn.cursor()
-        
-        # Check if table exists and if it has the old constraint
+
+        FULL_TYPE_LIST = "('synthesis', 'prediction', 'script', 'query', 'trends', 'pattern', 'workflows', 'strategy', 'opportunity', 'insight')"
+
+        # Check if table exists
         cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='intelligence'")
         table_exists = cursor.fetchone()
-        
+
         if table_exists:
-            # Check if we need to migrate (old constraint doesn't include 'trends')
             cursor.execute("SELECT sql FROM sqlite_master WHERE type='table' AND name='intelligence'")
             table_sql = cursor.fetchone()
             table_sql_text = table_sql[0] if table_sql else ""
-            
-            # Check if constraint needs updating (doesn't include 'trends')
+
+            # Check if we need to migrate (missing pattern/workflows types or source columns)
             needs_migration = False
-            if "CHECK(type IN" in table_sql_text and "'trends'" not in table_sql_text:
+            if "CHECK(type IN" in table_sql_text:
+                if "'pattern'" not in table_sql_text or "'workflows'" not in table_sql_text or "'strategy'" not in table_sql_text:
+                    needs_migration = True
+
+            # Check for source columns
+            cursor.execute("PRAGMA table_info(intelligence)")
+            columns = [col[1] for col in cursor.fetchall()]
+            if 'source_title' not in columns:
                 needs_migration = True
-                print(f"🔄 Found constraint without 'trends': {table_sql_text[:200]}...")
-                print(f"   Current constraint includes: {table_sql_text}")
-            
+
             if needs_migration:
-                # Need to migrate - recreate table with new constraint
-                print("🔄 Migrating intelligence table to include 'trends' type...")
-                # Create backup table
-                cursor.execute('''
+                print("🔄 Migrating intelligence table (adding pattern/workflows types + source columns)...")
+                cursor.execute(f'''
                     CREATE TABLE intelligence_new (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        type TEXT NOT NULL CHECK(type IN ('synthesis', 'prediction', 'script', 'query', 'trends')),
+                        type TEXT NOT NULL CHECK(type IN {FULL_TYPE_LIST}),
                         title TEXT NOT NULL,
                         content TEXT NOT NULL,
                         source_video_ids TEXT,
                         tags TEXT,
+                        source_title TEXT,
+                        source_url TEXT,
+                        source_channel TEXT,
                         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                     )
                 ''')
-                # Copy data
-                cursor.execute('INSERT INTO intelligence_new SELECT * FROM intelligence')
-                # Drop old table
+                # Copy existing data (new columns get NULL)
+                cursor.execute('''
+                    INSERT INTO intelligence_new (id, type, title, content, source_video_ids, tags, created_at, updated_at)
+                    SELECT id, type, title, content, source_video_ids, tags, created_at, updated_at
+                    FROM intelligence
+                ''')
                 cursor.execute('DROP TABLE intelligence')
-                # Rename new table
                 cursor.execute('ALTER TABLE intelligence_new RENAME TO intelligence')
-                # Recreate indexes
                 cursor.execute('CREATE INDEX IF NOT EXISTS idx_intelligence_type ON intelligence(type)')
                 cursor.execute('CREATE INDEX IF NOT EXISTS idx_intelligence_created_at ON intelligence(created_at DESC)')
                 cursor.execute('CREATE INDEX IF NOT EXISTS idx_intelligence_tags ON intelligence(tags)')
                 conn.commit()
                 print("✅ Intelligence table migrated successfully")
             else:
-                # Table exists with correct constraint or no constraint - just ensure indexes
                 cursor.execute('CREATE INDEX IF NOT EXISTS idx_intelligence_type ON intelligence(type)')
                 cursor.execute('CREATE INDEX IF NOT EXISTS idx_intelligence_created_at ON intelligence(created_at DESC)')
                 cursor.execute('CREATE INDEX IF NOT EXISTS idx_intelligence_tags ON intelligence(tags)')
                 conn.commit()
         else:
-            # Create new table with correct constraint
-            cursor.execute('''
+            cursor.execute(f'''
                 CREATE TABLE intelligence (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    type TEXT NOT NULL CHECK(type IN ('synthesis', 'prediction', 'script', 'query', 'trends')),
+                    type TEXT NOT NULL CHECK(type IN {FULL_TYPE_LIST}),
                     title TEXT NOT NULL,
                     content TEXT NOT NULL,
                     source_video_ids TEXT,
                     tags TEXT,
+                    source_title TEXT,
+                    source_url TEXT,
+                    source_channel TEXT,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
@@ -343,7 +361,7 @@ class DatabaseService:
             cursor.execute('CREATE INDEX IF NOT EXISTS idx_intelligence_created_at ON intelligence(created_at DESC)')
             cursor.execute('CREATE INDEX IF NOT EXISTS idx_intelligence_tags ON intelligence(tags)')
             conn.commit()
-        
+
         conn.close()
 
     def init_sparks_table(self):
@@ -435,6 +453,17 @@ class DatabaseService:
         except sqlite3.OperationalError:
             pass  # Column already exists
 
+        # Add auto-subscribe columns
+        for col_def in [
+            'auto_subscribe_status TEXT',
+            'auto_subscribe_message TEXT',
+            'signup_url TEXT'
+        ]:
+            try:
+                cursor.execute(f'ALTER TABLE newsletter_subscriptions ADD COLUMN {col_def}')
+            except sqlite3.OperationalError:
+                pass  # Column already exists
+
         # Newsletter issues table
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS newsletter_issues (
@@ -477,6 +506,205 @@ class DatabaseService:
         cursor.execute('CREATE INDEX IF NOT EXISTS idx_briefs_created ON daily_briefs(created_at DESC)')
         conn.commit()
         conn.close()
+
+    def init_channel_intelligence_table(self):
+        """Initialize channel intelligence table for channel bibles"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS channel_intelligence (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                channel_id TEXT NOT NULL,
+                channel_name TEXT NOT NULL,
+                content TEXT NOT NULL DEFAULT '',
+                generation_mode TEXT DEFAULT 'summaries',
+                video_count INTEGER DEFAULT 0,
+                video_date_range TEXT,
+                source_video_ids TEXT,
+                channel_type TEXT,
+                total_tokens_input INTEGER DEFAULT 0,
+                total_tokens_output INTEGER DEFAULT 0,
+                estimated_cost REAL DEFAULT 0,
+                persona_prompt TEXT,
+                status TEXT DEFAULT 'generating',
+                error_message TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                UNIQUE(channel_id, generation_mode)
+            )
+        ''')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_channel_intel_channel ON channel_intelligence(channel_id)')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_channel_intel_status ON channel_intelligence(status)')
+        conn.commit()
+        conn.close()
+
+    def get_channel_intelligence(self, channel_id, generation_mode='summaries'):
+        """Get channel intelligence for a given channel and mode"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute('''
+            SELECT * FROM channel_intelligence
+            WHERE channel_id = ? AND generation_mode = ?
+        ''', (channel_id, generation_mode))
+        row = cursor.fetchone()
+        conn.close()
+        return dict(row) if row else None
+
+    def get_channel_intelligence_by_id(self, intel_id):
+        """Get channel intelligence by primary key"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute('SELECT * FROM channel_intelligence WHERE id = ?', (intel_id,))
+        row = cursor.fetchone()
+        conn.close()
+        return dict(row) if row else None
+
+    def get_all_channel_intelligence(self):
+        """Get all channel intelligence entries"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute('''
+            SELECT id, channel_id, channel_name, generation_mode, video_count,
+                   video_date_range, channel_type, estimated_cost, status,
+                   created_at, updated_at
+            FROM channel_intelligence
+            ORDER BY updated_at DESC
+        ''')
+        rows = cursor.fetchall()
+        conn.close()
+        return [dict(row) for row in rows]
+
+    def save_channel_intelligence(self, data):
+        """Upsert channel intelligence entry"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute('''
+            INSERT INTO channel_intelligence
+                (channel_id, channel_name, content, generation_mode, video_count,
+                 video_date_range, source_video_ids, channel_type,
+                 total_tokens_input, total_tokens_output, estimated_cost,
+                 status, error_message, updated_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+            ON CONFLICT(channel_id, generation_mode) DO UPDATE SET
+                channel_name = excluded.channel_name,
+                content = excluded.content,
+                video_count = excluded.video_count,
+                video_date_range = excluded.video_date_range,
+                source_video_ids = excluded.source_video_ids,
+                channel_type = excluded.channel_type,
+                total_tokens_input = excluded.total_tokens_input,
+                total_tokens_output = excluded.total_tokens_output,
+                estimated_cost = excluded.estimated_cost,
+                status = excluded.status,
+                error_message = excluded.error_message,
+                updated_at = CURRENT_TIMESTAMP
+        ''', (
+            data.get('channel_id'),
+            data.get('channel_name'),
+            data.get('content', ''),
+            data.get('generation_mode', 'summaries'),
+            data.get('video_count', 0),
+            data.get('video_date_range', ''),
+            data.get('source_video_ids', ''),
+            data.get('channel_type', ''),
+            data.get('total_tokens_input', 0),
+            data.get('total_tokens_output', 0),
+            data.get('estimated_cost', 0),
+            data.get('status', 'generating'),
+            data.get('error_message')
+        ))
+        conn.commit()
+        intel_id = cursor.lastrowid
+        conn.close()
+        return intel_id
+
+    def delete_channel_intelligence(self, intel_id):
+        """Delete a channel intelligence entry"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute('DELETE FROM channel_intelligence WHERE id = ?', (intel_id,))
+        deleted = cursor.rowcount > 0
+        conn.commit()
+        conn.close()
+        return deleted
+
+    # Creator Queries CRUD methods
+    def init_creator_queries_table(self):
+        """Initialize creator queries table for storing Q&A synthesis results"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS creator_queries (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                channel_name TEXT NOT NULL,
+                channel_id TEXT,
+                question TEXT NOT NULL,
+                synthesis TEXT NOT NULL,
+                source_video_ids TEXT,
+                video_count INTEGER DEFAULT 0,
+                model_used TEXT DEFAULT 'claude-sonnet-4-5-20250929',
+                tokens_input INTEGER DEFAULT 0,
+                tokens_output INTEGER DEFAULT 0,
+                estimated_cost REAL DEFAULT 0,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_creator_queries_channel ON creator_queries(channel_name)')
+        conn.commit()
+        conn.close()
+
+    def get_creator_queries(self, channel_name=None, limit=50):
+        """Get creator queries, optionally filtered by channel"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        if channel_name:
+            cursor.execute('''
+                SELECT * FROM creator_queries
+                WHERE channel_name LIKE ?
+                ORDER BY created_at DESC LIMIT ?
+            ''', (f'%{channel_name}%', limit))
+        else:
+            cursor.execute('''
+                SELECT * FROM creator_queries
+                ORDER BY created_at DESC LIMIT ?
+            ''', (limit,))
+        rows = cursor.fetchall()
+        conn.close()
+        return [dict(row) for row in rows]
+
+    def get_creator_query_by_id(self, query_id):
+        """Get a single creator query by ID"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute('SELECT * FROM creator_queries WHERE id = ?', (query_id,))
+        row = cursor.fetchone()
+        conn.close()
+        return dict(row) if row else None
+
+    def delete_creator_query(self, query_id):
+        """Delete a creator query"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute('DELETE FROM creator_queries WHERE id = ?', (query_id,))
+        deleted = cursor.rowcount > 0
+        conn.commit()
+        conn.close()
+        return deleted
+
+    def toggle_creator_query_favorite(self, query_id):
+        """Toggle favorite status on a creator query"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute('SELECT favorited FROM creator_queries WHERE id = ?', (query_id,))
+        row = cursor.fetchone()
+        if not row:
+            conn.close()
+            return None
+        new_val = 0 if row[0] else 1
+        cursor.execute('UPDATE creator_queries SET favorited = ? WHERE id = ?', (new_val, query_id))
+        conn.commit()
+        conn.close()
+        return new_val
 
     # Newsletter CRUD methods
     def list_newsletter_subscriptions(self):
@@ -551,6 +779,20 @@ class DatabaseService:
         conn = self.get_connection()
         cursor = conn.cursor()
         cursor.execute('UPDATE newsletter_subscriptions SET last_checked = CURRENT_TIMESTAMP WHERE id = ?', (subscription_id,))
+        conn.commit()
+        conn.close()
+
+    def update_newsletter_subscription(self, subscription_id, **kwargs):
+        """Update arbitrary fields on a newsletter subscription"""
+        allowed = {'auto_subscribe_status', 'auto_subscribe_message', 'signup_url', 'feed_url', 'website_url', 'platform', 'newsletter_name', 'description', 'ktn_email'}
+        updates = {k: v for k, v in kwargs.items() if k in allowed}
+        if not updates:
+            return
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        set_clause = ', '.join(f'{k} = ?' for k in updates)
+        values = list(updates.values()) + [subscription_id]
+        cursor.execute(f'UPDATE newsletter_subscriptions SET {set_clause} WHERE id = ?', values)
         conn.commit()
         conn.close()
 
@@ -935,9 +1177,9 @@ class DatabaseService:
         cursor.execute('''
             INSERT INTO highlights (
                 user_id, video_id, article_id, content_type, highlighted_text,
-                user_note, tags, context, source_title, source_url, channel, bookmark_id
+                user_note, tags, context, source_title, source_url, channel, bookmark_id, favorited
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ''', (
             payload.get('user_id'),
             payload.get('video_id'),
@@ -950,7 +1192,8 @@ class DatabaseService:
             payload.get('source_title'),
             payload.get('source_url'),
             payload.get('channel'),
-            payload.get('bookmark_id')
+            payload.get('bookmark_id'),
+            1 if payload.get('favorited') else 0
         ))
         highlight_id = cursor.lastrowid
         conn.commit()
@@ -1343,34 +1586,37 @@ class DatabaseService:
             cursor = conn.cursor()
             
             # Validate type
-            valid_types = ['synthesis', 'prediction', 'script', 'query', 'trends']
+            valid_types = ['synthesis', 'prediction', 'script', 'query', 'trends', 'pattern', 'workflows', 'opportunity', 'strategy', 'insight']
             intelligence_type = payload.get('type')
             if intelligence_type not in valid_types:
                 return None
-            
+
             # Convert source_video_ids list to comma-separated string if provided
             source_video_ids = payload.get('source_video_ids')
             if isinstance(source_video_ids, list):
                 source_video_ids = ','.join(str(vid) for vid in source_video_ids)
-            
+
             cursor.execute('''
                 INSERT INTO intelligence (
-                    type, title, content, source_video_ids, tags
+                    type, title, content, source_video_ids, tags, source_title, source_url, source_channel
                 )
-                VALUES (?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             ''', (
                 intelligence_type,
                 payload.get('title'),
                 payload.get('content'),
                 source_video_ids,
-                payload.get('tags')
+                payload.get('tags'),
+                payload.get('source_title'),
+                payload.get('source_url'),
+                payload.get('source_channel')
             ))
             intelligence_id = cursor.lastrowid
             conn.commit()
-            
+
             # Fetch and return the created entry
             cursor.execute('''
-                SELECT id, type, title, content, source_video_ids, tags, created_at, updated_at
+                SELECT id, type, title, content, source_video_ids, tags, source_title, source_url, source_channel, created_at, updated_at
                 FROM intelligence
                 WHERE id = ?
             ''', (intelligence_id,))
@@ -1389,20 +1635,23 @@ class DatabaseService:
                 # Retry the insert
                 cursor.execute('''
                     INSERT INTO intelligence (
-                        type, title, content, source_video_ids, tags
+                        type, title, content, source_video_ids, tags, source_title, source_url, source_channel
                     )
-                    VALUES (?, ?, ?, ?, ?)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 ''', (
                     intelligence_type,
                     payload.get('title'),
                     payload.get('content'),
                     source_video_ids,
-                    payload.get('tags')
+                    payload.get('tags'),
+                    payload.get('source_title'),
+                    payload.get('source_url'),
+                    payload.get('source_channel')
                 ))
                 intelligence_id = cursor.lastrowid
                 conn.commit()
                 cursor.execute('''
-                    SELECT id, type, title, content, source_video_ids, tags, created_at, updated_at
+                    SELECT id, type, title, content, source_video_ids, tags, source_title, source_url, source_channel, created_at, updated_at
                     FROM intelligence
                     WHERE id = ?
                 ''', (intelligence_id,))
@@ -1421,7 +1670,7 @@ class DatabaseService:
         
         if intelligence_type:
             cursor.execute('''
-                SELECT id, type, title, content, source_video_ids, tags, created_at, updated_at
+                SELECT id, type, title, content, source_video_ids, tags, source_title, source_url, source_channel, created_at, updated_at
                 FROM intelligence
                 WHERE type = ?
                 ORDER BY created_at DESC
@@ -1429,7 +1678,7 @@ class DatabaseService:
             ''', (intelligence_type, limit, offset))
         else:
             cursor.execute('''
-                SELECT id, type, title, content, source_video_ids, tags, created_at, updated_at
+                SELECT id, type, title, content, source_video_ids, tags, source_title, source_url, source_channel, created_at, updated_at
                 FROM intelligence
                 ORDER BY created_at DESC
                 LIMIT ? OFFSET ?
@@ -1460,7 +1709,7 @@ class DatabaseService:
         cursor = conn.cursor()
         
         stats = {}
-        types = ['synthesis', 'prediction', 'script', 'query', 'trends']
+        types = ['synthesis', 'prediction', 'script', 'query', 'trends', 'pattern', 'workflows']
         
         for int_type in types:
             cursor.execute('''
@@ -1485,7 +1734,7 @@ class DatabaseService:
         updates = []
         values = []
         
-        for key in ['title', 'content', 'tags']:
+        for key in ['title', 'content', 'tags', 'source_title', 'source_url', 'source_channel']:
             if key in payload:
                 updates.append(f"{key} = ?")
                 values.append(payload[key])
@@ -1555,9 +1804,1052 @@ class DatabaseService:
             'content': row['content'],
             'source_video_ids': source_video_ids,
             'tags': row['tags'] or '',
+            'source_title': row['source_title'] if 'source_title' in row.keys() else '',
+            'source_url': row['source_url'] if 'source_url' in row.keys() else '',
+            'source_channel': row['source_channel'] if 'source_channel' in row.keys() else '',
             'created_at': row['created_at'],
             'updated_at': row['updated_at']
         }
+
+    # ══════════════════════════════════════════════════════════════
+    # CONSULTING OUTREACH SYSTEM — Database Layer
+    # ══════════════════════════════════════════════════════════════
+
+    def init_consulting_tables(self):
+        """Initialize all consulting outreach tables and seed data"""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS consulting_verticals (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                category TEXT NOT NULL,
+                yelp_search_terms TEXT,
+                ai_services TEXT,
+                typical_pain_points TEXT,
+                avg_deal_size_low INTEGER,
+                avg_deal_size_high INTEGER,
+                priority TEXT DEFAULT 'medium' CHECK(priority IN ('hot', 'high', 'medium', 'low', 'cold')),
+                notes TEXT,
+                prospect_count INTEGER DEFAULT 0,
+                win_count INTEGER DEFAULT 0,
+                active INTEGER DEFAULT 1,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_cv_category ON consulting_verticals(category)')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_cv_priority ON consulting_verticals(priority)')
+
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS consulting_prospects (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                business_name TEXT NOT NULL,
+                vertical_id INTEGER,
+                vertical_name TEXT,
+                owner_name TEXT,
+                owner_title TEXT,
+                phone TEXT,
+                email TEXT,
+                website TEXT,
+                address TEXT,
+                city TEXT,
+                state TEXT DEFAULT 'GA',
+                zip TEXT,
+                county TEXT DEFAULT 'Gwinnett',
+                yelp_rating REAL,
+                yelp_review_count INTEGER,
+                google_rating REAL,
+                google_review_count INTEGER,
+                employee_count_estimate TEXT,
+                year_established TEXT,
+                yelp_id TEXT,
+                google_place_id TEXT,
+                ai_readiness_score INTEGER DEFAULT 0,
+                priority TEXT DEFAULT 'medium' CHECK(priority IN ('hot', 'high', 'medium', 'low', 'cold')),
+                status TEXT DEFAULT 'new' CHECK(status IN ('new', 'researching', 'ready', 'contacted', 'callback', 'interested', 'meeting_scheduled', 'meeting_done', 'proposal_sent', 'negotiating', 'won', 'lost', 'not_qualified', 'do_not_contact')),
+                source TEXT DEFAULT 'manual',
+                source_url TEXT,
+                tags TEXT,
+                notes TEXT,
+                last_contact_date TEXT,
+                next_follow_up_date TEXT,
+                contact_count INTEGER DEFAULT 0,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY(vertical_id) REFERENCES consulting_verticals(id)
+            )
+        ''')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_cp_status ON consulting_prospects(status)')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_cp_vertical ON consulting_prospects(vertical_id)')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_cp_priority ON consulting_prospects(priority)')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_cp_next_follow_up ON consulting_prospects(next_follow_up_date)')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_cp_county ON consulting_prospects(county)')
+
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS consulting_interactions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                prospect_id INTEGER NOT NULL,
+                type TEXT NOT NULL CHECK(type IN ('call', 'voicemail', 'email', 'meeting', 'text', 'note', 'follow_up', 'proposal')),
+                direction TEXT DEFAULT 'outbound' CHECK(direction IN ('outbound', 'inbound')),
+                summary TEXT NOT NULL,
+                outcome TEXT,
+                duration_minutes INTEGER,
+                follow_up_date TEXT,
+                follow_up_note TEXT,
+                mood TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY(prospect_id) REFERENCES consulting_prospects(id)
+            )
+        ''')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_ci_prospect ON consulting_interactions(prospect_id)')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_ci_type ON consulting_interactions(type)')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_ci_created ON consulting_interactions(created_at)')
+
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS consulting_services (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                category TEXT NOT NULL,
+                description TEXT,
+                price_low INTEGER,
+                price_high INTEGER,
+                typical_duration TEXT,
+                deliverables TEXT,
+                active INTEGER DEFAULT 1,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS consulting_proposals (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                prospect_id INTEGER NOT NULL,
+                title TEXT NOT NULL,
+                services TEXT,
+                total_value INTEGER,
+                status TEXT DEFAULT 'draft' CHECK(status IN ('draft', 'sent', 'viewed', 'negotiating', 'accepted', 'rejected', 'expired')),
+                sent_date TEXT,
+                response_date TEXT,
+                notes TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY(prospect_id) REFERENCES consulting_prospects(id)
+            )
+        ''')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_cprop_prospect ON consulting_proposals(prospect_id)')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_cprop_status ON consulting_proposals(status)')
+
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS consulting_daily_call_sheets (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                date TEXT NOT NULL,
+                prospect_id INTEGER NOT NULL,
+                position INTEGER NOT NULL,
+                reason TEXT,
+                status TEXT DEFAULT 'pending' CHECK(status IN ('pending', 'called', 'skipped', 'rescheduled')),
+                interaction_id INTEGER,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY(prospect_id) REFERENCES consulting_prospects(id),
+                FOREIGN KEY(interaction_id) REFERENCES consulting_interactions(id)
+            )
+        ''')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_cdcs_date ON consulting_daily_call_sheets(date)')
+        cursor.execute('CREATE UNIQUE INDEX IF NOT EXISTS idx_cdcs_date_prospect ON consulting_daily_call_sheets(date, prospect_id)')
+
+        # Audit history — tracks changes over time for competitor monitoring
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS consulting_audit_history (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                prospect_id INTEGER NOT NULL,
+                audit_date TEXT NOT NULL,
+                has_chatbot INTEGER DEFAULT 0,
+                has_scheduling INTEGER DEFAULT 0,
+                has_contact_form INTEGER DEFAULT 0,
+                has_blog INTEGER DEFAULT 0,
+                has_ssl INTEGER DEFAULT 0,
+                mobile_friendly INTEGER DEFAULT 0,
+                audit_score INTEGER DEFAULT 0,
+                chatbot_provider TEXT,
+                scheduling_provider TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY(prospect_id) REFERENCES consulting_prospects(id)
+            )
+        ''')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_cah_prospect ON consulting_audit_history(prospect_id)')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_cah_date ON consulting_audit_history(audit_date)')
+
+        # Competitor alerts — triggered when a competitor gains a new feature
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS consulting_competitor_alerts (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                prospect_id INTEGER NOT NULL,
+                competitor_id INTEGER NOT NULL,
+                alert_type TEXT NOT NULL,
+                message TEXT NOT NULL,
+                status TEXT DEFAULT 'new' CHECK(status IN ('new', 'sent', 'dismissed')),
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                sent_at TIMESTAMP,
+                FOREIGN KEY(prospect_id) REFERENCES consulting_prospects(id),
+                FOREIGN KEY(competitor_id) REFERENCES consulting_prospects(id)
+            )
+        ''')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_cca_status ON consulting_competitor_alerts(status)')
+        cursor.execute('CREATE INDEX IF NOT EXISTS idx_cca_prospect ON consulting_competitor_alerts(prospect_id)')
+
+        conn.commit()
+
+        # Migration: add tier, revenue, and website audit columns if missing
+        existing = {row[1] for row in cursor.execute("PRAGMA table_info(consulting_prospects)").fetchall()}
+        migrations = [
+            ('tier', "TEXT DEFAULT 'unscored'"),           # A, B, C, or unscored
+            ('estimated_revenue_low', 'INTEGER'),           # e.g. 500000
+            ('estimated_revenue_high', 'INTEGER'),          # e.g. 2000000
+            ('estimated_employees', 'TEXT'),                 # "1-5", "5-10", "10-25", "25-50", "50+"
+            ('website_audit_score', 'INTEGER'),             # 0-100
+            ('website_has_scheduling', 'INTEGER DEFAULT 0'),
+            ('website_has_chatbot', 'INTEGER DEFAULT 0'),
+            ('website_has_contact_form', 'INTEGER DEFAULT 0'),
+            ('website_has_ssl', 'INTEGER DEFAULT 0'),
+            ('website_has_blog', 'INTEGER DEFAULT 0'),
+            ('website_has_social', 'INTEGER DEFAULT 0'),
+            ('website_mobile_friendly', 'INTEGER DEFAULT 0'),
+            ('website_audit_notes', 'TEXT'),
+            ('website_audit_date', 'TEXT'),
+        ]
+        for col_name, col_def in migrations:
+            if col_name not in existing:
+                cursor.execute(f'ALTER TABLE consulting_prospects ADD COLUMN {col_name} {col_def}')
+        conn.commit()
+
+        # Seed verticals if empty
+        cursor.execute('SELECT COUNT(*) FROM consulting_verticals')
+        if cursor.fetchone()[0] == 0:
+            self._seed_consulting_verticals(cursor)
+            conn.commit()
+
+        # Seed services if empty
+        cursor.execute('SELECT COUNT(*) FROM consulting_services')
+        if cursor.fetchone()[0] == 0:
+            self._seed_consulting_services(cursor)
+            conn.commit()
+
+        conn.close()
+
+    def init_visual_captures_table(self):
+        """Initialize visual captures table for OCR-processed screenshots."""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS visual_captures (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                filename TEXT NOT NULL,
+                content_type TEXT NOT NULL,
+                raw_ocr_text TEXT,
+                structured_data TEXT,
+                tags TEXT,
+                source_context TEXT,
+                api_calls_count INTEGER DEFAULT 0,
+                input_tokens INTEGER DEFAULT 0,
+                output_tokens INTEGER DEFAULT 0,
+                estimated_cost REAL DEFAULT 0.0,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                review_status TEXT DEFAULT 'complete'
+            )
+        ''')
+        conn.commit()
+        conn.close()
+
+    def _seed_consulting_verticals(self, cursor):
+        """Seed 27 business verticals with AI service mappings"""
+        verticals = [
+            # Home Services
+            ('HVAC Contractors', 'Home Services', 'hvac heating cooling', 'scheduling_automation,predictive_maintenance,customer_chatbot', 'missed calls,scheduling chaos,seasonal demand planning', 3000, 8000),
+            ('Plumbing Companies', 'Home Services', 'plumber plumbing', 'scheduling_automation,customer_chatbot,invoice_automation', 'after-hours call handling,quote follow-ups', 2000, 6000),
+            ('Electrical Contractors', 'Home Services', 'electrician electrical contractor', 'project_estimation,scheduling_automation,compliance_docs', 'bid accuracy,permit tracking', 3000, 8000),
+            ('Roofing Companies', 'Home Services', 'roofing roofer', 'lead_scoring,aerial_estimation,customer_chatbot', 'storm-chaser competition,lead qualification', 3000, 10000),
+            ('Landscaping / Lawn Care', 'Home Services', 'landscaping lawn care', 'route_optimization,scheduling_automation,customer_chatbot', 'route inefficiency,seasonal crew planning', 2000, 5000),
+            ('Pest Control', 'Home Services', 'pest control exterminator', 'route_optimization,scheduling_automation,predictive_service', 'repeat visit optimization,seasonal forecasting', 2000, 5000),
+            ('Commercial Cleaning', 'Home Services', 'commercial cleaning janitorial', 'scheduling_automation,quality_tracking,customer_chatbot', 'staff scheduling,client communication', 2000, 5000),
+            # Construction
+            ('General Contractors', 'Construction', 'general contractor construction', 'project_management_ai,bid_estimation,document_automation', 'bid accuracy,subcontractor coordination,change orders', 5000, 12000),
+            ('Custom Home Builders', 'Construction', 'custom home builder', 'design_visualization,project_timeline,client_portal', 'client communication,timeline tracking', 5000, 12000),
+            ('Specialty Subcontractors', 'Construction', 'flooring tile painter painting contractor', 'scheduling_automation,inventory_management,quote_automation', 'material waste,scheduling conflicts', 2000, 6000),
+            # Healthcare
+            ('Dental Practices', 'Healthcare', 'dentist dental', 'patient_scheduling,treatment_plan_automation,review_management', 'no-shows,insurance verification delays', 4000, 10000),
+            ('Chiropractic Offices', 'Healthcare', 'chiropractor', 'patient_scheduling,intake_automation,follow_up_sequences', 'patient retention,intake paperwork', 3000, 7000),
+            ('Med Spas / Aesthetics', 'Healthcare', 'med spa medical spa aesthetics', 'booking_automation,customer_chatbot,marketing_automation', 'appointment booking,upsell sequencing', 4000, 10000),
+            ('Veterinary Clinics', 'Healthcare', 'veterinarian vet clinic', 'scheduling_automation,patient_records,customer_chatbot', 'after-hours triage,record keeping', 3000, 8000),
+            ('Physical Therapy / Rehab', 'Healthcare', 'physical therapy rehab', 'patient_scheduling,exercise_plan_automation,insurance_verification', 'insurance verification,compliance', 3000, 8000),
+            # Professional Services
+            ('Law Firms (Small)', 'Professional Services', 'attorney lawyer law firm', 'document_automation,intake_chatbot,case_management', 'client intake,document review,time tracking', 5000, 12000),
+            ('Accounting / CPA Firms', 'Professional Services', 'accountant cpa tax', 'document_processing,client_portal,workflow_automation', 'tax season bottleneck,document collection', 4000, 10000),
+            ('Real Estate Brokerages', 'Professional Services', 'real estate broker agent', 'lead_scoring,market_analysis,customer_chatbot', 'lead qualification,market reports', 3000, 8000),
+            ('Insurance Agencies', 'Professional Services', 'insurance agency', 'quote_automation,lead_scoring,customer_chatbot', 'quote comparison,lead routing', 3000, 8000),
+            # Food & Hospitality
+            ('Restaurants (Multi-Location)', 'Food & Hospitality', 'restaurant', 'inventory_forecasting,scheduling_automation,review_management', 'food waste,staff scheduling,reputation', 3000, 8000),
+            ('Catering Companies', 'Food & Hospitality', 'catering', 'event_planning_automation,inventory_management,customer_chatbot', 'quote generation,ingredient ordering', 2000, 6000),
+            # Auto
+            ('Auto Repair Shops', 'Auto', 'auto repair mechanic', 'scheduling_automation,diagnostic_assistance,customer_chatbot', 'appointment booking,repair estimate accuracy', 3000, 7000),
+            ('Auto Dealerships (Independent)', 'Auto', 'car dealership used cars', 'lead_scoring,inventory_management,customer_chatbot', 'lead follow-up,pricing optimization', 5000, 12000),
+            # Other
+            ('Gyms / Fitness Studios', 'Fitness & Education', 'gym fitness studio crossfit', 'member_retention,scheduling_automation,customer_chatbot', 'member churn,class scheduling', 2000, 6000),
+            ('Tutoring / Learning Centers', 'Fitness & Education', 'tutoring learning center', 'scheduling_automation,progress_tracking,parent_communication', 'tutor matching,progress reports', 2000, 5000),
+            ('Property Management', 'Property & Facilities', 'property management', 'tenant_communication,maintenance_automation,document_processing', 'maintenance requests,lease management', 4000, 10000),
+            ('Self-Storage Facilities', 'Property & Facilities', 'self storage', 'pricing_optimization,customer_chatbot,occupancy_forecasting', 'dynamic pricing,after-hours inquiries', 2000, 6000),
+        ]
+        for v in verticals:
+            cursor.execute('''
+                INSERT INTO consulting_verticals (name, category, yelp_search_terms, ai_services, typical_pain_points, avg_deal_size_low, avg_deal_size_high)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            ''', v)
+
+    def _seed_consulting_services(self, cursor):
+        """Seed core AI consulting service offerings"""
+        services = [
+            ('AI Transformation Audit', 'Audit', 'Full assessment of business operations identifying AI automation opportunities, ROI projections, and implementation roadmap', 2000, 5000, '1-2 weeks', 'audit_report,opportunity_matrix,roi_projections,implementation_roadmap'),
+            ('Process Automation', 'Automation', 'Design and implement AI-powered automation for repetitive business processes — scheduling, follow-ups, data entry, customer communication', 3000, 8000, '2-4 weeks', 'automation_workflows,integration_setup,training_docs,30_day_support'),
+            ('Bespoke AI Software', 'Software', 'Custom AI-powered tools and applications built for specific business needs', 5000, 12000, '4-8 weeks', 'custom_application,documentation,deployment,60_day_support'),
+            ('AI Dashboard & Analytics', 'Dashboard', 'Real-time business intelligence dashboards powered by AI analysis of your data', 3000, 7000, '2-4 weeks', 'dashboard_deployment,data_integration,training,30_day_support'),
+            ('AI Training & Workshops', 'Training', 'Hands-on training for teams on using AI tools effectively in daily operations', 1500, 4000, '1-3 days', 'workshop_materials,recorded_sessions,action_plans,follow_up_session'),
+            ('Fractional VP of AI / Advisory', 'Advisory', 'Ongoing strategic AI advisory — monthly check-ins, roadmap updates, vendor evaluation, team guidance', 2000, 5000, 'monthly retainer', 'monthly_strategy_sessions,roadmap_updates,vendor_evaluations,slack_access'),
+        ]
+        for s in services:
+            cursor.execute('''
+                INSERT INTO consulting_services (name, category, description, price_low, price_high, typical_duration, deliverables)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            ''', s)
+
+    # ══════════════════════════════════════════════════════════════
+    # PROSPECT SCORING & TIERING ENGINE
+    # ══════════════════════════════════════════════════════════════
+
+    # Revenue benchmarks per vertical: (median_revenue_per_location, revenue_per_review_approx)
+    # Sources: IBISWorld, SBA industry averages, Census Bureau data
+    VERTICAL_REVENUE_BENCHMARKS = {
+        'HVAC Contractors': (800000, 5000),
+        'Plumbing Companies': (600000, 4000),
+        'Electrical Contractors': (700000, 4500),
+        'Roofing Companies': (900000, 5000),
+        'Landscaping / Lawn Care': (400000, 2500),
+        'Pest Control': (350000, 2000),
+        'Commercial Cleaning': (500000, 3000),
+        'General Contractors': (2000000, 8000),
+        'Custom Home Builders': (3000000, 12000),
+        'Specialty Subcontractors': (500000, 3000),
+        'Dental Practices': (800000, 3000),
+        'Chiropractic Offices': (400000, 2500),
+        'Med Spas / Aesthetics': (600000, 4000),
+        'Veterinary Clinics': (700000, 3000),
+        'Physical Therapy / Rehab': (500000, 3000),
+        'Law Firms (Small)': (800000, 5000),
+        'Accounting / CPA Firms': (600000, 4000),
+        'Real Estate Brokerages': (500000, 3000),
+        'Insurance Agencies': (400000, 2500),
+        'Restaurants (Multi-Location)': (1000000, 3000),
+        'Catering Companies': (500000, 3000),
+        'Auto Repair Shops': (600000, 3000),
+        'Auto Dealerships (Independent)': (3000000, 8000),
+        'Gyms / Fitness Studios': (400000, 2000),
+        'Tutoring / Learning Centers': (300000, 2000),
+        'Property Management': (600000, 3000),
+        'Self-Storage Facilities': (500000, 2500),
+    }
+
+    def score_and_tier_prospect(self, prospect):
+        """Score a prospect and assign A/B/C tier based on estimated revenue, digital maturity, and contactability.
+        Returns dict with: tier, estimated_revenue_low, estimated_revenue_high, estimated_employees, ai_readiness_score, priority
+        """
+        v_name = prospect.get('vertical_name', '')
+        benchmarks = self.VERTICAL_REVENUE_BENCHMARKS.get(v_name, (500000, 3000))
+        median_rev, rev_per_review = benchmarks
+
+        # Estimate revenue from review count (strong volume proxy)
+        review_count = prospect.get('google_review_count') or prospect.get('yelp_review_count') or 0
+        rating = prospect.get('google_rating') or prospect.get('yelp_rating') or 0
+
+        # Review-based revenue estimation
+        if review_count >= 200:
+            rev_multiplier = 2.5
+        elif review_count >= 100:
+            rev_multiplier = 1.8
+        elif review_count >= 50:
+            rev_multiplier = 1.3
+        elif review_count >= 20:
+            rev_multiplier = 1.0
+        elif review_count >= 10:
+            rev_multiplier = 0.7
+        elif review_count >= 5:
+            rev_multiplier = 0.5
+        else:
+            rev_multiplier = 0.3
+
+        est_revenue = int(median_rev * rev_multiplier)
+        # Revenue range: -30% to +30%
+        rev_low = int(est_revenue * 0.7)
+        rev_high = int(est_revenue * 1.3)
+
+        # Employee estimate from revenue (avg revenue per employee ~$100-200K for services)
+        rev_per_emp = 150000
+        est_emp = max(1, est_revenue // rev_per_emp)
+        if est_emp <= 5:
+            emp_range = '1-5'
+        elif est_emp <= 10:
+            emp_range = '5-10'
+        elif est_emp <= 25:
+            emp_range = '10-25'
+        elif est_emp <= 50:
+            emp_range = '25-50'
+        else:
+            emp_range = '50+'
+
+        # ═══════════════════════════════════════════════════════════
+        # OPPORTUNITY SCORE (0-100) — Higher = better prospect to call
+        # Two axes: "Business Success" × "Technology Gap"
+        # Best prospects: clearly making money BUT behind on tech
+        # ═══════════════════════════════════════════════════════════
+
+        # ── AXIS 1: Business Success (0-40 points) ──
+        # Evidence they can afford to pay
+        success_score = 0
+
+        # Review volume = customer throughput (15 pts max)
+        if review_count >= 200:
+            success_score += 15
+        elif review_count >= 100:
+            success_score += 13
+        elif review_count >= 50:
+            success_score += 10
+        elif review_count >= 20:
+            success_score += 7
+        elif review_count >= 10:
+            success_score += 4
+        elif review_count >= 5:
+            success_score += 2
+
+        # Rating = quality signal (10 pts max)
+        if rating >= 4.5:
+            success_score += 10
+        elif rating >= 4.0:
+            success_score += 7
+        elif rating >= 3.5:
+            success_score += 4
+        elif rating >= 3.0:
+            success_score += 1
+
+        # Revenue fit — sweet spot $500K-$5M (15 pts max)
+        if 1000000 <= est_revenue <= 5000000:
+            success_score += 15   # Ideal: big enough to pay, small enough to need us
+        elif 500000 <= est_revenue < 1000000:
+            success_score += 12   # Good size
+        elif 5000000 < est_revenue <= 10000000:
+            success_score += 8    # May already have IT
+        elif 250000 <= est_revenue < 500000:
+            success_score += 5    # Tight budget
+        elif est_revenue > 10000000:
+            success_score += 3    # Probably has in-house
+        # else: too small, 0 points
+
+        # ── AXIS 2: Technology Gap (0-45 points) ──
+        # Missing features = opportunities to pitch
+        gap_score = 0
+        audit_done = prospect.get('website_audit_date')
+        has_website = bool(prospect.get('website'))
+
+        if audit_done:
+            # We have actual audit data — use it precisely
+            if not prospect.get('website_has_chatbot'):
+                gap_score += 12   # Biggest single win to pitch
+            if not prospect.get('website_has_scheduling'):
+                gap_score += 12   # Second biggest
+            if not prospect.get('website_has_contact_form'):
+                gap_score += 7    # Basic gap
+            if not prospect.get('website_has_blog'):
+                gap_score += 5    # Content opportunity
+            if not prospect.get('website_mobile_friendly'):
+                gap_score += 5    # Critical in 2026
+            if not prospect.get('website_has_ssl'):
+                gap_score += 4    # Security gap
+        elif has_website:
+            # Have website but not audited yet — assume moderate gaps
+            gap_score += 20
+        else:
+            # No website at all — interesting but hard to pitch
+            gap_score += 10
+
+        # ── AXIS 3: Contactability (0-15 points) ──
+        contact_score = 0
+        if prospect.get('phone'):
+            contact_score += 8
+        if prospect.get('email'):
+            contact_score += 5
+        if has_website:
+            contact_score += 2
+
+        # ── COMPOSITE ──
+        score = min(100, success_score + gap_score + contact_score)
+
+        # ── Generate pitch angle ──
+        pitch_angles = []
+        if audit_done:
+            if not prospect.get('website_has_chatbot') and not prospect.get('website_has_scheduling'):
+                pitch_angles.append('No chatbot + no scheduling — full automation package')
+            elif not prospect.get('website_has_chatbot'):
+                pitch_angles.append('No chatbot — AI customer service opportunity')
+            elif not prospect.get('website_has_scheduling'):
+                pitch_angles.append('No online scheduling — booking automation')
+            if not prospect.get('website_has_contact_form') and not prospect.get('website_has_blog'):
+                pitch_angles.append('Basic web presence — digital overhaul candidate')
+
+        # ── TIER: More granular distribution ──
+        if score >= 80:
+            tier = 'A'
+            priority = 'hot'
+        elif score >= 65:
+            tier = 'A'
+            priority = 'high'
+        elif score >= 50:
+            tier = 'B'
+            priority = 'high'
+        elif score >= 35:
+            tier = 'B'
+            priority = 'medium'
+        elif score >= 20:
+            tier = 'C'
+            priority = 'medium'
+        else:
+            tier = 'C'
+            priority = 'low'
+
+        return {
+            'tier': tier,
+            'ai_readiness_score': score,
+            'estimated_revenue_low': rev_low,
+            'estimated_revenue_high': rev_high,
+            'estimated_employees': emp_range,
+            'priority': priority,
+            'pitch_angle': ' | '.join(pitch_angles) if pitch_angles else None,
+        }
+
+    def score_all_prospects(self):
+        """Re-score and tier all prospects. Returns count updated."""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute('SELECT * FROM consulting_prospects WHERE status NOT IN (?, ?)', ('won', 'lost'))
+        rows = cursor.fetchall()
+        updated = 0
+        for row in rows:
+            prospect = {k: row[k] for k in row.keys()}
+            scores = self.score_and_tier_prospect(prospect)
+            cursor.execute('''
+                UPDATE consulting_prospects
+                SET tier = ?, ai_readiness_score = ?, estimated_revenue_low = ?, estimated_revenue_high = ?,
+                    estimated_employees = ?, priority = ?, pitch_angle = ?, updated_at = CURRENT_TIMESTAMP
+                WHERE id = ?
+            ''', (scores['tier'], scores['ai_readiness_score'], scores['estimated_revenue_low'],
+                  scores['estimated_revenue_high'], scores['estimated_employees'], scores['priority'],
+                  scores.get('pitch_angle'), prospect['id']))
+            updated += 1
+        conn.commit()
+        conn.close()
+        return updated
+
+    def _serialize_prospect(self, row):
+        if not row:
+            return None
+        return {k: row[k] for k in row.keys()}
+
+    def _serialize_interaction(self, row):
+        if not row:
+            return None
+        return {k: row[k] for k in row.keys()}
+
+    def get_consulting_prospects(self, status=None, vertical_id=None, priority=None, county=None, search=None, tier=None, sort_by=None, sort_dir='desc', preset=None, limit=100, offset=0):
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        conditions = []
+        params = []
+        if status:
+            conditions.append('status = ?')
+            params.append(status)
+        if vertical_id:
+            conditions.append('vertical_id = ?')
+            params.append(vertical_id)
+        if priority:
+            conditions.append('priority = ?')
+            params.append(priority)
+        if county:
+            conditions.append('county = ?')
+            params.append(county)
+        if tier:
+            conditions.append('tier = ?')
+            params.append(tier)
+        if search:
+            conditions.append('(business_name LIKE ? OR owner_name LIKE ? OR notes LIKE ?)')
+            params.extend([f'%{search}%', f'%{search}%', f'%{search}%'])
+        # Preset filters
+        if preset == 'golden':
+            conditions.append('google_review_count >= 50 AND website_audit_score IS NOT NULL AND website_audit_score < 40 AND phone IS NOT NULL')
+        elif preset == 'hot':
+            conditions.append('ai_readiness_score >= 80')
+        elif preset == 'has_email':
+            conditions.append("email IS NOT NULL AND length(email) > 0")
+        elif preset == 'no_chatbot':
+            conditions.append('website_has_chatbot = 0 AND website_audit_score IS NOT NULL')
+        elif preset == 'no_scheduling':
+            conditions.append('website_has_scheduling = 0 AND website_audit_score IS NOT NULL')
+        where = ' WHERE ' + ' AND '.join(conditions) if conditions else ''
+        # Sortable columns (whitelist to prevent injection)
+        valid_sorts = {
+            'score': 'ai_readiness_score', 'name': 'business_name', 'tier': 'tier',
+            'rating': 'google_rating', 'reviews': 'google_review_count',
+            'revenue': 'estimated_revenue_high', 'status': 'status',
+            'vertical': 'vertical_name', 'updated': 'updated_at', 'created': 'created_at',
+            'audit': 'website_audit_score', 'priority': 'priority',
+        }
+        order_col = valid_sorts.get(sort_by, 'updated_at')
+        order_dir = 'ASC' if sort_dir.lower() == 'asc' else 'DESC'
+        cursor.execute(f'SELECT * FROM consulting_prospects{where} ORDER BY {order_col} {order_dir} NULLS LAST LIMIT ? OFFSET ?', params + [limit, offset])
+        rows = cursor.fetchall()
+        cursor.execute(f'SELECT COUNT(*) FROM consulting_prospects{where}', params)
+        total = cursor.fetchone()[0]
+        conn.close()
+        return [self._serialize_prospect(r) for r in rows], total
+
+    def get_consulting_prospect(self, prospect_id):
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute('SELECT * FROM consulting_prospects WHERE id = ?', (prospect_id,))
+        row = cursor.fetchone()
+        prospect = self._serialize_prospect(row) if row else None
+        if prospect:
+            cursor.execute('SELECT * FROM consulting_interactions WHERE prospect_id = ? ORDER BY created_at DESC', (prospect_id,))
+            prospect['interactions'] = [self._serialize_interaction(r) for r in cursor.fetchall()]
+        conn.close()
+        return prospect
+
+    def create_consulting_prospect(self, data):
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute('''
+            INSERT INTO consulting_prospects (business_name, vertical_id, vertical_name, owner_name, owner_title,
+                phone, email, website, address, city, state, zip, county,
+                yelp_rating, yelp_review_count, google_rating, google_review_count,
+                employee_count_estimate, year_established, yelp_id, google_place_id,
+                ai_readiness_score, priority, status, source, source_url, tags, notes)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ''', (
+            data.get('business_name'), data.get('vertical_id'), data.get('vertical_name'),
+            data.get('owner_name'), data.get('owner_title'),
+            data.get('phone'), data.get('email'), data.get('website'),
+            data.get('address'), data.get('city'), data.get('state', 'GA'),
+            data.get('zip'), data.get('county', 'Gwinnett'),
+            data.get('yelp_rating'), data.get('yelp_review_count'),
+            data.get('google_rating'), data.get('google_review_count'),
+            data.get('employee_count_estimate'), data.get('year_established'),
+            data.get('yelp_id'), data.get('google_place_id'),
+            data.get('ai_readiness_score', 0), data.get('priority', 'medium'),
+            data.get('status', 'new'), data.get('source', 'manual'),
+            data.get('source_url'), data.get('tags'), data.get('notes')
+        ))
+        pid = cursor.lastrowid
+        # Update vertical prospect count
+        if data.get('vertical_id'):
+            cursor.execute('UPDATE consulting_verticals SET prospect_count = prospect_count + 1 WHERE id = ?', (data['vertical_id'],))
+        conn.commit()
+        cursor.execute('SELECT * FROM consulting_prospects WHERE id = ?', (pid,))
+        result = self._serialize_prospect(cursor.fetchone())
+        conn.close()
+        return result
+
+    def update_consulting_prospect(self, prospect_id, data):
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        sets = []
+        params = []
+        allowed = ['business_name', 'vertical_id', 'vertical_name', 'owner_name', 'owner_title',
+                    'phone', 'email', 'website', 'address', 'city', 'state', 'zip', 'county',
+                    'ai_readiness_score', 'priority', 'status', 'tags', 'notes',
+                    'last_contact_date', 'next_follow_up_date', 'contact_count']
+        for key in allowed:
+            if key in data:
+                sets.append(f'{key} = ?')
+                params.append(data[key])
+        if not sets:
+            conn.close()
+            return None
+        sets.append("updated_at = CURRENT_TIMESTAMP")
+        params.append(prospect_id)
+        cursor.execute(f"UPDATE consulting_prospects SET {', '.join(sets)} WHERE id = ?", params)
+        conn.commit()
+        cursor.execute('SELECT * FROM consulting_prospects WHERE id = ?', (prospect_id,))
+        result = self._serialize_prospect(cursor.fetchone())
+        conn.close()
+        return result
+
+    def create_consulting_interaction(self, data):
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute('''
+            INSERT INTO consulting_interactions (prospect_id, type, direction, summary, outcome, duration_minutes, follow_up_date, follow_up_note, mood)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ''', (
+            data['prospect_id'], data['type'], data.get('direction', 'outbound'),
+            data['summary'], data.get('outcome'), data.get('duration_minutes'),
+            data.get('follow_up_date'), data.get('follow_up_note'), data.get('mood')
+        ))
+        interaction_id = cursor.lastrowid
+        # Update prospect contact tracking
+        updates = ['contact_count = contact_count + 1', 'last_contact_date = CURRENT_TIMESTAMP', 'updated_at = CURRENT_TIMESTAMP']
+        params = []
+        if data.get('follow_up_date'):
+            updates.append('next_follow_up_date = ?')
+            params.append(data['follow_up_date'])
+        # Auto-advance status based on outcome
+        outcome = data.get('outcome', '')
+        status_map = {'interested': 'interested', 'meeting_booked': 'meeting_scheduled', 'not_interested': 'lost', 'callback': 'callback'}
+        if outcome in status_map:
+            updates.append('status = ?')
+            params.append(status_map[outcome])
+        params.append(data['prospect_id'])
+        cursor.execute(f"UPDATE consulting_prospects SET {', '.join(updates)} WHERE id = ?", params)
+        conn.commit()
+        cursor.execute('SELECT * FROM consulting_interactions WHERE id = ?', (interaction_id,))
+        result = self._serialize_interaction(cursor.fetchone())
+        conn.close()
+        return result
+
+    def get_consulting_interactions(self, prospect_id=None, interaction_type=None, limit=50, offset=0):
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        conditions = []
+        params = []
+        if prospect_id:
+            conditions.append('prospect_id = ?')
+            params.append(prospect_id)
+        if interaction_type:
+            conditions.append('type = ?')
+            params.append(interaction_type)
+        where = ' WHERE ' + ' AND '.join(conditions) if conditions else ''
+        cursor.execute(f'SELECT ci.*, cp.business_name FROM consulting_interactions ci LEFT JOIN consulting_prospects cp ON ci.prospect_id = cp.id{where} ORDER BY ci.created_at DESC LIMIT ? OFFSET ?', params + [limit, offset])
+        rows = cursor.fetchall()
+        conn.close()
+        return [{k: row[k] for k in row.keys()} for row in rows]
+
+    def generate_call_sheet(self, date_str, target_calls=10, preset=None, verticals=None, min_score=None):
+        """Generate or return existing call sheet. verticals = list of vertical IDs to filter by."""
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        # Check if sheet exists
+        cursor.execute('SELECT COUNT(*) FROM consulting_daily_call_sheets WHERE date = ?', (date_str,))
+        if cursor.fetchone()[0] > 0:
+            cursor.execute('''
+                SELECT cs.*, cp.business_name, cp.vertical_name, cp.phone, cp.owner_name, cp.yelp_rating, cp.yelp_review_count, cp.priority as prospect_priority, cp.tier, cp.estimated_revenue_low, cp.estimated_revenue_high, cp.ai_readiness_score, cp.pitch_angle
+                FROM consulting_daily_call_sheets cs
+                JOIN consulting_prospects cp ON cs.prospect_id = cp.id
+                WHERE cs.date = ? ORDER BY cs.position
+            ''', (date_str,))
+            rows = cursor.fetchall()
+            conn.close()
+            return [{k: row[k] for k in row.keys()} for row in rows]
+
+        selected_ids = []
+        seen_names = set()  # Dedup chains — only one slot per business name
+        calls = []
+        position = 1
+
+        # Build reusable vertical filter condition
+        vert_cond = ''
+        vert_params = []
+        if verticals and len(verticals) > 0:
+            vert_ph = ','.join('?' * len(verticals))
+            vert_cond = f' AND vertical_id IN ({vert_ph})'
+            vert_params = list(verticals)
+
+        # Build reusable min score condition
+        score_cond = ''
+        score_params = []
+        if min_score is not None and min_score > 0:
+            score_cond = ' AND ai_readiness_score >= ?'
+            score_params = [min_score]
+
+        def _add_prospect(row, reason):
+            nonlocal position
+            name = row['business_name'].strip().lower()
+            if name in seen_names:
+                return  # Skip chain duplicate
+            seen_names.add(name)
+            selected_ids.append(row['id'])
+            calls.append((date_str, row['id'], position, reason))
+            position += 1
+
+        # 1. Follow-ups due (max 4)
+        cursor.execute(f'''
+            SELECT * FROM consulting_prospects
+            WHERE next_follow_up_date <= ? AND status NOT IN ('won','lost','not_qualified','do_not_contact')
+            {vert_cond} {score_cond}
+            ORDER BY next_follow_up_date ASC LIMIT 8
+        ''', [date_str] + vert_params + score_params)
+        for row in cursor.fetchall():
+            if len([c for c in calls if 'Follow-up' in c[3]]) >= 4:
+                break
+            _add_prospect(row, f"Follow-up due (scheduled {row['next_follow_up_date']})")
+
+        # 2. Callbacks (max 2)
+        excl_ph = ','.join('?' * len(selected_ids)) if selected_ids else '0'
+        cursor.execute(f'''
+            SELECT * FROM consulting_prospects
+            WHERE status = 'callback' AND id NOT IN ({excl_ph})
+            {vert_cond} {score_cond}
+            ORDER BY updated_at ASC LIMIT 4
+        ''', (selected_ids or []) + vert_params + score_params)
+        for row in cursor.fetchall():
+            if len([c for c in calls if c[3] == 'Requested callback']) >= 2:
+                break
+            _add_prospect(row, 'Requested callback')
+
+        # 3. Hot/high priority ready (max 2)
+        excl_ph = ','.join('?' * len(selected_ids)) if selected_ids else '0'
+        cursor.execute(f'''
+            SELECT * FROM consulting_prospects
+            WHERE status IN ('new', 'ready') AND priority IN ('hot','high')
+            AND id NOT IN ({excl_ph})
+            {vert_cond} {score_cond}
+            ORDER BY ai_readiness_score DESC NULLS LAST LIMIT 6
+        ''', (selected_ids or []) + vert_params + score_params)
+        added_hot = 0
+        for row in cursor.fetchall():
+            if added_hot >= 2:
+                break
+            before = len(calls)
+            reason = f"High-priority {row['vertical_name'] or 'prospect'}"
+            if row['yelp_rating']:
+                reason += f", {row['yelp_rating']} stars"
+            _add_prospect(row, reason)
+            if len(calls) > before:
+                added_hot += 1
+
+        # 4. Fill remaining with fresh prospects, dedup chains
+        remaining = target_calls - len(calls)
+        if remaining > 0:
+            from datetime import datetime
+            excl_ph = ','.join('?' * len(selected_ids)) if selected_ids else '0'
+            # Build preset condition for golden filter
+            preset_cond = ''
+            if preset == 'golden':
+                preset_cond = ' AND google_review_count >= 50 AND website_audit_score IS NOT NULL AND website_audit_score < 40 AND phone IS NOT NULL'
+            elif preset == 'hot':
+                preset_cond = ' AND ai_readiness_score >= 80'
+            cursor.execute(f'''
+                SELECT * FROM consulting_prospects
+                WHERE status IN ('new', 'ready') AND id NOT IN ({excl_ph})
+                AND (last_contact_date IS NULL OR last_contact_date < date(?, '-7 days'))
+                {preset_cond} {vert_cond} {score_cond}
+                ORDER BY ai_readiness_score DESC NULLS LAST, google_review_count DESC NULLS LAST
+                LIMIT ?
+            ''', (selected_ids or []) + [date_str] + vert_params + score_params + [remaining * 3])
+            for row in cursor.fetchall():
+                if len(calls) >= target_calls:
+                    break
+                reason = f"New {row['vertical_name'] or 'prospect'}"
+                reviews = row['google_review_count'] or row['yelp_review_count']
+                if reviews:
+                    reason += f" ({reviews} reviews)"
+                if row['pitch_angle']:
+                    reason += f" — {row['pitch_angle'].split('|')[0].strip()}"
+                _add_prospect(row, reason)
+
+        # Insert call sheet entries (use INSERT OR IGNORE to prevent race condition dupes)
+        for call in calls:
+            cursor.execute('''
+                INSERT OR IGNORE INTO consulting_daily_call_sheets (date, prospect_id, position, reason)
+                VALUES (?, ?, ?, ?)
+            ''', call)
+        conn.commit()
+
+        # Return full sheet with prospect data
+        cursor.execute('''
+            SELECT cs.*, cp.business_name, cp.vertical_name, cp.phone, cp.owner_name, cp.yelp_rating, cp.yelp_review_count, cp.priority as prospect_priority, cp.tier, cp.estimated_revenue_low, cp.estimated_revenue_high, cp.ai_readiness_score, cp.pitch_angle
+            FROM consulting_daily_call_sheets cs
+            JOIN consulting_prospects cp ON cs.prospect_id = cp.id
+            WHERE cs.date = ? ORDER BY cs.position
+        ''', (date_str,))
+        rows = cursor.fetchall()
+        conn.close()
+        return [{k: row[k] for k in row.keys()} for row in rows]
+
+    def get_consulting_dashboard(self):
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        from datetime import datetime, timedelta
+        today = datetime.now().strftime('%Y-%m-%d')
+        week_ago = (datetime.now() - timedelta(days=7)).strftime('%Y-%m-%d')
+        month_start = datetime.now().strftime('%Y-%m-01')
+
+        # KPIs
+        cursor.execute('SELECT COUNT(*) FROM consulting_prospects')
+        total_prospects = cursor.fetchone()[0]
+        cursor.execute("SELECT COUNT(*) FROM consulting_interactions WHERE created_at >= ? AND type = 'call'", (week_ago,))
+        calls_this_week = cursor.fetchone()[0]
+        cursor.execute("SELECT COUNT(*) FROM consulting_prospects WHERE status = 'meeting_scheduled'")
+        meetings = cursor.fetchone()[0]
+        cursor.execute("SELECT COUNT(*), COALESCE(SUM(total_value), 0) FROM consulting_proposals WHERE status IN ('sent','viewed','negotiating')")
+        row = cursor.fetchone()
+        proposals_out = row[0]
+        pipeline_value = row[1]
+        cursor.execute("SELECT COUNT(*), COALESCE(SUM(cp2.total_value), 0) FROM consulting_prospects cp3 LEFT JOIN consulting_proposals cp2 ON cp2.prospect_id = cp3.id AND cp2.status = 'accepted' WHERE cp3.status = 'won' AND cp3.updated_at >= ?", (month_start,))
+        row = cursor.fetchone()
+        won_this_month = row[0]
+        won_value = row[1]
+
+        # Call sheet for today
+        cursor.execute("SELECT COUNT(*) FROM consulting_daily_call_sheets WHERE date = ? AND status = 'called'", (today,))
+        calls_today = cursor.fetchone()[0]
+
+        # Pipeline by stage
+        pipeline = []
+        for stage in ['new', 'contacted', 'callback', 'interested', 'meeting_scheduled', 'meeting_done', 'proposal_sent', 'negotiating', 'won', 'lost']:
+            cursor.execute('SELECT COUNT(*) FROM consulting_prospects WHERE status = ?', (stage,))
+            count = cursor.fetchone()[0]
+            pipeline.append({'stage': stage, 'count': count})
+
+        # Recent interactions
+        cursor.execute('''
+            SELECT ci.*, cp.business_name FROM consulting_interactions ci
+            LEFT JOIN consulting_prospects cp ON ci.prospect_id = cp.id
+            ORDER BY ci.created_at DESC LIMIT 10
+        ''')
+        recent = [{k: r[k] for k in r.keys()} for r in cursor.fetchall()]
+
+        # Follow-ups due
+        cursor.execute('''
+            SELECT * FROM consulting_prospects
+            WHERE next_follow_up_date <= ? AND status NOT IN ('won','lost','not_qualified','do_not_contact')
+            ORDER BY next_follow_up_date ASC LIMIT 10
+        ''', (today,))
+        follow_ups = [self._serialize_prospect(r) for r in cursor.fetchall()]
+
+        # Vertical stats
+        cursor.execute('''
+            SELECT cv.id, cv.name, cv.category, cv.prospect_count, cv.win_count, cv.priority,
+                   cv.avg_deal_size_low, cv.avg_deal_size_high
+            FROM consulting_verticals cv WHERE cv.active = 1 ORDER BY cv.category, cv.name
+        ''')
+        verticals = [{k: r[k] for k in r.keys()} for r in cursor.fetchall()]
+
+        # Tier breakdown
+        tier_breakdown = {}
+        for tier in ['A', 'B', 'C', 'unscored']:
+            cursor.execute('SELECT COUNT(*) FROM consulting_prospects WHERE tier = ?', (tier,))
+            tier_breakdown[tier] = cursor.fetchone()[0]
+
+        # Estimated revenue range (sum of A+B tier prospects)
+        cursor.execute('''
+            SELECT COALESCE(SUM(estimated_revenue_low), 0), COALESCE(SUM(estimated_revenue_high), 0)
+            FROM consulting_prospects WHERE tier IN ('A', 'B') AND status NOT IN ('won', 'lost', 'not_qualified', 'do_not_contact')
+        ''')
+        rev_row = cursor.fetchone()
+        est_addressable_low = rev_row[0]
+        est_addressable_high = rev_row[1]
+
+        conn.close()
+        return {
+            'kpis': {
+                'total_prospects': total_prospects,
+                'calls_this_week': calls_this_week,
+                'meetings': meetings,
+                'proposals_out': proposals_out,
+                'pipeline_value': pipeline_value,
+                'won_this_month': won_this_month,
+                'won_value': won_value,
+                'calls_today': calls_today,
+                'calls_target': 10,
+            },
+            'tier_breakdown': tier_breakdown,
+            'est_addressable_low': est_addressable_low,
+            'est_addressable_high': est_addressable_high,
+            'pipeline': pipeline,
+            'recent_interactions': recent,
+            'follow_ups_due': follow_ups,
+            'vertical_stats': verticals,
+        }
+
+    def get_consulting_verticals(self):
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute('SELECT * FROM consulting_verticals WHERE active = 1 ORDER BY category, name')
+        rows = cursor.fetchall()
+        conn.close()
+        return [{k: r[k] for k in r.keys()} for r in rows]
+
+    def update_consulting_vertical(self, vertical_id, data):
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        sets = []
+        params = []
+        for key in ['priority', 'notes', 'active', 'ai_services', 'typical_pain_points']:
+            if key in data:
+                sets.append(f'{key} = ?')
+                params.append(data[key])
+        if sets:
+            sets.append('updated_at = CURRENT_TIMESTAMP')
+            params.append(vertical_id)
+            cursor.execute(f"UPDATE consulting_verticals SET {', '.join(sets)} WHERE id = ?", params)
+            conn.commit()
+        cursor.execute('SELECT * FROM consulting_verticals WHERE id = ?', (vertical_id,))
+        row = cursor.fetchone()
+        result = {k: row[k] for k in row.keys()} if row else None
+        conn.close()
+        return result
+
+    def get_consulting_services(self):
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        cursor.execute('SELECT * FROM consulting_services WHERE active = 1 ORDER BY category')
+        rows = cursor.fetchall()
+        conn.close()
+        return [{k: r[k] for k in r.keys()} for r in rows]
+
+    def bulk_create_prospects(self, prospects):
+        conn = self.get_connection()
+        cursor = conn.cursor()
+        created = 0
+        skipped = 0
+        for data in prospects:
+            # Dedup by name + phone
+            if data.get('phone'):
+                cursor.execute('SELECT id FROM consulting_prospects WHERE business_name = ? AND phone = ?',
+                               (data.get('business_name'), data.get('phone')))
+                if cursor.fetchone():
+                    skipped += 1
+                    continue
+            cursor.execute('''
+                INSERT INTO consulting_prospects (business_name, vertical_id, vertical_name, owner_name, owner_title,
+                    phone, email, website, address, city, state, zip, county,
+                    yelp_rating, yelp_review_count, yelp_id, ai_readiness_score,
+                    priority, status, source, source_url)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (
+                data.get('business_name'), data.get('vertical_id'), data.get('vertical_name'),
+                data.get('owner_name'), data.get('owner_title'),
+                data.get('phone'), data.get('email'), data.get('website'),
+                data.get('address'), data.get('city'), data.get('state', 'GA'),
+                data.get('zip'), data.get('county', 'Gwinnett'),
+                data.get('yelp_rating'), data.get('yelp_review_count'), data.get('yelp_id'),
+                data.get('ai_readiness_score', 0), data.get('priority', 'medium'),
+                'new', data.get('source', 'yelp'), data.get('source_url')
+            ))
+            created += 1
+        # Update vertical counts
+        cursor.execute('''
+            UPDATE consulting_verticals SET prospect_count = (
+                SELECT COUNT(*) FROM consulting_prospects WHERE consulting_prospects.vertical_id = consulting_verticals.id
+            )
+        ''')
+        conn.commit()
+        conn.close()
+        return {'created': created, 'skipped': skipped}
 
 db_service = DatabaseService(DATABASE_PATH)
 
@@ -1624,208 +2916,455 @@ def stats():
 
 @app.route('/api/stats', methods=['GET'])
 def get_stats():
-    """Get usage statistics and cost data"""
+    """Get usage statistics and cost data — uses real token logging from api_usage table."""
     try:
         conn = sqlite3.connect(DATABASE_PATH)
+        conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
-        
-        # Helper function to estimate cost based on content length
-        def estimate_cost(content_length):
-            """Estimate API cost based on content length (characters)
-            Assumes: 4 chars per token, 20% output tokens, Haiku 4.5 pricing"""
-            if not content_length or content_length == 0:
-                return 0.0
-            
-            input_tokens = content_length / 4
-            output_tokens = input_tokens * 0.20  # 20% output (typical for summaries)
-            
-            input_cost = (input_tokens / 1_000_000) * 1.0  # $1 per 1M tokens
-            output_cost = (output_tokens / 1_000_000) * 5.0  # $5 per 1M tokens
-            
-            return input_cost + output_cost
-        
-        # Vision API cost per screenshot (rough estimate)
-        VISION_API_COST = 0.002  # ~$0.002 per image for Vision API (Haiku 4.5)
-        
-        # Get current date ranges
+
         now = datetime.now()
         current_month_start = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
         current_year_start = now.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
         last_month_start = (current_month_start - timedelta(days=1)).replace(day=1)
         thirty_days_ago = now - timedelta(days=30)
-        
-        # Get videos data
+        seven_days_ago = now - timedelta(days=7)
+
+        # Check if api_usage table exists
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='api_usage'")
+        has_usage_table = cursor.fetchone() is not None
+
+        # --- REAL TOKEN DATA (from api_usage table) ---
+        usage_data = {
+            'total_cost': 0, 'month_cost': 0, 'last_month_cost': 0, 'year_cost': 0,
+            'total_calls': 0, 'month_calls': 0,
+            'total_input_tokens': 0, 'total_output_tokens': 0,
+            'month_input_tokens': 0, 'month_output_tokens': 0,
+        }
+        daily_costs = {}
+        category_breakdown = {}
+        model_breakdown = {}
+        recent_calls = []
+        logging_since = None
+
+        if has_usage_table:
+            # Overall totals
+            cursor.execute('SELECT MIN(timestamp) FROM api_usage')
+            row = cursor.fetchone()
+            logging_since = row[0] if row else None
+
+            cursor.execute('''
+                SELECT
+                    COUNT(*) as calls,
+                    COALESCE(SUM(total_cost), 0) as cost,
+                    COALESCE(SUM(input_tokens), 0) as input_t,
+                    COALESCE(SUM(output_tokens), 0) as output_t
+                FROM api_usage
+            ''')
+            r = cursor.fetchone()
+            usage_data['total_calls'] = r['calls']
+            usage_data['total_cost'] = r['cost']
+            usage_data['total_input_tokens'] = r['input_t']
+            usage_data['total_output_tokens'] = r['output_t']
+
+            # This month
+            cursor.execute('''
+                SELECT COUNT(*) as calls, COALESCE(SUM(total_cost), 0) as cost,
+                       COALESCE(SUM(input_tokens), 0) as input_t,
+                       COALESCE(SUM(output_tokens), 0) as output_t
+                FROM api_usage WHERE timestamp >= ?
+            ''', (current_month_start.strftime('%Y-%m-%d'),))
+            r = cursor.fetchone()
+            usage_data['month_calls'] = r['calls']
+            usage_data['month_cost'] = r['cost']
+            usage_data['month_input_tokens'] = r['input_t']
+            usage_data['month_output_tokens'] = r['output_t']
+
+            # Last month
+            cursor.execute('''
+                SELECT COALESCE(SUM(total_cost), 0) as cost
+                FROM api_usage WHERE timestamp >= ? AND timestamp < ?
+            ''', (last_month_start.strftime('%Y-%m-%d'), current_month_start.strftime('%Y-%m-%d')))
+            usage_data['last_month_cost'] = cursor.fetchone()['cost']
+
+            # This year
+            cursor.execute('''
+                SELECT COALESCE(SUM(total_cost), 0) as cost
+                FROM api_usage WHERE timestamp >= ?
+            ''', (current_year_start.strftime('%Y-%m-%d'),))
+            usage_data['year_cost'] = cursor.fetchone()['cost']
+
+            # Daily costs (last 30 days)
+            cursor.execute('''
+                SELECT DATE(timestamp) as day, SUM(total_cost) as cost, COUNT(*) as calls
+                FROM api_usage WHERE timestamp >= ?
+                GROUP BY DATE(timestamp) ORDER BY day
+            ''', (thirty_days_ago.strftime('%Y-%m-%d'),))
+            for row in cursor.fetchall():
+                daily_costs[row['day']] = {'cost': row['cost'], 'calls': row['calls']}
+
+            # Breakdown by call type (this month)
+            cursor.execute('''
+                SELECT call_type,
+                       COUNT(*) as calls,
+                       SUM(total_cost) as cost,
+                       SUM(input_tokens) as input_t,
+                       SUM(output_tokens) as output_t,
+                       ROUND(AVG(input_tokens)) as avg_input,
+                       ROUND(AVG(output_tokens)) as avg_output
+                FROM api_usage WHERE timestamp >= ?
+                GROUP BY call_type ORDER BY cost DESC
+            ''', (current_month_start.strftime('%Y-%m-%d'),))
+            for row in cursor.fetchall():
+                category_breakdown[row['call_type']] = {
+                    'calls': row['calls'],
+                    'cost': round(row['cost'], 4),
+                    'input_tokens': row['input_t'],
+                    'output_tokens': row['output_t'],
+                    'avg_input': int(row['avg_input'] or 0),
+                    'avg_output': int(row['avg_output'] or 0),
+                }
+
+            # Breakdown by model (this month)
+            cursor.execute('''
+                SELECT model,
+                       COUNT(*) as calls,
+                       SUM(total_cost) as cost,
+                       SUM(input_tokens) as input_t,
+                       SUM(output_tokens) as output_t
+                FROM api_usage WHERE timestamp >= ?
+                GROUP BY model ORDER BY cost DESC
+            ''', (current_month_start.strftime('%Y-%m-%d'),))
+            for row in cursor.fetchall():
+                model_breakdown[row['model'] or 'unknown'] = {
+                    'calls': row['calls'],
+                    'cost': round(row['cost'], 4),
+                    'input_tokens': row['input_t'],
+                    'output_tokens': row['output_t'],
+                }
+
+            # Recent API calls (last 20)
+            cursor.execute('''
+                SELECT timestamp, call_type, model, input_tokens, output_tokens, total_cost, context
+                FROM api_usage ORDER BY id DESC LIMIT 20
+            ''')
+            for row in cursor.fetchall():
+                recent_calls.append({
+                    'timestamp': row['timestamp'],
+                    'call_type': row['call_type'],
+                    'model': row['model'],
+                    'input_tokens': row['input_tokens'],
+                    'output_tokens': row['output_tokens'],
+                    'cost': round(row['total_cost'], 4),
+                })
+
+        # --- CONTENT COUNTS ---
+        cursor.execute('SELECT COUNT(*) FROM videos WHERE status = "completed"')
+        total_videos = cursor.fetchone()[0]
+
+        cursor.execute('SELECT COUNT(*) FROM articles')
+        total_articles = cursor.fetchone()[0]
+
         cursor.execute('''
-            SELECT processing_date, full_transcript, ai_summary
-            FROM videos
-            WHERE status = 'completed' AND full_transcript IS NOT NULL
-        ''')
-        videos = cursor.fetchall()
-        
-        # Get articles data
+            SELECT COUNT(*) FROM videos
+            WHERE status = "completed" AND processing_date >= ?
+        ''', (seven_days_ago.strftime('%Y-%m-%d'),))
+        this_week_videos = cursor.fetchone()[0]
+
         cursor.execute('''
-            SELECT created_at, content, summary
-            FROM articles
-            WHERE content IS NOT NULL
-        ''')
-        articles = cursor.fetchall()
-        
-        # Calculate costs
-        total_cost = 0.0
-        month_cost = 0.0
-        last_month_cost = 0.0
-        year_cost = 0.0
-        daily_costs = {}  # {date: cost}
-        
-        # Process videos
-        for video_date, transcript, summary in videos:
-            if not video_date:
-                continue
-                
-            try:
-                video_dt = datetime.strptime(video_date, '%Y-%m-%d %H:%M:%S') if isinstance(video_date, str) else video_date
-            except:
-                continue
-            
-            transcript_len = len(transcript) if transcript else 0
-            cost = estimate_cost(transcript_len)
-            # Add Vision API cost for screenshot processing (each video starts with a screenshot)
-            cost += VISION_API_COST
-            
-            total_cost += cost
-            
-            if video_dt >= current_month_start:
-                month_cost += cost
-            if video_dt >= last_month_start and video_dt < current_month_start:
-                last_month_cost += cost
-            if video_dt >= current_year_start:
-                year_cost += cost
-            
-            # Daily costs for chart
-            if video_dt >= thirty_days_ago:
-                date_key = video_dt.strftime('%Y-%m-%d')
-                daily_costs[date_key] = daily_costs.get(date_key, 0.0) + cost
-        
-        # Process articles
-        for article_date, content, summary in articles:
-            if not article_date:
-                continue
-                
-            try:
-                article_dt = datetime.strptime(article_date, '%Y-%m-%d %H:%M:%S') if isinstance(article_date, str) else article_date
-            except:
-                continue
-            
-            content_len = len(content) if content else 0
-            cost = estimate_cost(content_len)
-            
-            total_cost += cost
-            
-            if article_dt >= current_month_start:
-                month_cost += cost
-            if article_dt >= last_month_start and article_dt < current_month_start:
-                last_month_cost += cost
-            if article_dt >= current_year_start:
-                year_cost += cost
-            
-            # Daily costs for chart
-            if article_dt >= thirty_days_ago:
-                date_key = article_dt.strftime('%Y-%m-%d')
-                daily_costs[date_key] = daily_costs.get(date_key, 0.0) + cost
-        
-        # Build chart data (last 30 days)
+            SELECT COUNT(*) FROM videos
+            WHERE status = "completed" AND processing_date >= ?
+        ''', (current_month_start.strftime('%Y-%m-%d'),))
+        this_month_videos = cursor.fetchone()[0]
+
+        # Briefs this month
+        cursor.execute('''
+            SELECT COUNT(*) FROM daily_briefs WHERE created_at >= ?
+        ''', (current_month_start.strftime('%Y-%m-%d'),))
+        this_month_briefs = cursor.fetchone()[0]
+
+        # Podcasts this month
+        cursor.execute('''
+            SELECT COUNT(*) FROM brief_podcast_episodes WHERE created_at >= ?
+        ''', (current_month_start.strftime('%Y-%m-%d'),))
+        this_month_podcasts = cursor.fetchone()[0]
+
+        # Auto-process channels
+        cursor.execute('SELECT COUNT(*) FROM channel_subscriptions WHERE auto_process = 1')
+        auto_channels = cursor.fetchone()[0]
+
+        # Build chart data (last 30 days, fill gaps with 0)
         chart_data = []
         for i in range(30):
             date = (now - timedelta(days=29-i)).strftime('%Y-%m-%d')
+            day_data = daily_costs.get(date, {'cost': 0, 'calls': 0})
             chart_data.append({
                 'date': date,
-                'cost': round(daily_costs.get(date, 0.0), 4)
+                'cost': round(day_data['cost'], 4),
+                'calls': day_data['calls'],
             })
-        
-        # Get counts
-        cursor.execute('SELECT COUNT(*) FROM videos WHERE status = "completed"')
-        total_videos = cursor.fetchone()[0]
-        
-        cursor.execute('SELECT COUNT(*) FROM articles')
-        total_articles = cursor.fetchone()[0]
-        
-        # Get this week's count
-        week_ago = now - timedelta(days=7)
-        cursor.execute('''
-            SELECT COUNT(*) FROM videos 
-            WHERE status = "completed" AND processing_date >= ?
-        ''', (week_ago.strftime('%Y-%m-%d'),))
-        this_week_videos = cursor.fetchone()[0]
-        
-        # Get recent activity (last 10 items)
-        recent_activity = []
-        
-        # Recent videos
-        cursor.execute('''
-            SELECT title, processing_date, full_transcript
-            FROM videos
-            WHERE status = "completed" AND full_transcript IS NOT NULL
-            ORDER BY processing_date DESC
-            LIMIT 5
-        ''')
-        for title, date, transcript in cursor.fetchall():
-            cost = estimate_cost(len(transcript) if transcript else 0)
-            recent_activity.append({
-                'type': 'video',
-                'title': title or 'Untitled Video',
-                'date': date,
-                'cost': round(cost, 4),
-                'icon': '📹'
-            })
-        
-        # Recent articles
-        cursor.execute('''
-            SELECT title, created_at, content
-            FROM articles
-            WHERE content IS NOT NULL
-            ORDER BY created_at DESC
-            LIMIT 5
-        ''')
-        for title, date, content in cursor.fetchall():
-            cost = estimate_cost(len(content) if content else 0)
-            recent_activity.append({
-                'type': 'article',
-                'title': title or 'Untitled Article',
-                'date': date,
-                'cost': round(cost, 4),
-                'icon': '📄'
-            })
-        
-        # Sort by date and take top 10
-        recent_activity.sort(key=lambda x: x['date'] if x['date'] else '', reverse=True)
-        recent_activity = recent_activity[:10]
-        
+
         conn.close()
-        
+
         return jsonify({
             'success': True,
             'stats': {
-                'total_cost': round(total_cost, 2),
-                'month_cost': round(month_cost, 2),
-                'last_month_cost': round(last_month_cost, 2),
-                'year_cost': round(year_cost, 2),
-                'month_change': round(month_cost - last_month_cost, 2),
+                # Cost summary
+                'total_cost': round(usage_data['total_cost'], 2),
+                'month_cost': round(usage_data['month_cost'], 2),
+                'last_month_cost': round(usage_data['last_month_cost'], 2),
+                'year_cost': round(usage_data['year_cost'], 2),
+                'month_change': round(usage_data['month_cost'] - usage_data['last_month_cost'], 2),
+
+                # Token totals
+                'total_calls': usage_data['total_calls'],
+                'month_calls': usage_data['month_calls'],
+                'total_input_tokens': usage_data['total_input_tokens'],
+                'total_output_tokens': usage_data['total_output_tokens'],
+                'month_input_tokens': usage_data['month_input_tokens'],
+                'month_output_tokens': usage_data['month_output_tokens'],
+
+                # Content counts
                 'total_videos': total_videos,
                 'total_articles': total_articles,
                 'this_week_videos': this_week_videos,
+                'this_month_videos': this_month_videos,
+                'this_month_briefs': this_month_briefs,
+                'this_month_podcasts': this_month_podcasts,
+                'auto_channels': auto_channels,
+
+                # Breakdowns
+                'category_breakdown': category_breakdown,
+                'model_breakdown': model_breakdown,
+
+                # Charts
                 'chart_data': chart_data,
-                'recent_activity': recent_activity,
-                'models': {
-                    'text_model': 'Claude Haiku 4.5',
-                    'text_model_id': 'claude-haiku-4-5-20251001',
-                    'vision_model': 'Claude Sonnet 4.5',
-                    'vision_model_id': 'claude-3-5-sonnet-20241022'
-                }
+
+                # Recent calls
+                'recent_calls': recent_calls,
+
+                # Meta
+                'logging_since': logging_since,
+                'data_source': 'real' if has_usage_table and usage_data['total_calls'] > 0 else 'none',
             }
         })
-        
+
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/stats/videos', methods=['GET'])
+def get_stats_videos():
+    """Drill-down: videos processed this month with details."""
+    try:
+        conn = sqlite3.connect(DATABASE_PATH)
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+        month_start = datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+
+        cursor.execute('''
+            SELECT id, title, channel, processing_date, prompt_used,
+                   LENGTH(full_transcript) as transcript_length,
+                   LENGTH(ai_summary) as summary_length
+            FROM videos
+            WHERE status = 'completed' AND processing_date >= ?
+            ORDER BY processing_date DESC
+        ''', (month_start.strftime('%Y-%m-%d'),))
+        videos = []
+        for row in cursor.fetchall():
+            videos.append({
+                'id': row['id'],
+                'title': row['title'] or 'Untitled',
+                'channel': row['channel'] or 'Unknown',
+                'date': row['processing_date'],
+                'content_type': row['prompt_used'] or 'explainer',
+                'transcript_chars': row['transcript_length'] or 0,
+                'summary_chars': row['summary_length'] or 0,
+            })
+
+        # Group by channel for summary
+        by_channel = {}
+        for v in videos:
+            ch = v['channel']
+            if ch not in by_channel:
+                by_channel[ch] = 0
+            by_channel[ch] += 1
+        top_channels = sorted(by_channel.items(), key=lambda x: -x[1])[:15]
+
+        # Group by content type
+        by_type = {}
+        for v in videos:
+            ct = v['content_type']
+            if ct not in by_type:
+                by_type[ct] = 0
+            by_type[ct] += 1
+
+        # Group by day
+        by_day = {}
+        for v in videos:
+            day = v['date'][:10] if v['date'] else 'unknown'
+            if day not in by_day:
+                by_day[day] = 0
+            by_day[day] += 1
+
+        conn.close()
+        return jsonify({
+            'success': True,
+            'count': len(videos),
+            'videos': videos,
+            'by_channel': top_channels,
+            'by_type': by_type,
+            'by_day': dict(sorted(by_day.items())),
+        })
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/stats/briefs', methods=['GET'])
+def get_stats_briefs():
+    """Drill-down: briefs generated this month."""
+    try:
+        conn = sqlite3.connect(DATABASE_PATH)
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+        month_start = datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+
+        cursor.execute('''
+            SELECT id, vertical, title, signal_count, source_count, created_at
+            FROM daily_briefs
+            WHERE created_at >= ?
+            ORDER BY created_at DESC
+        ''', (month_start.strftime('%Y-%m-%d'),))
+        briefs = []
+        for row in cursor.fetchall():
+            briefs.append({
+                'id': row['id'],
+                'vertical': row['vertical'],
+                'title': row['title'],
+                'signal_count': row['signal_count'],
+                'source_count': row['source_count'],
+                'date': row['created_at'],
+            })
+
+        # Group by vertical
+        by_vertical = {}
+        for b in briefs:
+            v = b['vertical']
+            if v not in by_vertical:
+                by_vertical[v] = {'count': 0, 'total_signals': 0}
+            by_vertical[v]['count'] += 1
+            by_vertical[v]['total_signals'] += b['signal_count'] or 0
+
+        conn.close()
+        return jsonify({
+            'success': True,
+            'count': len(briefs),
+            'briefs': briefs,
+            'by_vertical': by_vertical,
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/stats/podcasts', methods=['GET'])
+def get_stats_podcasts():
+    """Drill-down: podcasts generated this month."""
+    try:
+        conn = sqlite3.connect(DATABASE_PATH)
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+        month_start = datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+
+        cursor.execute('''
+            SELECT id, vertical, title, duration_seconds, audio_size, status, created_at
+            FROM brief_podcast_episodes
+            WHERE created_at >= ?
+            ORDER BY created_at DESC
+        ''', (month_start.strftime('%Y-%m-%d'),))
+        podcasts = []
+        total_duration = 0
+        for row in cursor.fetchall():
+            dur = row['duration_seconds'] or 0
+            total_duration += dur
+            podcasts.append({
+                'id': row['id'],
+                'vertical': row['vertical'],
+                'title': row['title'],
+                'duration_seconds': dur,
+                'duration_display': f"{dur // 60}:{dur % 60:02d}" if dur else '—',
+                'audio_size_mb': round((row['audio_size'] or 0) / 1048576, 1),
+                'status': row['status'],
+                'date': row['created_at'],
+            })
+
+        # Group by vertical
+        by_vertical = {}
+        for p in podcasts:
+            v = p['vertical']
+            if v not in by_vertical:
+                by_vertical[v] = {'count': 0, 'total_duration': 0}
+            by_vertical[v]['count'] += 1
+            by_vertical[v]['total_duration'] += p['duration_seconds']
+
+        conn.close()
+        return jsonify({
+            'success': True,
+            'count': len(podcasts),
+            'total_duration_seconds': total_duration,
+            'total_duration_display': f"{total_duration // 3600}h {(total_duration % 3600) // 60}m",
+            'podcasts': podcasts,
+            'by_vertical': by_vertical,
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/stats/channels', methods=['GET'])
+def get_stats_channels():
+    """Drill-down: auto-process channels with video counts this month."""
+    try:
+        conn = sqlite3.connect(DATABASE_PATH)
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+        month_start = datetime.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+
+        cursor.execute('''
+            SELECT cs.id, cs.channel_name, cs.subscriber_count, cs.last_checked,
+                   cs.channel_url,
+                   (SELECT COUNT(*) FROM videos v
+                    WHERE v.channel = cs.channel_name
+                    AND v.status = 'completed'
+                    AND v.processing_date >= ?) as videos_this_month,
+                   (SELECT COUNT(*) FROM videos v
+                    WHERE v.channel = cs.channel_name
+                    AND v.status = 'completed') as videos_total
+            FROM channel_subscriptions cs
+            WHERE cs.auto_process = 1
+            ORDER BY videos_this_month DESC, cs.subscriber_count DESC
+        ''', (month_start.strftime('%Y-%m-%d'),))
+        channels = []
+        for row in cursor.fetchall():
+            sub_count = row['subscriber_count'] or 0
+            channels.append({
+                'id': row['id'],
+                'name': row['channel_name'],
+                'subscribers': sub_count,
+                'subscribers_display': f"{sub_count/1000:.0f}K" if sub_count >= 1000 else str(sub_count),
+                'last_checked': row['last_checked'],
+                'channel_url': row['channel_url'],
+                'videos_this_month': row['videos_this_month'],
+                'videos_total': row['videos_total'],
+            })
+
+        conn.close()
+        return jsonify({
+            'success': True,
+            'count': len(channels),
+            'channels': channels,
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 
 @app.route('/debug')
 def debug():
@@ -2069,6 +3608,90 @@ def analyze_video(video_id):
             'video_id': video_id
         })
         
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/items/<int:item_id>/extract-predictions', methods=['POST'])
+def extract_predictions(item_id):
+    """Extract predictions from a video transcript or article content using Claude."""
+    try:
+        data = request.get_json(force=True) or {}
+        content_type = data.get('content_type', 'video')
+
+        # Get the content
+        if content_type in ('article', 'audio'):
+            conn = sqlite3.connect(DATABASE_PATH)
+            conn.row_factory = sqlite3.Row
+            cursor = conn.cursor()
+            cursor.execute('SELECT id, title, url, content, summary, COALESCE(content_type, ?) as content_type FROM articles WHERE id = ?', (content_type, item_id))
+            row = cursor.fetchone()
+            conn.close()
+            if not row:
+                return jsonify({'success': False, 'error': 'Article not found'}), 404
+            item_title = row['title']
+            item_url = row['url'] or ''
+            item_channel = ''
+            # Use full content for articles, fall back to summary
+            text = row['content'] or row['summary'] or ''
+        else:
+            video = db_service.get_video_by_id(item_id)
+            if not video:
+                return jsonify({'success': False, 'error': 'Video not found'}), 404
+            item_title = video.get('title', '')
+            item_url = video.get('video_url', '')
+            item_channel = video.get('channel', '')
+            text = video.get('full_transcript') or video.get('ai_summary') or ''
+
+        if not text or len(text.strip()) < 100:
+            return jsonify({'success': False, 'error': 'Not enough content to extract predictions from'}), 400
+
+        # Truncate to stay within context limits
+        text = text[:12000]
+
+        prompt = f"""Analyze the following content and extract ALL explicit predictions, forecasts, projections, or forward-looking claims.
+
+Title: {item_title}
+
+Content:
+{text}
+
+For each prediction found, return it as a JSON array. Each prediction should have:
+- "prediction": The prediction text (1-3 sentences, capturing the full claim)
+- "timeframe": Any mentioned timeframe (e.g., "by 2030", "within 5 years", "next decade") or "unspecified"
+- "confidence": Your assessment of how confident the speaker/author seems: "high", "medium", or "speculative"
+- "topic": 1-3 word topic label (e.g., "AI labor", "longevity", "energy transition")
+
+If there are NO predictions in this content, return an empty array: []
+
+Return ONLY valid JSON — no markdown, no explanation, just the array."""
+
+        response = claude_client.messages.create(
+            model="claude-haiku-4-5-20251001",
+            max_tokens=3000,
+            messages=[{"role": "user", "content": prompt}]
+        )
+
+        result_text = response.content[0].text.strip()
+        # Clean any markdown wrapping
+        if result_text.startswith('```'):
+            result_text = result_text.split('\n', 1)[1] if '\n' in result_text else result_text[3:]
+            if result_text.endswith('```'):
+                result_text = result_text[:-3].strip()
+
+        predictions = json.loads(result_text)
+
+        return jsonify({
+            'success': True,
+            'predictions': predictions,
+            'source_title': item_title,
+            'source_url': item_url,
+            'source_channel': item_channel,
+            'item_id': item_id,
+            'content_type': content_type
+        })
+
+    except json.JSONDecodeError:
+        return jsonify({'success': False, 'error': 'Failed to parse predictions from Claude response'}), 500
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
@@ -2666,6 +4289,128 @@ def check_duplicate():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
+def _process_pdf_upload(file_path, filename):
+    """Extract text from PDF, generate AI summary, store in videos table as article."""
+    import PyPDF2
+
+    # Extract text from PDF
+    text = ""
+    page_count = 0
+    with open(file_path, 'rb') as f:
+        reader = PyPDF2.PdfReader(f)
+        page_count = len(reader.pages)
+        for page in reader.pages:
+            page_text = page.extract_text()
+            if page_text:
+                text += page_text + "\n\n"
+
+    text = text.strip()
+    if not text:
+        raise ValueError("PDF contains no extractable text (may be image-only/scanned)")
+
+    # Truncate if very long
+    max_chars = 80000
+    truncated = len(text) > max_chars
+    extract_text = text[:max_chars] if truncated else text
+
+    # Generate full AI summary using same pattern as articles
+    # Title will be extracted from the AI response
+    summary_prompt = f"""Analyze this document thoroughly and provide a comprehensive summary.
+
+IMPORTANT: Start your response with exactly this format on the first line:
+TITLE: [the document's actual title]
+
+Then continue with the analysis:
+
+DOCUMENT ({page_count} pages{', truncated' if truncated else ''}):
+
+{extract_text}
+
+Provide a detailed analysis covering:
+1. **Overview**: What this document is about, who wrote it, and why it matters
+2. **Key Findings**: The most important findings, arguments, or conclusions
+3. **Methodology**: How the research/analysis was conducted (if applicable)
+4. **Data & Evidence**: Key data points, statistics, or evidence presented
+5. **Implications**: What this means for the relevant field or audience
+6. **Critical Assessment**: Strengths, limitations, and open questions
+
+Be thorough — this is the full analysis that shorter summaries will be derived from."""
+
+    client = anthropic.Anthropic()
+    response = client.messages.create(
+        model="claude-haiku-4-5-20251001",
+        max_tokens=4000,
+        messages=[{"role": "user", "content": summary_prompt}]
+    )
+    full_summary = response.content[0].text.strip()
+
+    # Extract title from AI response
+    import re
+    title_match = re.match(r'^TITLE:\s*(.+)', full_summary)
+    if title_match:
+        raw_title = title_match.group(1).strip().strip('"')
+        # Remove the TITLE line from the summary
+        full_summary = re.sub(r'^TITLE:\s*.+\n*', '', full_summary).strip()
+    else:
+        # Fallback to filename
+        raw_title = filename.rsplit('.', 1)[0].replace('_', ' ')
+        raw_title = re.sub(r'^\d{8}_\d{6}_', '', raw_title)
+
+    # Generate shortened summaries
+    summary_50 = generate_shortened_summary(full_summary, 50)
+    summary_30 = generate_shortened_summary(full_summary, 30)
+    summary_15 = generate_shortened_summary(full_summary, 15)
+
+    # Store in videos table as a document/article
+    conn = sqlite3.connect(DATABASE_PATH)
+    cursor = conn.cursor()
+
+    # Duplicate guard for PDFs
+    pdf_url = f"pdf://{filename}"
+    cursor.execute('SELECT id FROM videos WHERE video_url = ?', (pdf_url,))
+    if cursor.fetchone():
+        conn.close()
+        return {'filename': filename, 'status': 'duplicate', 'message': 'PDF already processed'}
+
+    cursor.execute('''
+        INSERT INTO videos (
+            screenshot_path, filename, video_url, title, channel,
+            full_transcript, ai_summary, summary_50, summary_30, summary_15,
+            key_insights, topics, confidence_score, status, prompt_used, processing_date
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+    ''', (
+        file_path,
+        filename,
+        pdf_url,
+        raw_title,
+        f"PDF Document ({page_count} pages)",
+        text[:100000],
+        full_summary,
+        summary_50,
+        summary_30,
+        summary_15,
+        '',
+        '',
+        1.0,
+        'completed',
+        'pdf_upload'
+    ))
+    video_id = cursor.lastrowid
+    conn.commit()
+    conn.close()
+
+    print(f"📄 PDF stored as article #{video_id}: {raw_title} ({page_count} pages)")
+
+    return {
+        'filename': filename,
+        'status': 'queued',
+        'queue_id': video_id,
+        'video_url': f"pdf://{filename}",
+        'message': f"PDF processed: {raw_title} ({page_count} pages)"
+    }
+
+
 @app.route('/api/upload', methods=['POST'])
 def upload_files():
     try:
@@ -2685,14 +4430,30 @@ def upload_files():
             file_path = os.path.join(SCREENSHOTS_FOLDER, filename)
             file.save(file_path)
             uploaded_files.append(filename)
-            
+
             print(f"📸 File uploaded: {filename}")
-            
+
+            # Check if PDF — handle separately
+            is_pdf = filename.lower().endswith('.pdf')
+            if is_pdf:
+                try:
+                    result = _process_pdf_upload(file_path, filename)
+                    processing_results.append(result)
+                    print(f"✅ PDF processed: {filename}")
+                except Exception as pdf_err:
+                    print(f"❌ PDF processing failed: {pdf_err}")
+                    processing_results.append({
+                        'filename': filename,
+                        'status': 'error',
+                        'message': f'PDF processing failed: {str(pdf_err)}'
+                    })
+                continue
+
             # Process the screenshot immediately
             try:
                 # Extract metadata first
                 metadata = processor.extract_video_metadata(file_path)
-                
+
                 if metadata and metadata.get('is_youtube', False):
                     # Find video URL
                     video_url = processor.find_youtube_video(metadata)
@@ -2705,25 +4466,40 @@ def upload_files():
                         cursor = conn.cursor()
                         cursor.execute('SELECT id FROM videos WHERE video_url = ?', (video_url,))
                         existing = cursor.fetchone()
+                        # Also check processing_queue for in-flight items
+                        cursor.execute(
+                            "SELECT id FROM processing_queue WHERE video_url = ? AND status IN ('queued', 'processing')",
+                            (video_url,)
+                        )
+                        existing_in_queue = cursor.fetchone()
                         conn.close()
 
-                        if existing and not force_reprocess:
-                            # Update last_duplicate_attempt timestamp on existing record
-                            conn2 = sqlite3.connect(DATABASE_PATH)
-                            cursor2 = conn2.cursor()
-                            cursor2.execute(
-                                'UPDATE videos SET last_duplicate_attempt = ? WHERE id = ?',
-                                (datetime.now().isoformat(), existing[0])
-                            )
-                            conn2.commit()
-                            conn2.close()
+                        if (existing or existing_in_queue) and not force_reprocess:
+                            if existing:
+                                # Update last_duplicate_attempt timestamp on existing videos record
+                                conn2 = sqlite3.connect(DATABASE_PATH)
+                                cursor2 = conn2.cursor()
+                                cursor2.execute(
+                                    'UPDATE videos SET last_duplicate_attempt = ? WHERE id = ?',
+                                    (datetime.now().isoformat(), existing[0])
+                                )
+                                conn2.commit()
+                                conn2.close()
 
-                            processing_results.append({
-                                'filename': filename,
-                                'status': 'duplicate',
-                                'video_id': existing[0],
-                                'message': 'Video already processed'
-                            })
+                                processing_results.append({
+                                    'filename': filename,
+                                    'status': 'duplicate',
+                                    'video_id': existing[0],
+                                    'message': 'Video already processed'
+                                })
+                            else:
+                                # Duplicate found in processing_queue (still in-flight)
+                                processing_results.append({
+                                    'filename': filename,
+                                    'status': 'duplicate',
+                                    'queue_id': existing_in_queue[0],
+                                    'message': 'Video already in processing queue'
+                                })
                         else:
                             # Add to processing queue
                             title = metadata.get('title', '')
@@ -2732,7 +4508,8 @@ def upload_files():
                             queue_item = processor.add_video_to_queue(
                                 video_url=video_url,
                                 title=title,
-                                channel_name=channel
+                                channel_name=channel,
+                                force=True
                             )
                             
                             processing_results.append({
@@ -2750,37 +4527,27 @@ def upload_files():
                             'message': 'Could not find video URL'
                         })
                 else:
-                    # Not a YouTube screenshot - try processing as article screenshot
-                    print(f"📄 Not YouTube, attempting article extraction for: {filename}")
+                    # Not a YouTube screenshot - process as visual capture (OCR classification + extraction)
+                    print(f"🔍 Not YouTube, processing as visual capture: {filename}")
                     try:
-                        article_data = processor.extract_article_text_from_image(file_path)
-                        if article_data and article_data.get('text'):
-                            # Process as article
-                            title = article_data.get('title', f'Article from {filename}')
-                            text = article_data.get('text', '')
-
-                            # Store and process the article
-                            processor.process_article_from_text(file_path, text, title)
-
-                            processing_results.append({
-                                'filename': filename,
-                                'status': 'queued',
-                                'content_type': 'article',
-                                'message': f'Processing as article: {title[:50]}...'
-                            })
-                            print(f"✅ Added article screenshot to processing: {title[:50]}")
-                        else:
-                            processing_results.append({
-                                'filename': filename,
-                                'status': 'skipped',
-                                'message': 'Could not extract text from screenshot'
-                            })
-                    except Exception as article_err:
-                        print(f"❌ Article extraction failed: {article_err}")
+                        source_ctx = request.form.get('source_context', 'upload')
+                        result = visual_processor.process_visual_capture(
+                            file_path, source_context=source_ctx, db_path=DATABASE_PATH
+                        )
                         processing_results.append({
                             'filename': filename,
-                            'status': 'skipped',
-                            'message': f'Not YouTube and article extraction failed: {str(article_err)}'
+                            'status': 'processed',
+                            'content_type': result['content_type'],
+                            'capture_id': result['id'],
+                            'message': f"Visual capture: {result['content_type']} (${result['estimated_cost']:.4f})"
+                        })
+                        print(f"✅ Visual capture #{result['id']}: {result['content_type']}")
+                    except Exception as visual_err:
+                        print(f"❌ Visual processing failed: {visual_err}")
+                        processing_results.append({
+                            'filename': filename,
+                            'status': 'error',
+                            'message': f'Visual processing failed: {str(visual_err)}'
                         })
             except Exception as e:
                 print(f"❌ Error processing {filename}: {e}")
@@ -2799,6 +4566,251 @@ def upload_files():
         
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
+
+# --- Visual Captures API ---
+
+@app.route('/api/visual-captures')
+def get_visual_captures():
+    """Get all visual captures, optionally filtered by search query or content type."""
+    try:
+        conn = sqlite3.connect(DATABASE_PATH)
+        cursor = conn.cursor()
+
+        search = request.args.get('search', '').strip()
+        content_type_filter = request.args.get('content_type', '').strip()
+
+        if search:
+            query = '''
+                SELECT id, filename, content_type, structured_data, tags, source_context,
+                       estimated_cost, created_at, review_status
+                FROM visual_captures
+                WHERE tags LIKE ? OR structured_data LIKE ? OR filename LIKE ?
+                ORDER BY created_at DESC
+            '''
+            like = f'%{search}%'
+            cursor.execute(query, (like, like, like))
+        elif content_type_filter:
+            cursor.execute('''
+                SELECT id, filename, content_type, structured_data, tags, source_context,
+                       estimated_cost, created_at, review_status
+                FROM visual_captures
+                WHERE content_type = ?
+                ORDER BY created_at DESC
+            ''', (content_type_filter,))
+        else:
+            cursor.execute('''
+                SELECT id, filename, content_type, structured_data, tags, source_context,
+                       estimated_cost, created_at, review_status
+                FROM visual_captures
+                ORDER BY created_at DESC
+            ''')
+
+        rows = cursor.fetchall()
+        conn.close()
+
+        captures = []
+        for row in rows:
+            tags = []
+            try:
+                tags = json.loads(row[4]) if row[4] else []
+            except (json.JSONDecodeError, TypeError):
+                pass
+
+            structured = {}
+            try:
+                structured = json.loads(row[3]) if row[3] else {}
+            except (json.JSONDecodeError, TypeError):
+                pass
+
+            # Derive a title from structured data
+            title = structured.get('title', '') or structured.get('converted_text', '')[:80] if structured else ''
+            if not title:
+                title = f"{row[2].replace('_', ' ').title()} — {row[1]}"
+
+            review_status = row[8] if len(row) > 8 and row[8] else 'complete'
+
+            captures.append({
+                'id': row[0],
+                'filename': row[1],
+                'content_type': row[2],
+                'title': title if review_status == 'complete' else f"[Pending Review] {row[2].replace('_', ' ').title()}",
+                'structured_data': structured,
+                'tags': tags,
+                'source_context': row[5],
+                'estimated_cost': row[6],
+                'created_at': row[7],
+                'review_status': review_status,
+            })
+
+        return jsonify({'success': True, 'captures': captures, 'count': len(captures)})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/visual-captures/<int:capture_id>')
+def get_visual_capture(capture_id):
+    """Get a single visual capture with full data."""
+    try:
+        conn = sqlite3.connect(DATABASE_PATH)
+        cursor = conn.cursor()
+        cursor.execute('''
+            SELECT id, filename, content_type, raw_ocr_text, structured_data, tags,
+                   source_context, api_calls_count, input_tokens, output_tokens,
+                   estimated_cost, created_at
+            FROM visual_captures WHERE id = ?
+        ''', (capture_id,))
+        row = cursor.fetchone()
+        conn.close()
+
+        if not row:
+            return jsonify({'success': False, 'error': 'Not found'}), 404
+
+        structured = {}
+        try:
+            structured = json.loads(row[4]) if row[4] else {}
+        except (json.JSONDecodeError, TypeError):
+            pass
+
+        tags = []
+        try:
+            tags = json.loads(row[5]) if row[5] else []
+        except (json.JSONDecodeError, TypeError):
+            pass
+
+        title = structured.get('title', '') or ''
+        if not title:
+            title = f"{row[2].replace('_', ' ').title()} — {row[1]}"
+
+        return jsonify({
+            'success': True,
+            'capture': {
+                'id': row[0],
+                'filename': row[1],
+                'content_type': row[2],
+                'title': title,
+                'raw_ocr_text': row[3],
+                'structured_data': structured,
+                'tags': tags,
+                'source_context': row[6],
+                'api_calls_count': row[7],
+                'input_tokens': row[8],
+                'output_tokens': row[9],
+                'estimated_cost': row[10],
+                'created_at': row[11],
+            }
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/visual-captures/<int:capture_id>', methods=['DELETE'])
+def delete_visual_capture(capture_id):
+    """Delete a visual capture."""
+    try:
+        conn = sqlite3.connect(DATABASE_PATH)
+        cursor = conn.cursor()
+        cursor.execute('DELETE FROM visual_captures WHERE id = ?', (capture_id,))
+        conn.commit()
+        deleted = cursor.rowcount > 0
+        conn.close()
+
+        if deleted:
+            return jsonify({'success': True})
+        return jsonify({'success': False, 'error': 'Not found'}), 404
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/visual-captures/pending-review')
+def get_pending_review_captures():
+    """Get visual captures awaiting Claude Code review."""
+    try:
+        conn = sqlite3.connect(DATABASE_PATH)
+        cursor = conn.cursor()
+        cursor.execute('''
+            SELECT id, filename, content_type, created_at
+            FROM visual_captures
+            WHERE review_status = 'pending_review'
+            ORDER BY created_at ASC
+        ''')
+        rows = cursor.fetchall()
+        conn.close()
+
+        pending = [{'id': r[0], 'filename': r[1], 'content_type': r[2], 'created_at': r[3]} for r in rows]
+        return jsonify({'success': True, 'pending': pending, 'count': len(pending)})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/visual-captures/<int:capture_id>/review', methods=['PUT'])
+def update_visual_capture_review(capture_id):
+    """Update a visual capture with Claude Code review data."""
+    try:
+        data = request.get_json()
+        structured_data = data.get('structured_data')
+        tags = data.get('tags')
+
+        conn = sqlite3.connect(DATABASE_PATH)
+        cursor = conn.cursor()
+        cursor.execute('''
+            UPDATE visual_captures
+            SET structured_data = ?, raw_ocr_text = ?, tags = ?, review_status = 'complete'
+            WHERE id = ?
+        ''', (
+            json.dumps(structured_data),
+            json.dumps(structured_data),
+            json.dumps(tags) if tags else None,
+            capture_id,
+        ))
+        conn.commit()
+        updated = cursor.rowcount > 0
+        conn.close()
+
+        if updated:
+            return jsonify({'success': True})
+        return jsonify({'success': False, 'error': 'Not found'}), 404
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+# --- Capture Router PWA ---
+
+@app.route('/capture')
+def capture_page():
+    """Serve the Capture Router PWA."""
+    return send_from_directory('.', 'capture.html')
+
+@app.route('/capture/manifest.json')
+def capture_manifest():
+    """Serve PWA manifest."""
+    return send_from_directory('.', 'capture-manifest.json', mimetype='application/manifest+json')
+
+@app.route('/capture/sw.js')
+def capture_sw():
+    """Serve service worker."""
+    return send_from_directory('.', 'capture-sw.js', mimetype='application/javascript')
+
+@app.route('/capture/icon-180.png')
+def capture_icon_180():
+    """Serve 180px Apple touch icon."""
+    return send_from_directory('.', 'capture-icon-180.png', mimetype='image/png')
+
+@app.route('/capture/icon-192.png')
+def capture_icon_192():
+    """Serve 192px PWA icon."""
+    return send_from_directory('.', 'capture-icon-192.png', mimetype='image/png')
+
+@app.route('/capture/icon-512.png')
+def capture_icon_512():
+    """Serve 512px PWA icon."""
+    return send_from_directory('.', 'capture-icon-512.png', mimetype='image/png')
+
+
+@app.route('/screenshots/<path:filename>')
+def serve_screenshot(filename):
+    """Serve screenshot images for visual capture display."""
+    return send_from_directory(SCREENSHOTS_FOLDER, filename)
+
 
 @app.route('/api/videos/<int:video_id>/tags', methods=['PUT'])
 def update_video_tags(video_id):
@@ -3443,16 +5455,62 @@ def get_library():
         
         conn.close()
         
+        # Get visual captures
+        visuals = []
+        try:
+            vc_conn = sqlite3.connect(DATABASE_PATH)
+            vc_cursor = vc_conn.cursor()
+            vc_cursor.execute('''
+                SELECT id, filename, content_type, structured_data, tags, created_at
+                FROM visual_captures ORDER BY created_at DESC
+            ''')
+            for vc_row in vc_cursor.fetchall():
+                vc_structured = {}
+                try:
+                    vc_structured = json.loads(vc_row[3]) if vc_row[3] else {}
+                except (json.JSONDecodeError, TypeError):
+                    pass
+                vc_tags = []
+                try:
+                    vc_tags = json.loads(vc_row[4]) if vc_row[4] else []
+                except (json.JSONDecodeError, TypeError):
+                    pass
+
+                vc_title = vc_structured.get('title', '') or ''
+                if not vc_title:
+                    vc_title = f"{vc_row[2].replace('_', ' ').title()} — {vc_row[1]}"
+
+                visuals.append({
+                    'id': vc_row[0],
+                    'title': vc_title,
+                    'url': f'/screenshots/{vc_row[1]}',
+                    'filename': vc_row[1],
+                    'ai_summary': None,
+                    'summary': None,
+                    'tags': ', '.join(vc_tags) if vc_tags else '',
+                    'date': vc_row[5],
+                    'sort_date': vc_row[5],
+                    'content_type': 'visual',
+                    'visual_content_type': vc_row[2],
+                    'channel': vc_row[2].replace('_', ' ').title(),
+                    'status': 'completed',
+                    'structured_data': vc_structured,
+                })
+            vc_conn.close()
+        except Exception as vc_err:
+            print(f"Warning: could not load visual captures: {vc_err}")
+
         # Combine and return
-        all_content = videos + articles
+        all_content = videos + articles + visuals
         # Sort by sort_date (raw timestamp), most recent first
         all_content.sort(key=lambda x: x.get('sort_date', '') or x.get('date', ''), reverse=True)
-        
+
         return jsonify({
             'success': True,
             'content': all_content,
             'videos_count': len(videos),
             'articles_count': len(articles),
+            'visuals_count': len(visuals),
             'total_count': len(all_content)
         })
     except Exception as e:
@@ -3830,9 +5888,10 @@ def create_highlight():
         'context': data.get('context') or '',
         'source_title': data.get('source_title') or data.get('sourceTitle'),
         'source_url': data.get('source_url') or data.get('sourceUrl'),
-        'channel': data.get('channel')
+        'channel': data.get('channel'),
+        'favorited': data.get('favorited', False)
     }
-    
+
     try:
         saved_highlight = db_service.save_highlight(payload)
         return jsonify({'success': True, 'highlight': saved_highlight}), 201
@@ -4085,8 +6144,8 @@ def create_intelligence():
     
     if not intelligence_type:
         return jsonify({'success': False, 'error': 'Type is required'}), 400
-    if intelligence_type not in ['synthesis', 'prediction', 'script', 'query', 'trends']:
-        return jsonify({'success': False, 'error': 'Type must be one of: synthesis, prediction, script, query, trends'}), 400
+    if intelligence_type not in ['synthesis', 'prediction', 'script', 'query', 'trends', 'pattern', 'workflows', 'opportunity', 'strategy', 'insight']:
+        return jsonify({'success': False, 'error': 'Type must be one of: synthesis, prediction, script, query, trends, pattern, workflows, opportunity, insight'}), 400
     if not title:
         return jsonify({'success': False, 'error': 'Title is required'}), 400
     if not content:
@@ -4097,7 +6156,10 @@ def create_intelligence():
         'title': title,
         'content': content,
         'source_video_ids': data.get('source_video_ids') or [],
-        'tags': (data.get('tags') or '').strip()
+        'tags': (data.get('tags') or '').strip(),
+        'source_title': (data.get('source_title') or '').strip(),
+        'source_url': (data.get('source_url') or '').strip(),
+        'source_channel': (data.get('source_channel') or '').strip()
     }
     
     try:
@@ -4121,7 +6183,7 @@ def list_intelligence():
     limit = max(1, min(limit, 500))
     offset = max(0, offset)
     
-    if intelligence_type and intelligence_type not in ['synthesis', 'prediction', 'script', 'query', 'trends']:
+    if intelligence_type and intelligence_type not in ['synthesis', 'prediction', 'script', 'query', 'trends', 'pattern', 'workflows', 'opportunity', 'strategy', 'insight']:
         return jsonify({'success': False, 'error': 'Invalid type'}), 400
     
     try:
@@ -4189,6 +6251,159 @@ def delete_intelligence(intelligence_id):
         return jsonify({'success': True, 'message': 'Intelligence entry deleted'})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
+
+# ============================================================
+# Channel Intelligence (Bible) Routes
+# ============================================================
+
+@app.route('/api/channel-intelligence/generate', methods=['POST'])
+def generate_channel_intelligence():
+    """Generate channel bible from all processed videos for a channel"""
+    import threading
+    data = request.get_json(force=True) or {}
+    channel_id = data.get('channel_id')
+    channel_name = data.get('channel_name')
+    mode = data.get('mode', 'summaries')
+
+    if not channel_id or not channel_name:
+        return jsonify({'success': False, 'error': 'channel_id and channel_name required'}), 400
+    if mode not in ('summaries', 'transcripts'):
+        return jsonify({'success': False, 'error': 'mode must be summaries or transcripts'}), 400
+
+    # Mark as generating
+    db_service.save_channel_intelligence({
+        'channel_id': channel_id,
+        'channel_name': channel_name,
+        'generation_mode': mode,
+        'status': 'generating',
+        'content': '',
+        'video_count': 0,
+    })
+
+    def _run_synthesis():
+        try:
+            from channel_intelligence_synthesizer import run_channel_intelligence as run_ci
+            result = run_ci(channel_id, channel_name, mode=mode, db_path=DATABASE_PATH)
+            db_service.save_channel_intelligence({
+                'channel_id': channel_id,
+                'channel_name': channel_name,
+                'generation_mode': mode,
+                'status': 'completed',
+                'content': result['content'],
+                'video_count': result['video_count'],
+                'video_date_range': result['video_date_range'],
+                'source_video_ids': ','.join(str(v) for v in result['source_video_ids']),
+                'channel_type': result['channel_type'],
+                'total_tokens_input': result['token_usage']['input'],
+                'total_tokens_output': result['token_usage']['output'],
+                'estimated_cost': result['estimated_cost'],
+            })
+            print(f"✅ Channel intelligence generated for {channel_name} ({mode}): {result['video_count']} videos, ${result['estimated_cost']}")
+        except Exception as e:
+            print(f"❌ Channel intelligence failed for {channel_name}: {e}")
+            db_service.save_channel_intelligence({
+                'channel_id': channel_id,
+                'channel_name': channel_name,
+                'generation_mode': mode,
+                'status': 'failed',
+                'content': '',
+                'error_message': str(e),
+            })
+
+    # Run in background thread (even summaries mode, to keep UI responsive)
+    thread = threading.Thread(target=_run_synthesis, daemon=True)
+    thread.start()
+    return jsonify({'success': True, 'message': f'Bible generation started for {channel_name} ({mode} mode).'})
+
+
+@app.route('/api/channel-intelligence', methods=['GET'])
+def get_channel_intelligence():
+    """Get channel intelligence for a specific channel"""
+    channel_id = request.args.get('channel_id')
+    mode = request.args.get('mode', 'summaries')
+
+    if not channel_id:
+        return jsonify({'success': False, 'error': 'channel_id required'}), 400
+
+    intel = db_service.get_channel_intelligence(channel_id, mode)
+    if not intel:
+        return jsonify({'success': True, 'intelligence': None})
+    return jsonify({'success': True, 'intelligence': intel})
+
+
+@app.route('/api/channel-intelligence/all', methods=['GET'])
+def get_all_channel_intelligence():
+    """Get all channel intelligence entries (for status badges)"""
+    try:
+        entries = db_service.get_all_channel_intelligence()
+        return jsonify({'success': True, 'intelligence': entries})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/channel-intelligence/<int:intel_id>', methods=['DELETE'])
+def delete_channel_intelligence(intel_id):
+    """Delete a channel intelligence entry"""
+    try:
+        deleted = db_service.delete_channel_intelligence(intel_id)
+        if not deleted:
+            return jsonify({'success': False, 'error': 'Not found'}), 404
+        return jsonify({'success': True, 'message': 'Channel intelligence deleted'})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+# ============================================================
+# Creator Queries API Routes
+# ============================================================
+
+@app.route('/api/creator-queries', methods=['GET'])
+def get_creator_queries():
+    """Get creator queries, optionally filtered by channel name"""
+    try:
+        channel_name = request.args.get('channel_name')
+        limit = int(request.args.get('limit', 50))
+        queries = db_service.get_creator_queries(channel_name=channel_name, limit=limit)
+        return jsonify({'success': True, 'queries': queries})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/creator-queries/<int:query_id>', methods=['GET'])
+def get_creator_query(query_id):
+    """Get a single creator query by ID"""
+    try:
+        query = db_service.get_creator_query_by_id(query_id)
+        if not query:
+            return jsonify({'success': False, 'error': 'Not found'}), 404
+        return jsonify({'success': True, 'query': query})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/creator-queries/<int:query_id>', methods=['DELETE'])
+def delete_creator_query(query_id):
+    """Delete a creator query"""
+    try:
+        deleted = db_service.delete_creator_query(query_id)
+        if not deleted:
+            return jsonify({'success': False, 'error': 'Not found'}), 404
+        return jsonify({'success': True, 'message': 'Query deleted'})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/creator-queries/<int:query_id>/favorite', methods=['POST'])
+def toggle_creator_query_favorite(query_id):
+    """Toggle favorite status on a creator query"""
+    try:
+        result = db_service.toggle_creator_query_favorite(query_id)
+        if result is None:
+            return jsonify({'success': False, 'error': 'Not found'}), 404
+        return jsonify({'success': True, 'favorited': result})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 
 @app.route('/api/tags/all', methods=['GET'])
 def get_all_tags():
@@ -5117,9 +7332,14 @@ def add_to_processing_queue():
         if not video_url:
             return jsonify({'success': False, 'error': 'Missing video_url or videos payload'}), 400
         videos = [data]
-    
+
+    # Manual adds get high priority (100) so they jump ahead of auto-queued (10)
+    for v in videos:
+        if 'priority' not in v:
+            v['priority'] = 100
+
     try:
-        result = processor.add_videos_to_queue(videos)
+        result = processor.add_videos_to_queue(videos, force=True)
         state = processor.get_queue_state()
         return jsonify({
             'success': True,
@@ -5195,12 +7415,605 @@ def download_audio(filename):
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
+@app.route('/api/marketing-dashboard', methods=['GET'])
+def marketing_dashboard():
+    """Aggregated marketing intelligence data for Command Center dashboard.
+
+    Query params:
+        exclude: comma-separated channel names to exclude
+    """
+    try:
+        conn = sqlite3.connect(DATABASE_PATH)
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+
+        # Parse exclusion list
+        exclude_param = request.args.get('exclude', '')
+        exclude_channels = [c.strip() for c in exclude_param.split(',') if c.strip()] if exclude_param else []
+
+        # Parse time period filter (days)
+        days_param = request.args.get('days', '')
+        days_filter = int(days_param) if days_param.isdigit() else None
+
+        def time_sql_videos(alias='v'):
+            if not days_filter:
+                return '', []
+            return f" AND {alias}.published_at >= date('now', ?)", [f'-{days_filter} days']
+
+        def time_sql_cv(alias='cv'):
+            if not days_filter:
+                return '', []
+            return f" AND {alias}.published_at >= date('now', ?)", [f'-{days_filter} days']
+
+        # Build exclusion SQL fragments (case-insensitive to handle DB inconsistencies)
+        exclude_lower = [c.lower() for c in exclude_channels]
+
+        def excl_sql_videos(alias='v'):
+            if not exclude_lower:
+                return '', []
+            placeholders = ','.join('?' for _ in exclude_lower)
+            return f" AND LOWER({alias}.channel) NOT IN ({placeholders})", list(exclude_lower)
+
+        def excl_sql_cv(alias='cv'):
+            if not exclude_lower:
+                return '', []
+            placeholders = ','.join('?' for _ in exclude_lower)
+            return f" AND LOWER({alias}.channel_name) NOT IN ({placeholders})", list(exclude_lower)
+
+        def excl_sql_cs(alias='cs'):
+            if not exclude_lower:
+                return '', []
+            placeholders = ','.join('?' for _ in exclude_lower)
+            return f" AND LOWER({alias}.channel_name) NOT IN ({placeholders})", list(exclude_lower)
+
+        # 1. KPIs (unfiltered — always show totals)
+        cursor.execute("SELECT COUNT(*) FROM channel_subscriptions WHERE enabled=1")
+        total_channels = cursor.fetchone()[0]
+        cursor.execute("SELECT COUNT(*) FROM channel_videos")
+        total_indexed = cursor.fetchone()[0]
+        cursor.execute("SELECT COUNT(*) FROM videos WHERE status='completed'")
+        total_processed = cursor.fetchone()[0]
+        cursor.execute("SELECT COUNT(*) FROM channel_videos WHERE published_at >= date('now', '-7 days')")
+        new_this_week = cursor.fetchone()[0]
+        cursor.execute("SELECT COUNT(*) FROM channel_videos WHERE published_at >= date('now', '-30 days')")
+        new_this_month = cursor.fetchone()[0]
+
+        # 2. Channel leaderboard — uses channel_videos (all known videos, not just processed)
+        excl_cv, excl_cv_params = excl_sql_cv()
+        time_cv_lb, time_cv_lb_params = time_sql_cv()
+        cursor.execute(f'''
+            SELECT cv.channel_name as channel, COUNT(*) as vid_count,
+                   CAST(AVG(cv.view_count) AS INTEGER) as avg_views,
+                   MAX(cv.view_count) as max_views,
+                   SUM(cv.view_count) as total_views,
+                   MIN(cv.published_at) as earliest,
+                   MAX(cv.published_at) as latest,
+                   cs.subscriber_count
+            FROM channel_videos cv
+            LEFT JOIN channel_subscriptions cs ON cv.channel_id = cs.channel_id
+            WHERE cv.view_count IS NOT NULL AND cv.view_count > 0
+            {excl_cv} {time_cv_lb}
+            GROUP BY cv.channel_name
+            HAVING vid_count >= {1 if days_filter and days_filter <= 14 else 3}
+            ORDER BY avg_views DESC
+        ''', excl_cv_params + time_cv_lb_params)
+        leaderboard = []
+        for row in cursor.fetchall():
+            leaderboard.append({
+                'channel': row['channel'],
+                'video_count': row['vid_count'],
+                'avg_views': row['avg_views'],
+                'max_views': row['max_views'],
+                'total_views': row['total_views'],
+                'earliest': row['earliest'],
+                'latest': row['latest'],
+                'subscriber_count': row['subscriber_count'],
+            })
+
+        # 2b. Subscriber growth — compare oldest snapshot in time window to latest
+        growth_days = days_filter if days_filter else 90  # default to 90d for "all"
+        cursor.execute(f'''
+            SELECT h.channel_name,
+                   MAX(CASE WHEN h.snapshot_date = sub.earliest THEN h.subscriber_count END) as old_subs,
+                   MAX(CASE WHEN h.snapshot_date = sub.latest THEN h.subscriber_count END) as new_subs
+            FROM channel_stats_history h
+            JOIN (
+                SELECT channel_id,
+                       MIN(snapshot_date) as earliest,
+                       MAX(snapshot_date) as latest
+                FROM channel_stats_history
+                WHERE snapshot_date >= date('now', '-{int(growth_days)} days')
+                GROUP BY channel_id
+                HAVING earliest != latest
+            ) sub ON h.channel_id = sub.channel_id
+              AND h.snapshot_date IN (sub.earliest, sub.latest)
+            GROUP BY h.channel_name
+        ''')
+        growth_map = {}
+        for grow_row in cursor.fetchall():
+            old_s = grow_row['old_subs']
+            new_s = grow_row['new_subs']
+            if old_s and new_s:
+                growth_map[grow_row['channel_name']] = new_s - old_s
+
+        for entry in leaderboard:
+            entry['sub_growth'] = growth_map.get(entry['channel'], None)
+
+        # 3. Top performers — uses channel_videos (all known videos)
+        excl_cv2, excl_cv2_params = excl_sql_cv()
+        time_cv2, time_cv2_params = time_sql_cv()
+        top_time = time_cv2 if days_filter else " AND cv.published_at >= date('now', '-90 days')"
+        top_time_params = time_cv2_params if days_filter else []
+        cursor.execute(f'''
+            SELECT cv.title, cv.channel_name as channel, cv.view_count,
+                   cv.published_at, cv.video_url, cv.thumbnail_url
+            FROM channel_videos cv
+            WHERE cv.view_count IS NOT NULL AND cv.view_count > 0
+                  {top_time}
+                  {excl_cv2}
+            ORDER BY cv.view_count DESC
+            LIMIT 20
+        ''', top_time_params + excl_cv2_params)
+        top_performers = [dict(row) for row in cursor.fetchall()]
+
+        # 4. Breakout content — uses channel_videos (all known videos)
+        breakouts = []
+        for ch in leaderboard:
+            if ch['avg_views'] and ch['avg_views'] > 0:
+                cursor.execute('''
+                    SELECT cv.title, cv.channel_name as channel, cv.view_count,
+                           cv.published_at, cv.video_url, cv.thumbnail_url,
+                           ROUND(CAST(cv.view_count AS REAL) / ?, 1) as multiplier
+                    FROM channel_videos cv
+                    WHERE cv.channel_name = ? AND cv.view_count > ? * 2
+                          AND cv.view_count IS NOT NULL
+                    ORDER BY cv.view_count DESC
+                    LIMIT 3
+                ''', (ch['avg_views'], ch['channel'], ch['avg_views']))
+                for row in cursor.fetchall():
+                    breakouts.append(dict(row))
+        breakouts.sort(key=lambda x: x.get('multiplier', 0), reverse=True)
+        breakouts = breakouts[:15]
+
+        # 5. Publishing pulse (filtered)
+        excl, excl_params = excl_sql_cs()
+        pulse_days = days_filter if days_filter else 7
+        cursor.execute(f'''
+            SELECT cs.channel_name, COUNT(cv.id) as count_7d
+            FROM channel_subscriptions cs
+            LEFT JOIN channel_videos cv ON cv.channel_id = cs.channel_id
+                AND cv.published_at >= date('now', ?)
+            WHERE cs.enabled = 1 {excl}
+            GROUP BY cs.channel_name
+            ORDER BY count_7d DESC
+        ''', [f'-{pulse_days} days'] + excl_params)
+        publishing_pulse = [dict(row) for row in cursor.fetchall()]
+
+        # 6. Recent activity (filtered)
+        excl, excl_params = excl_sql_cv()
+        time_cv, time_cv_params = time_sql_cv()
+        cursor.execute(f'''
+            SELECT cv.title, cv.channel_name, cv.published_at, cv.thumbnail_url,
+                   cv.video_url, cv.processed, cv.duration,
+                   v.view_count
+            FROM channel_videos cv
+            LEFT JOIN videos v ON v.id = cv.processed_video_id
+            WHERE 1=1 {excl} {time_cv}
+            ORDER BY cv.published_at DESC
+            LIMIT 30
+        ''', excl_params + time_cv_params)
+        recent_activity = [dict(row) for row in cursor.fetchall()]
+
+        # 7. Topic heat — extract from ai_summary (key_insights/topics columns are empty)
+        excl, excl_params = excl_sql_videos()
+        topic_days = days_filter if days_filter else 60
+        cursor.execute(f'''
+            SELECT v.ai_summary, v.title FROM videos v
+            WHERE v.status='completed'
+                  AND v.published_at >= date('now', ?)
+                  AND v.ai_summary IS NOT NULL AND v.ai_summary <> ''
+                  {excl}
+        ''', [f'-{topic_days} days'] + excl_params)
+        topic_keywords = [
+            'ai agents', 'agentic', 'automation', 'claude', 'chatgpt', 'openai',
+            'anthropic', 'google', 'gemini', 'llm', 'machine learning',
+            'prompt engineering', 'rag', 'fine-tuning', 'open source',
+            'saas', 'no-code', 'low-code', 'vibe coding',
+            'content creation', 'youtube', 'creator economy',
+            'consulting', 'freelancing', 'solopreneur', 'entrepreneurship',
+            'productized service', 'ai consulting', 'ai agency',
+            'workflow', 'n8n', 'make.com', 'zapier',
+            'voice ai', 'text to speech', 'computer vision',
+            'coding', 'software development', 'api',
+            'monetization', 'scaling', 'growth', 'marketing',
+            'personal branding', 'newsletter', 'community',
+            'health', 'longevity', 'biohacking', 'supplements',
+            'investing', 'crypto', 'real estate',
+        ]
+        topic_counts = {}
+        for row in cursor.fetchall():
+            text = (row['ai_summary'] + ' ' + (row['title'] or '')).lower()
+            for kw in topic_keywords:
+                if kw in text:
+                    topic_counts[kw] = topic_counts.get(kw, 0) + 1
+        top_topics = sorted(topic_counts.items(), key=lambda x: x[1], reverse=True)[:30]
+
+        # 8. Intelligence entries (unfiltered)
+        cursor.execute('''
+            SELECT type, title, source_channel, created_at
+            FROM intelligence
+            ORDER BY created_at DESC
+            LIMIT 10
+        ''')
+        intel_entries = [dict(row) for row in cursor.fetchall()]
+
+        conn.close()
+
+        return jsonify({
+            'success': True,
+            'data': {
+                'kpis': {
+                    'total_channels': total_channels,
+                    'total_indexed': total_indexed,
+                    'total_processed': total_processed,
+                    'new_this_week': new_this_week,
+                    'new_this_month': new_this_month,
+                    'active_filter': len(exclude_channels) > 0,
+                    'excluded_count': len(exclude_channels),
+                },
+                'leaderboard': leaderboard,
+                'top_performers': top_performers,
+                'breakouts': breakouts,
+                'publishing_pulse': publishing_pulse,
+                'recent_activity': recent_activity,
+                'top_topics': [{'topic': t[0], 'count': t[1]} for t in top_topics],
+                'intelligence': intel_entries,
+            }
+        })
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 @app.route('/api/subscriptions', methods=['GET'])
 def list_subscriptions():
     """List channel subscriptions."""
     try:
         subs = processor.list_subscriptions()
         return jsonify({'success': True, 'subscriptions': subs})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/subscriptions/refresh-subscribers', methods=['POST'])
+def refresh_subscriber_counts():
+    """Fetch and update subscriber counts for all subscribed channels."""
+    try:
+        result = processor.refresh_subscriber_counts()
+        return jsonify({'success': True, **result})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/channel-stats/history', methods=['GET'])
+def get_channel_stats_history():
+    """Get subscriber history for one or all channels."""
+    try:
+        channel = request.args.get('channel', '')
+        conn = sqlite3.connect(DATABASE_PATH)
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+        if channel:
+            cursor.execute('''
+                SELECT channel_name, subscriber_count, total_views, video_count, snapshot_date, source
+                FROM channel_stats_history
+                WHERE LOWER(channel_name) = LOWER(?)
+                   OR LOWER(channel_name) LIKE LOWER(?)
+                   OR channel_id = ?
+                ORDER BY snapshot_date
+            ''', (channel, f'%{channel}%', channel))
+        else:
+            cursor.execute('''
+                SELECT channel_name, subscriber_count, total_views, video_count, snapshot_date, source
+                FROM channel_stats_history
+                ORDER BY channel_name, snapshot_date
+            ''')
+        rows = [dict(row) for row in cursor.fetchall()]
+        conn.close()
+        return jsonify({'success': True, 'data': rows})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/channel-meta', methods=['GET'])
+def get_channel_meta():
+    """Get channel metadata (creation date, description, notes, etc)."""
+    try:
+        channel = request.args.get('channel', '')
+        if not channel:
+            return jsonify({'success': False, 'error': 'Missing channel parameter'}), 400
+        conn = sqlite3.connect(DATABASE_PATH)
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+        cursor.execute('''
+            SELECT channel_id, channel_name, channel_url, subscriber_count,
+                   channel_created_at, channel_description, total_views,
+                   video_count, country, notes, created_at
+            FROM channel_subscriptions
+            WHERE LOWER(channel_name) = LOWER(?)
+               OR LOWER(channel_name) LIKE LOWER(?)
+               OR channel_id = ?
+            LIMIT 1
+        ''', (channel, f'%{channel}%', channel))
+        row = cursor.fetchone()
+        conn.close()
+        if row:
+            return jsonify({'success': True, 'data': dict(row)})
+        return jsonify({'success': True, 'data': None})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/channel-engagement', methods=['GET'])
+def get_channel_engagement():
+    """Calculate estimated watch time and engagement metrics for a channel.
+
+    Uses duration + likes + comments + views-to-sub ratio to estimate retention,
+    then calculates estimated average watch time per video.
+    """
+    try:
+        channel = request.args.get('channel', '')
+        if not channel:
+            return jsonify({'success': False, 'error': 'Missing channel parameter'}), 400
+
+        conn = sqlite3.connect(DATABASE_PATH)
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+
+        # Get subscriber count
+        cursor.execute('''
+            SELECT subscriber_count FROM channel_subscriptions
+            WHERE LOWER(channel_name) = LOWER(?) OR LOWER(channel_name) LIKE LOWER(?)
+        ''', (channel, f'%{channel}%'))
+        sub_row = cursor.fetchone()
+        subscriber_count = sub_row['subscriber_count'] if sub_row else None
+
+        # Get all videos with engagement data
+        cursor.execute('''
+            SELECT view_count, like_count, comment_count, duration_seconds
+            FROM channel_videos
+            WHERE (LOWER(channel_name) = LOWER(?) OR LOWER(channel_name) LIKE LOWER(?))
+              AND view_count > 0 AND duration_seconds > 0
+        ''', (channel, f'%{channel}%'))
+        videos = [dict(r) for r in cursor.fetchall()]
+        conn.close()
+
+        if not videos:
+            return jsonify({'success': True, 'data': None})
+
+        # Calculate per-video metrics
+        total_views = sum(v['view_count'] for v in videos)
+        total_likes = sum(v['like_count'] or 0 for v in videos)
+        total_comments = sum(v['comment_count'] or 0 for v in videos)
+        avg_duration_sec = sum(v['duration_seconds'] for v in videos) / len(videos)
+        avg_views = total_views / len(videos)
+
+        # Engagement ratios
+        like_ratio = (total_likes / total_views * 100) if total_views > 0 else 0
+        comment_ratio = (total_comments / total_views * 100) if total_views > 0 else 0
+        views_per_sub = (avg_views / subscriber_count) if subscriber_count and subscriber_count > 0 else None
+
+        # Base retention from duration bucket
+        if avg_duration_sec < 300:       # < 5 min
+            base_retention = 0.55
+        elif avg_duration_sec < 900:     # 5-15 min
+            base_retention = 0.45
+        elif avg_duration_sec < 1800:    # 15-30 min
+            base_retention = 0.35
+        else:                            # 30+ min
+            base_retention = 0.25
+
+        # Engagement multiplier (centered on 1.0)
+        # Like ratio: industry avg ~4%, scale from 0.85 (0%) to 1.15 (8%+)
+        like_mult = min(1.15, max(0.85, 0.85 + (like_ratio / 4.0) * 0.15))
+
+        # Comment ratio: industry avg ~0.5%, scale from 0.9 to 1.1
+        comment_mult = min(1.1, max(0.9, 0.9 + (comment_ratio / 0.5) * 0.1))
+
+        # Views-per-sub: >1.0 = strong reach (algorithm pushing), <0.3 = weak
+        if views_per_sub is not None:
+            if views_per_sub >= 1.0:
+                reach_mult = 1.15
+            elif views_per_sub >= 0.5:
+                reach_mult = 1.05
+            elif views_per_sub >= 0.3:
+                reach_mult = 1.0
+            else:
+                reach_mult = 0.9
+        else:
+            reach_mult = 1.0
+
+        # View consistency (lower coefficient of variation = more consistent = loyal audience)
+        import statistics
+        if len(videos) >= 5:
+            view_counts = [v['view_count'] for v in videos]
+            mean_v = statistics.mean(view_counts)
+            stdev_v = statistics.stdev(view_counts)
+            cv = stdev_v / mean_v if mean_v > 0 else 1.0
+            consistency_mult = min(1.1, max(0.9, 1.1 - (cv * 0.15)))
+        else:
+            consistency_mult = 1.0
+
+        # Combined engagement multiplier
+        engagement_mult = like_mult * comment_mult * reach_mult * consistency_mult
+
+        # Adjusted retention (capped 15%-65%)
+        adjusted_retention = min(0.65, max(0.15, base_retention * engagement_mult))
+
+        # Estimated watch time
+        est_watch_time_sec = avg_duration_sec * adjusted_retention
+        est_total_watch_hours = sum(
+            v['duration_seconds'] * adjusted_retention * v['view_count'] / 3600
+            for v in videos
+        )
+
+        result = {
+            'video_count': len(videos),
+            'avg_duration_sec': round(avg_duration_sec),
+            'avg_duration_display': f"{int(avg_duration_sec // 60)}:{int(avg_duration_sec % 60):02d}",
+            'avg_views': round(avg_views),
+            'subscriber_count': subscriber_count,
+            'like_ratio': round(like_ratio, 2),
+            'comment_ratio': round(comment_ratio, 3),
+            'views_per_sub': round(views_per_sub, 2) if views_per_sub else None,
+            'base_retention': round(base_retention * 100),
+            'engagement_multiplier': round(engagement_mult, 3),
+            'multiplier_breakdown': {
+                'likes': round(like_mult, 3),
+                'comments': round(comment_mult, 3),
+                'reach': round(reach_mult, 3),
+                'consistency': round(consistency_mult, 3),
+            },
+            'adjusted_retention': round(adjusted_retention * 100, 1),
+            'est_watch_time_sec': round(est_watch_time_sec),
+            'est_watch_time_display': f"{int(est_watch_time_sec // 60)}:{int(est_watch_time_sec % 60):02d}",
+            'est_total_watch_hours': round(est_total_watch_hours, 1),
+        }
+
+        return jsonify({'success': True, 'data': result})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/channel-stats/import', methods=['POST'])
+def import_channel_stats():
+    """Import historical subscriber data (from Social Blade screenshots etc)."""
+    try:
+        data = request.get_json(force=True)
+        channel_name = data.get('channel')
+        history = data.get('history', [])
+        if not channel_name or not history:
+            return jsonify({'success': False, 'error': 'Missing channel or history data'}), 400
+        result = processor.import_subscriber_history(channel_name, history)
+        return jsonify({'success': True, **result})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/channel-videos/refresh-views', methods=['POST'])
+def refresh_channel_video_views():
+    """Batch-fetch view counts for all channel_videos from YouTube API."""
+    try:
+        result = processor.refresh_channel_video_views()
+        return jsonify({'success': True, **result})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+# ── Spark Dash endpoints ────────────────────────────────────────────
+
+@app.route('/api/spark-dashboard', methods=['GET'])
+def spark_dashboard():
+    """Aggregated ideation data for Spark Dash in Command Center."""
+    try:
+        conn = sqlite3.connect(DATABASE_PATH)
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+
+        # 1. Signal Radar — intelligence entries (predictions, trends, patterns)
+        cursor.execute('''
+            SELECT id, type, title, content, source_channel, tags, created_at
+            FROM intelligence
+            WHERE type IN ('prediction', 'trends', 'pattern', 'opportunity')
+            ORDER BY created_at DESC
+            LIMIT 50
+        ''')
+        signals = [dict(r) for r in cursor.fetchall()]
+
+        # 2. Spike Watch — tag volume this week vs last week
+        cursor.execute('''
+            SELECT tags FROM videos
+            WHERE tags IS NOT NULL AND tags <> ''
+            AND processing_date >= date('now', '-7 days')
+        ''')
+        this_week_tags = {}
+        for row in cursor.fetchall():
+            for tag in str(row['tags']).split(','):
+                tag = tag.strip().lower()
+                if tag:
+                    this_week_tags[tag] = this_week_tags.get(tag, 0) + 1
+
+        cursor.execute('''
+            SELECT tags FROM videos
+            WHERE tags IS NOT NULL AND tags <> ''
+            AND processing_date >= date('now', '-14 days')
+            AND processing_date < date('now', '-7 days')
+        ''')
+        last_week_tags = {}
+        for row in cursor.fetchall():
+            for tag in str(row['tags']).split(','):
+                tag = tag.strip().lower()
+                if tag:
+                    last_week_tags[tag] = last_week_tags.get(tag, 0) + 1
+
+        spikes = []
+        for tag, count in sorted(this_week_tags.items(), key=lambda x: x[1], reverse=True)[:20]:
+            prev = last_week_tags.get(tag, 0)
+            spikes.append({
+                'tag': tag,
+                'this_week': count,
+                'last_week': prev,
+                'delta': count - prev
+            })
+
+        # 3. Cross-Vertical Mix — recent briefs across verticals
+        cursor.execute('''
+            SELECT id, vertical, title, content, signal_count, source_count, created_at
+            FROM daily_briefs
+            ORDER BY created_at DESC
+            LIMIT 15
+        ''')
+        briefs = [dict(r) for r in cursor.fetchall()]
+
+        # 4. Sparks — active sparks
+        cursor.execute('''
+            SELECT id, content, tags, status, created_at
+            FROM sparks
+            WHERE status = 'active'
+            ORDER BY created_at DESC
+            LIMIT 50
+        ''')
+        sparks = [dict(r) for r in cursor.fetchall()]
+
+        # 5. Highlight Gems — favorited + recent tagged
+        cursor.execute('''
+            SELECT id, highlighted_text, user_note, tags, source_title, channel, created_at
+            FROM highlights
+            WHERE favorited = 1
+            ORDER BY created_at DESC
+            LIMIT 20
+        ''')
+        fav_highlights = [dict(r) for r in cursor.fetchall()]
+
+        cursor.execute('''
+            SELECT id, highlighted_text, user_note, tags, source_title, channel, created_at
+            FROM highlights
+            WHERE tags IS NOT NULL AND tags <> ''
+            ORDER BY created_at DESC
+            LIMIT 20
+        ''')
+        tagged_highlights = [dict(r) for r in cursor.fetchall()]
+
+        # Dedupe (favorited might also be tagged)
+        seen_ids = {h['id'] for h in fav_highlights}
+        for h in tagged_highlights:
+            if h['id'] not in seen_ids:
+                fav_highlights.append(h)
+                seen_ids.add(h['id'])
+
+        conn.close()
+
+        return jsonify({
+            'success': True,
+            'signals': signals,
+            'spikes': spikes,
+            'briefs': briefs,
+            'sparks': sparks,
+            'highlights': fav_highlights
+        })
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
@@ -5235,6 +8048,17 @@ def toggle_subscription(subscription_id):
     """Enable or disable a channel subscription."""
     try:
         subscription = processor.toggle_subscription(subscription_id)
+        return jsonify({'success': True, 'subscription': subscription})
+    except ValueError as ve:
+        return jsonify({'success': False, 'error': str(ve)}), 404
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/subscriptions/<int:subscription_id>/auto-process', methods=['POST'])
+def toggle_auto_process(subscription_id):
+    """Toggle auto-process for a channel subscription."""
+    try:
+        subscription = processor.toggle_auto_process(subscription_id)
         return jsonify({'success': True, 'subscription': subscription})
     except ValueError as ve:
         return jsonify({'success': False, 'error': str(ve)}), 404
@@ -5344,7 +8168,7 @@ def refresh_all_feeds():
                 try:
                     result = processor.refresh_subscription(sub['id'], max_results=20)
                     results['youtube']['refreshed'] += 1
-                    results['youtube']['new_videos'] += result.get('new_videos', 0)
+                    results['youtube']['new_videos'] += result.get('inserted', 0)
                     # Auto-add to podcast if channel is podcast-enabled
                     # Always check (not just when new_videos > 0) since videos might exist
                     # but not yet be in podcast feed; the auto-add function handles duplicates
@@ -5482,7 +8306,8 @@ def queue_channel_videos():
     if not video_ids:
         return jsonify({'success': False, 'error': 'No video IDs provided'}), 400
     try:
-        result = processor.add_channel_videos_to_queue_by_ids(video_ids)
+        # Manual queue = high priority (100) so it jumps ahead of auto-queued (10)
+        result = processor.add_channel_videos_to_queue_by_ids(video_ids, priority=100)
         state = processor.get_queue_state()
         return jsonify({'success': True, 'result': result, 'state': state})
     except Exception as e:
@@ -6503,11 +9328,24 @@ Just the URL, no explanation."""
                 newsletter_name = newsletter_input
                 platform = 'Manual'
 
-        # Check for duplicate
+        # Check for duplicate (by feed URL, exact name, or fuzzy name match)
         existing = db_service.list_newsletter_subscriptions()
+        input_lower = newsletter_name.lower().strip()
         for sub in existing:
             if sub.get('feed_url') == feed_url and feed_url:
                 return jsonify({'success': False, 'error': f'Newsletter already subscribed: {sub.get("newsletter_name")}'}), 400
+            existing_lower = sub.get('newsletter_name', '').lower().strip()
+            if existing_lower == input_lower:
+                return jsonify({'success': False, 'error': f'Newsletter already subscribed: {sub.get("newsletter_name")}'}), 400
+            # Fuzzy match: check if input name appears inside existing name or vice versa (min 4 chars to avoid false positives)
+            if len(input_lower) >= 4 and (input_lower in existing_lower or existing_lower in input_lower):
+                return jsonify({'success': False, 'error': f'Possible duplicate — "{sub.get("newsletter_name")}" already subscribed. Add anyway by using the exact feed URL.'}), 400
+            # Also check if any word (4+ chars) from input matches any word in existing name
+            input_words = {w for w in input_lower.split() if len(w) >= 4}
+            existing_words = {w for w in existing_lower.split() if len(w) >= 4}
+            shared = input_words & existing_words
+            if shared and len(shared) / max(len(input_words), 1) >= 0.5:
+                return jsonify({'success': False, 'error': f'Possible duplicate — "{sub.get("newsletter_name")}" already subscribed (matched: {", ".join(shared)}). Add anyway by using the exact feed URL.'}), 400
 
         # Add subscription
         subscription = db_service.add_newsletter_subscription(
@@ -6545,8 +9383,72 @@ Just the URL, no explanation."""
             except Exception as feed_error:
                 print(f"Warning: Could not fetch initial issues: {feed_error}")
 
+        # Auto-trigger subscriber agent for KtN subscriptions
+        if ktn_email and subscription:
+            try:
+                from newsletter_auto_subscriber import NewsletterAutoSubscriber, PLAYWRIGHT_AVAILABLE
+                if PLAYWRIGHT_AVAILABLE:
+                    agent = NewsletterAutoSubscriber(db_service)
+                    thread = threading.Thread(
+                        target=agent.auto_subscribe,
+                        args=(subscription['id'],),
+                        daemon=True
+                    )
+                    thread.start()
+                    print(f"🤖 Auto-subscribe agent launched for {newsletter_name}")
+            except ImportError:
+                print("⚠️ newsletter_auto_subscriber not available")
+
         return jsonify({'success': True, 'subscription': subscription})
 
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/newsletter-subscriptions/<int:subscription_id>/auto-subscribe', methods=['POST'])
+def auto_subscribe_newsletter(subscription_id):
+    """Trigger or retry auto-subscribe agent for a newsletter subscription"""
+    try:
+        sub = db_service.get_newsletter_subscription(subscription_id)
+        if not sub:
+            return jsonify({'success': False, 'error': 'Subscription not found'}), 404
+        if not sub.get('ktn_email'):
+            return jsonify({'success': False, 'error': 'Not a Kill the Newsletter subscription'}), 400
+
+        data = request.get_json(silent=True) or {}
+        manual_url = data.get('signup_url')
+
+        from newsletter_auto_subscriber import NewsletterAutoSubscriber, PLAYWRIGHT_AVAILABLE
+        if not PLAYWRIGHT_AVAILABLE:
+            return jsonify({'success': False, 'error': 'Playwright not installed'}), 500
+
+        agent = NewsletterAutoSubscriber(db_service)
+        thread = threading.Thread(
+            target=agent.auto_subscribe,
+            args=(subscription_id,),
+            kwargs={'manual_signup_url': manual_url},
+            daemon=True
+        )
+        thread.start()
+
+        return jsonify({'success': True, 'status': 'started', 'message': 'Auto-subscribe agent launched'})
+    except ImportError:
+        return jsonify({'success': False, 'error': 'Auto-subscriber module not available'}), 500
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/newsletter-subscriptions/<int:subscription_id>/auto-subscribe-status', methods=['GET'])
+def auto_subscribe_status(subscription_id):
+    """Get current auto-subscribe status"""
+    try:
+        sub = db_service.get_newsletter_subscription(subscription_id)
+        if not sub:
+            return jsonify({'success': False, 'error': 'Subscription not found'}), 404
+        return jsonify({
+            'success': True,
+            'status': sub.get('auto_subscribe_status'),
+            'message': sub.get('auto_subscribe_message'),
+            'signup_url': sub.get('signup_url')
+        })
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
@@ -6820,6 +9722,14 @@ def briefing_page():
     except FileNotFoundError:
         return '<h1>Briefing Room page not found</h1><p><a href="/">← Back to Capture</a></p>'
 
+@app.route('/studio')
+def studio_page():
+    try:
+        with open('studio.html', 'r') as f:
+            return f.read()
+    except FileNotFoundError:
+        return '<h1>Studio page not found</h1><p><a href="/">← Back</a></p>'
+
 @app.route('/api/server-status', methods=['GET'])
 def server_status():
     """Check if the server is running"""
@@ -7023,6 +9933,57 @@ def remove_duplicates():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
+@app.route('/api/videos/<int:video_id>/reprocess', methods=['POST'])
+def reprocess_video(video_id):
+    """Re-generate summary for a failed video, updating it in place"""
+    try:
+        conn = sqlite3.connect(DATABASE_PATH)
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+        cursor.execute('''
+            SELECT id, title, full_transcript, ai_summary
+            FROM videos WHERE id = ?
+        ''', (video_id,))
+        video = cursor.fetchone()
+        conn.close()
+
+        if not video:
+            return jsonify({'success': False, 'error': 'Video not found'}), 404
+
+        if not video['full_transcript']:
+            return jsonify({'success': False, 'error': 'No transcript available'}), 400
+
+        summary, prompt_used = processor.generate_summary(
+            video['full_transcript'], video['title']
+        )
+
+        if summary and not summary.startswith("Summary generation error"):
+            conn = sqlite3.connect(DATABASE_PATH)
+            cursor = conn.cursor()
+            cursor.execute('''
+                UPDATE videos
+                SET ai_summary = ?, prompt_used = ?, status = 'completed',
+                    summary_15 = NULL, summary_30 = NULL, summary_50 = NULL
+                WHERE id = ?
+            ''', (summary, prompt_used, video_id))
+            conn.commit()
+            conn.close()
+
+            return jsonify({
+                'success': True,
+                'message': 'Video reprocessed successfully',
+                'video_id': video_id,
+                'prompt_used': prompt_used
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'error': summary or 'Summary generation failed'
+            }), 400
+
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
 @app.route('/api/videos/<int:video_id>/reprocess-with-prompt', methods=['POST'])
 def reprocess_video_with_prompt(video_id):
     """Reprocess a video with a different prompt, creating a new entry for comparison"""
@@ -7102,7 +10063,14 @@ def reprocess_video_with_prompt(video_id):
         # Create a NEW video entry (don't overwrite the old one)
         conn = sqlite3.connect(DATABASE_PATH)
         cursor = conn.cursor()
-        
+
+        # Duplicate guard: check if this exact reprocessed entry already exists
+        reprocessed_title = f"{title} [Reprocessed: {target_prompt}]"
+        cursor.execute('SELECT id FROM videos WHERE title = ? AND prompt_used = ?', (reprocessed_title, target_prompt))
+        if cursor.fetchone():
+            conn.close()
+            return jsonify({'success': False, 'error': f'Already reprocessed with {target_prompt} prompt'}), 409
+
         # Insert as new video entry with all required fields
         cursor.execute('''
             INSERT INTO videos (
@@ -7115,7 +10083,7 @@ def reprocess_video_with_prompt(video_id):
             f"reprocessed_from_{video_id}",  # screenshot_path
             f"reprocessed_from_{video_id}",  # filename
             video_url,  # Keep same URL
-            f"{title} [Reprocessed: {target_prompt}]",  # Mark as reprocessed in title
+            reprocessed_title,  # Mark as reprocessed in title
             channel or '',
             transcript,
             summary_text,
@@ -7611,7 +10579,7 @@ def _xml_escape(text):
     return html.escape(str(text), quote=True)
 
 
-def _generate_podcast_rss(title, description, episodes, feed_url, host_url, image_url=None):
+def _generate_podcast_rss(title, description, episodes, feed_url, host_url, image_url=None, category="Technology"):
     """Generate Apple Podcasts-compatible RSS XML."""
     escaped_title = _xml_escape(title)
     escaped_desc = _xml_escape(description)
@@ -7661,7 +10629,7 @@ def _generate_podcast_rss(title, description, episodes, feed_url, host_url, imag
     <itunes:author>{escaped_title}</itunes:author>
     <itunes:summary>{escaped_desc}</itunes:summary>
     <itunes:explicit>false</itunes:explicit>
-    <itunes:category text="Technology"/>
+    <itunes:category text="{category}"/>
     {img_tag}
 {items_xml}
   </channel>
@@ -7887,9 +10855,55 @@ def yt_podcast_picks_feed():
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
+@app.route('/podcast/briefs/<vertical>/feed.xml', methods=['GET'])
 @app.route('/podcast/briefs/feed.xml', methods=['GET'])
-def brief_podcast_feed():
-    """Serve RSS feed for daily brief podcast episodes."""
+def brief_podcast_feed(vertical=None):
+    """Serve RSS feed for daily brief podcast episodes.
+
+    Supports per-vertical feeds:
+      /podcast/briefs/ai_tech/feed.xml
+      /podcast/briefs/health_longevity/feed.xml
+      /podcast/briefs/futures_trends/feed.xml
+      /podcast/briefs/feed.xml  (backwards compat — serves ai_tech)
+    """
+    if vertical is None:
+        vertical = 'ai_tech'
+
+    vertical_config = {
+        'ai_tech': {
+            'title': 'AI & Tech Daily Brief',
+            'description': 'AI-synthesized daily intelligence brief covering AI, tech infrastructure, and the forces shaping the industry.',
+            'cover': 'brief_podcast_cover.png',
+            'category': 'Technology',
+        },
+        'health_longevity': {
+            'title': 'Health & Longevity Brief',
+            'description': 'Intelligence brief covering health research, longevity science, and life extension developments.',
+            'cover': 'health_podcast_cover.png',
+            'category': 'Health &amp; Fitness',
+        },
+        'futures_trends': {
+            'title': 'Futures & Trends Brief',
+            'description': 'Cross-domain intelligence brief covering macro trends, geopolitics, and emerging futures.',
+            'cover': 'futures_podcast_cover.png',
+            'category': 'Science',
+        },
+        'ks_youtube': {
+            'title': 'YouTube Intelligence Brief',
+            'description': 'Daily intelligence brief synthesizing trends, hot topics, and cross-channel convergence from a 53-channel YouTube monitoring network.',
+            'cover': 'ks_youtube_podcast_cover.png',
+            'category': 'Technology',
+        },
+        'ks_examiner': {
+            'title': 'The KS Examiner',
+            'description': 'Daily operations report from Knowledge Studio — processing stats, channel activity, topic convergence, and emerging signals.',
+            'cover': 'brief_podcast_cover.png',
+            'category': 'Technology',
+        },
+    }
+
+    config = vertical_config.get(vertical, vertical_config['ai_tech'])
+
     try:
         conn = sqlite3.connect(DATABASE_PATH)
         conn.row_factory = sqlite3.Row
@@ -7897,24 +10911,24 @@ def brief_podcast_feed():
 
         cursor.execute('''
             SELECT * FROM brief_podcast_episodes
-            WHERE status = 'ready'
+            WHERE status = 'ready' AND vertical = ?
             ORDER BY created_at DESC
-        ''')
+        ''', (vertical,))
         episodes = [dict(row) for row in cursor.fetchall()]
         conn.close()
 
         host_url = _get_podcast_host_url()
-        feed_url = f"{host_url}podcast/briefs/feed.xml"
-
-        image_url = f"{host_url}podcast-audio/brief_podcast_cover.png"
+        feed_url = f"{host_url}podcast/briefs/{vertical}/feed.xml"
+        image_url = f"{host_url}podcast-audio/{config['cover']}"
 
         rss = _generate_podcast_rss(
-            title="AI & Tech Daily Brief",
-            description="AI-synthesized daily intelligence brief covering AI, tech infrastructure, and the forces shaping the industry.",
+            title=config['title'],
+            description=config['description'],
             episodes=episodes,
             feed_url=feed_url,
             host_url=host_url,
             image_url=image_url,
+            category=config.get('category', 'Technology'),
         )
 
         from flask import Response
@@ -8048,23 +11062,33 @@ def yt_podcast_list_feeds():
 
         conn.close()
 
-        # Brief podcast feed
+        # Brief podcast feeds (per vertical)
         try:
             conn2 = sqlite3.connect(DATABASE_PATH)
             conn2.row_factory = sqlite3.Row
             cursor2 = conn2.cursor()
-            cursor2.execute("SELECT COUNT(*) as cnt FROM brief_podcast_episodes WHERE status = 'ready'")
-            brief_ready = cursor2.fetchone()['cnt']
-            cursor2.execute("SELECT COUNT(*) as cnt FROM brief_podcast_episodes")
-            brief_total = cursor2.fetchone()['cnt']
+
+            brief_verticals = {
+                'ai_tech': 'AI & Tech Daily Brief',
+                'health_longevity': 'Health & Longevity Brief',
+                'futures_trends': 'Futures & Trends Brief',
+                'ks_youtube': 'YouTube Intelligence Brief',
+                'ks_examiner': 'The KS Examiner',
+            }
+            for vert, vert_name in brief_verticals.items():
+                cursor2.execute("SELECT COUNT(*) as cnt FROM brief_podcast_episodes WHERE status = 'ready' AND vertical = ?", (vert,))
+                ready = cursor2.fetchone()['cnt']
+                cursor2.execute("SELECT COUNT(*) as cnt FROM brief_podcast_episodes WHERE vertical = ?", (vert,))
+                total = cursor2.fetchone()['cnt']
+                if total > 0:
+                    feeds.append({
+                        'name': vert_name,
+                        'type': 'briefs',
+                        'feed_url': f'{host_url}podcast/briefs/{vert}/feed.xml',
+                        'ready_episodes': ready,
+                        'total_episodes': total
+                    })
             conn2.close()
-            feeds.append({
-                'name': 'Daily Intelligence Brief',
-                'type': 'briefs',
-                'feed_url': f'{host_url}podcast/briefs/feed.xml',
-                'ready_episodes': brief_ready,
-                'total_episodes': brief_total
-            })
         except Exception:
             pass  # Table may not exist yet
 
@@ -8082,6 +11106,45 @@ def yt_podcast_list_feeds():
             'storage_bytes': total_size,
             'storage_mb': round(total_size / 1024 / 1024, 1)
         })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/studio/voice-roster', methods=['GET'])
+def studio_voice_roster():
+    """List voice files in the voice roster directory."""
+    try:
+        roster_dir = os.path.join(PODCAST_AUDIO_FOLDER, 'voice_roster')
+        voices = []
+        if os.path.exists(roster_dir):
+            for f in sorted(os.listdir(roster_dir)):
+                if f.endswith('.wav') or f.endswith('.mp3'):
+                    label = f.replace('.wav', '').replace('.mp3', '').replace('_', ' ')
+                    # Strip leading number prefix for cleaner label
+                    if label[:2].isdigit():
+                        label = label[3:]
+                    host_url = _get_podcast_host_url()
+                    voices.append({
+                        'filename': f,
+                        'label': label.title(),
+                        'url': f'{host_url}podcast-audio/voice_roster/{f}',
+                    })
+        return jsonify({'success': True, 'voices': voices})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/studio/episodes', methods=['GET'])
+def studio_episodes():
+    """List all podcast episodes for the Studio view."""
+    try:
+        conn = sqlite3.connect(DATABASE_PATH)
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+        cursor.execute('SELECT * FROM brief_podcast_episodes ORDER BY created_at DESC')
+        episodes = [dict(row) for row in cursor.fetchall()]
+        conn.close()
+        return jsonify({'success': True, 'episodes': episodes})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
@@ -8139,11 +11202,17 @@ def yt_podcast_retry(episode_id):
 
 @app.route('/api/briefs', methods=['GET'])
 def get_briefs():
-    """Get all daily briefs, newest first"""
+    """Get all daily briefs with podcast scripts, newest first"""
     try:
         conn = sqlite3.connect(DATABASE_PATH)
         cursor = conn.cursor()
-        cursor.execute('SELECT id, vertical, title, content, signal_count, source_count, created_at FROM daily_briefs ORDER BY created_at DESC')
+        cursor.execute('''
+            SELECT b.id, b.vertical, b.title, b.content, b.signal_count, b.source_count, b.created_at,
+                   p.script_text, p.duration_seconds
+            FROM daily_briefs b
+            LEFT JOIN brief_podcast_episodes p ON p.brief_id = b.id AND p.status = 'ready'
+            ORDER BY b.created_at DESC
+        ''')
         rows = cursor.fetchall()
         conn.close()
         briefs = []
@@ -8156,6 +11225,8 @@ def get_briefs():
                 'signal_count': row[4] or 0,
                 'source_count': row[5] or 0,
                 'created_at': row[6],
+                'podcast_script': row[7],
+                'podcast_duration': row[8],
             })
         return jsonify({'success': True, 'briefs': briefs})
     except Exception as e:
@@ -8197,12 +11268,17 @@ def generate_brief_api():
         # Use importlib to load from exact file paths (sys.path manipulation is unreliable)
         import importlib.util
 
-        if vertical == 'health_longevity':
-            brief_dir = os.path.join(os.path.dirname(__file__), 'health_longevity_brief')
-        elif vertical == 'futures_trends':
-            brief_dir = os.path.join(os.path.dirname(__file__), 'futures_trends_brief')
-        else:
+        # Convention-based directory lookup: check for {vertical}_brief/ first, then {vertical}/
+        candidate_dir = os.path.join(os.path.dirname(__file__), f'{vertical}_brief')
+        candidate_dir_alt = os.path.join(os.path.dirname(__file__), vertical)
+        if os.path.isdir(candidate_dir):
+            brief_dir = candidate_dir
+        elif os.path.isdir(candidate_dir_alt) and os.path.exists(os.path.join(candidate_dir_alt, 'collectors.py')):
+            brief_dir = candidate_dir_alt
+        elif vertical == 'ai_tech':
             brief_dir = os.path.join(os.path.dirname(__file__), 'daily_brief')
+        else:
+            return jsonify({'success': False, 'error': f'No brief directory found for vertical: {vertical}'}), 404
 
         collectors_path = os.path.join(brief_dir, 'collectors.py')
         synthesizer_path = os.path.join(brief_dir, 'synthesizer.py')
@@ -8217,8 +11293,9 @@ def generate_brief_api():
         spec_s.loader.exec_module(synthesizer_mod)
         synthesize_brief = synthesizer_mod.synthesize_brief
 
-        # Collect signals (wider window for futures — twice-weekly cadence)
-        hours = 96 if vertical == 'futures_trends' else 24
+        # Collect signals (wider window for weekly/less-frequent verticals)
+        wider_window_verticals = {'futures_trends': 168, 'local_ai_intel': 56}
+        hours = wider_window_verticals.get(vertical, 24)
         collected = collect_all(
             vertical=vertical,
             hours_back=hours,
@@ -8306,6 +11383,601 @@ def import_brief():
         conn.close()
 
         return jsonify({'success': True, 'brief_id': brief_id})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+# ========== UNLOCKS API ==========
+
+@app.route('/api/unlocks', methods=['GET'])
+def get_unlocks():
+    """Return unlock chain items from unlocks.json."""
+    import json as json_mod
+    unlocks_path = os.path.expanduser('~/jarvis/memory/unlocks.json')
+    try:
+        with open(unlocks_path, 'r') as f:
+            items = json_mod.load(f)
+        return jsonify({'success': True, 'unlocks': items})
+    except FileNotFoundError:
+        return jsonify({'success': True, 'unlocks': []})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/unlocks', methods=['PUT'])
+def update_unlocks():
+    """Replace the full unlocks list."""
+    import json as json_mod
+    unlocks_path = os.path.expanduser('~/jarvis/memory/unlocks.json')
+    try:
+        data = request.get_json(force=True)
+        items = data.get('unlocks', [])
+        with open(unlocks_path, 'w') as f:
+            json_mod.dump(items, f, indent=2)
+        return jsonify({'success': True, 'unlocks': items})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+# ========== IDEAS JOURNAL API ==========
+
+@app.route('/api/ideas', methods=['GET'])
+def get_ideas():
+    """Parse ideas journal and return structured entries."""
+    import re
+    journal_path = os.path.expanduser('~/jarvis/memory/ideas_journal.md')
+    try:
+        with open(journal_path, 'r') as f:
+            content = f.read()
+    except FileNotFoundError:
+        return jsonify({'success': True, 'ideas': []})
+
+    ideas = []
+    # Split on ## headings (each idea entry)
+    sections = re.split(r'^## ', content, flags=re.MULTILINE)
+
+    for section in sections:
+        section = section.strip()
+        if not section or section.startswith('Ideas Journal') or section.startswith('This file'):
+            continue
+
+        lines = section.split('\n')
+        heading = lines[0].strip().rstrip(' —-')
+
+        # Parse date from heading
+        date_str = None
+        if 'DATE UNCERTAIN' in heading:
+            date_str = '2026-02-25'  # approximate
+        else:
+            date_match = re.match(r'(\d{4}-\d{2}-\d{2})', heading)
+            if date_match:
+                date_str = date_match.group(1)
+            else:
+                month_match = re.match(r'((?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{1,2},?\s*\d{4})', heading)
+                if month_match:
+                    from datetime import datetime as dt_parse
+                    try:
+                        parsed = dt_parse.strptime(month_match.group(1).replace(',', ''), '%b %d %Y')
+                        date_str = parsed.strftime('%Y-%m-%d')
+                    except ValueError:
+                        date_str = None
+
+        if not date_str:
+            continue
+
+        # Parse project and idea title from body
+        body = '\n'.join(lines[1:]).strip()
+        project = None
+        idea_title = None
+
+        proj_match = re.search(r'\*\*Project\*\*:\s*(.+)', body)
+        if proj_match:
+            project = proj_match.group(1).strip()
+
+        idea_match = re.search(r'\*\*Idea\*\*:\s*(.+)', body)
+        if idea_match:
+            idea_title = idea_match.group(1).strip()
+
+        # If no explicit idea title, use the heading context
+        if not idea_title:
+            # Extract title from heading after date
+            title_part = re.sub(r'^[\d\-]+\s*[—–-]?\s*', '', heading).strip()
+            if not title_part:
+                title_part = heading
+            idea_title = title_part
+
+        # Cap display title for card readability (full text in body)
+        if len(idea_title) > 80:
+            idea_title = idea_title[:77] + '...'
+
+        # Get bullet points as summary
+        bullet_lines = [l.strip().lstrip('- ').lstrip('• ') for l in body.split('\n')
+                       if l.strip().startswith('-') or l.strip().startswith('•')]
+        summary = bullet_lines[0] if bullet_lines else ''
+
+        ideas.append({
+            'date': date_str,
+            'heading': heading,
+            'project': project,
+            'title': idea_title,
+            'summary': summary,
+            'body': body,
+        })
+
+    # Sort newest first, return last 10
+    ideas.sort(key=lambda x: x['date'], reverse=True)
+    limit = request.args.get('limit', 10, type=int)
+    ideas = ideas[:limit]
+
+    return jsonify({'success': True, 'ideas': ideas})
+
+
+# ══════════════════════════════════════════════════════════════
+# CONSULTING OUTREACH SYSTEM — API Routes
+# ══════════════════════════════════════════════════════════════
+
+@app.route('/api/consulting/dashboard', methods=['GET'])
+def consulting_dashboard():
+    try:
+        data = db_service.get_consulting_dashboard()
+        return jsonify({'success': True, **data})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/consulting/prospects', methods=['GET'])
+def list_consulting_prospects():
+    try:
+        status = request.args.get('status')
+        vertical_id = request.args.get('vertical_id', type=int)
+        priority = request.args.get('priority')
+        county = request.args.get('county')
+        search = request.args.get('search')
+        tier = request.args.get('tier')
+        limit = request.args.get('limit', 100, type=int)
+        offset = request.args.get('offset', 0, type=int)
+        sort_by = request.args.get('sort_by')
+        sort_dir = request.args.get('sort_dir', 'desc')
+        preset = request.args.get('preset')
+        prospects, total = db_service.get_consulting_prospects(status=status, vertical_id=vertical_id, priority=priority, county=county, search=search, tier=tier, sort_by=sort_by, sort_dir=sort_dir, preset=preset, limit=limit, offset=offset)
+        return jsonify({'success': True, 'prospects': prospects, 'total': total})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/consulting/prospects', methods=['POST'])
+def create_consulting_prospect():
+    try:
+        data = request.get_json(force=True) or {}
+        if not data.get('business_name'):
+            return jsonify({'success': False, 'error': 'business_name required'}), 400
+        prospect = db_service.create_consulting_prospect(data)
+        return jsonify({'success': True, 'prospect': prospect}), 201
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/consulting/prospects/<int:prospect_id>', methods=['GET'])
+def get_consulting_prospect(prospect_id):
+    try:
+        prospect = db_service.get_consulting_prospect(prospect_id)
+        if not prospect:
+            return jsonify({'success': False, 'error': 'Not found'}), 404
+        return jsonify({'success': True, 'prospect': prospect})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/consulting/prospects/<int:prospect_id>', methods=['PUT'])
+def update_consulting_prospect(prospect_id):
+    try:
+        data = request.get_json(force=True) or {}
+        prospect = db_service.update_consulting_prospect(prospect_id, data)
+        return jsonify({'success': True, 'prospect': prospect})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/consulting/prospects/<int:prospect_id>/status', methods=['PUT'])
+def update_consulting_prospect_status(prospect_id):
+    try:
+        data = request.get_json(force=True) or {}
+        status = data.get('status')
+        if not status:
+            return jsonify({'success': False, 'error': 'status required'}), 400
+        prospect = db_service.update_consulting_prospect(prospect_id, {'status': status})
+        return jsonify({'success': True, 'prospect': prospect})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/consulting/prospects/bulk', methods=['POST'])
+def bulk_create_prospects():
+    try:
+        data = request.get_json(force=True) or {}
+        prospects = data.get('prospects', [])
+        if not prospects:
+            return jsonify({'success': False, 'error': 'prospects array required'}), 400
+        result = db_service.bulk_create_prospects(prospects)
+        return jsonify({'success': True, **result}), 201
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/consulting/interactions', methods=['POST'])
+def create_consulting_interaction():
+    try:
+        data = request.get_json(force=True) or {}
+        required = ['prospect_id', 'type', 'summary']
+        for field in required:
+            if not data.get(field):
+                return jsonify({'success': False, 'error': f'{field} required'}), 400
+        interaction = db_service.create_consulting_interaction(data)
+        return jsonify({'success': True, 'interaction': interaction}), 201
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/consulting/interactions', methods=['GET'])
+def list_consulting_interactions():
+    try:
+        prospect_id = request.args.get('prospect_id', type=int)
+        interaction_type = request.args.get('type')
+        limit = request.args.get('limit', 50, type=int)
+        offset = request.args.get('offset', 0, type=int)
+        interactions = db_service.get_consulting_interactions(prospect_id=prospect_id, interaction_type=interaction_type, limit=limit, offset=offset)
+        return jsonify({'success': True, 'interactions': interactions})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/consulting/call-sheet', methods=['GET'])
+def get_call_sheet():
+    try:
+        from datetime import datetime
+        date_str = request.args.get('date', datetime.now().strftime('%Y-%m-%d'))
+        target_calls = int(request.args.get('target_calls', 10))
+        preset = request.args.get('preset') or None
+        min_score = request.args.get('min_score')
+        min_score = int(min_score) if min_score else None
+        # verticals passed as comma-separated IDs
+        vert_str = request.args.get('verticals', '')
+        verticals = [int(v) for v in vert_str.split(',') if v.strip().isdigit()] if vert_str else None
+        sheet = db_service.generate_call_sheet(date_str, target_calls=target_calls, preset=preset, verticals=verticals, min_score=min_score)
+        return jsonify({'success': True, 'call_sheet': sheet, 'date': date_str})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/consulting/call-sheet/generate', methods=['POST'])
+def force_generate_call_sheet():
+    try:
+        from datetime import datetime
+        data = request.get_json(force=True) or {}
+        date_str = data.get('date', datetime.now().strftime('%Y-%m-%d'))
+        target_calls = int(data.get('target_calls', 10))
+        preset = data.get('preset') or None
+        min_score = data.get('min_score')
+        min_score = int(min_score) if min_score else None
+        verticals = data.get('verticals')  # list of int IDs
+        if verticals and not isinstance(verticals, list):
+            verticals = None
+        # Delete existing sheet for this date
+        conn = db_service.get_connection()
+        cursor = conn.cursor()
+        cursor.execute('DELETE FROM consulting_daily_call_sheets WHERE date = ?', (date_str,))
+        conn.commit()
+        conn.close()
+        sheet = db_service.generate_call_sheet(date_str, target_calls=target_calls, preset=preset, verticals=verticals, min_score=min_score)
+        return jsonify({'success': True, 'call_sheet': sheet, 'date': date_str})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/consulting/call-sheet/<int:entry_id>', methods=['PUT'])
+def update_call_sheet_entry(entry_id):
+    try:
+        data = request.get_json(force=True) or {}
+        conn = db_service.get_connection()
+        cursor = conn.cursor()
+        sets = []
+        params = []
+        for key in ['status', 'interaction_id']:
+            if key in data:
+                sets.append(f'{key} = ?')
+                params.append(data[key])
+        if sets:
+            params.append(entry_id)
+            cursor.execute(f"UPDATE consulting_daily_call_sheets SET {', '.join(sets)} WHERE id = ?", params)
+            conn.commit()
+        conn.close()
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/consulting/verticals', methods=['GET'])
+def list_consulting_verticals():
+    try:
+        verticals = db_service.get_consulting_verticals()
+        return jsonify({'success': True, 'verticals': verticals})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/consulting/verticals/<int:vertical_id>', methods=['PUT'])
+def update_consulting_vertical(vertical_id):
+    try:
+        data = request.get_json(force=True) or {}
+        result = db_service.update_consulting_vertical(vertical_id, data)
+        return jsonify({'success': True, 'vertical': result})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/consulting/score-all', methods=['POST'])
+def score_all_prospects():
+    try:
+        updated = db_service.score_all_prospects()
+        return jsonify({'success': True, 'updated': updated})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/consulting/services', methods=['GET'])
+def list_consulting_services():
+    try:
+        services = db_service.get_consulting_services()
+        return jsonify({'success': True, 'services': services})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+# Scraping endpoints
+_scrape_status = {'running': False, 'results': None, 'error': None, 'started': None}
+
+@app.route('/api/consulting/scrape', methods=['POST'])
+def trigger_scrape():
+    import threading
+    if _scrape_status['running']:
+        return jsonify({'success': False, 'error': 'Scrape already in progress'}), 409
+    data = request.get_json(force=True) or {}
+    location = data.get('location', 'Gwinnett County, GA')
+    max_per = data.get('max_per_vertical', 200)
+    source = data.get('source', 'google')
+    # Capture keys from main thread's env (thread-safe)
+    _google_key = os.environ.get('GOOGLE_PLACES_API_KEY', '')
+    _yelp_key = os.environ.get('YELP_API_KEY', '')
+    def run_scrape():
+        _scrape_status['running'] = True
+        _scrape_status['error'] = None
+        _scrape_status['started'] = datetime.now().isoformat()
+        try:
+            from prospect_scraper import ProspectScraper
+            scraper = ProspectScraper(google_api_key=_google_key, yelp_api_key=_yelp_key)
+            if source == 'google' and not scraper.google_api_key:
+                _scrape_status['error'] = 'GOOGLE_PLACES_API_KEY not set in .env'
+                return
+            if source == 'yelp' and not scraper.yelp_api_key:
+                _scrape_status['error'] = 'YELP_API_KEY not set in .env'
+                return
+            _scrape_status['results'] = scraper.scrape_all_verticals(source=source, location=location, max_per_vertical=max_per)
+        except Exception as e:
+            _scrape_status['error'] = str(e)
+        finally:
+            _scrape_status['running'] = False
+    threading.Thread(target=run_scrape, daemon=True).start()
+    return jsonify({'success': True, 'message': f'Scrape started for {location}'})
+
+@app.route('/api/consulting/scrape/deep', methods=['POST'])
+def trigger_deep_scrape():
+    import threading
+    if _scrape_status['running']:
+        return jsonify({'success': False, 'error': 'Scrape already in progress'}), 409
+    data = request.get_json(force=True) or {}
+    skip_verticals = set(data.get('skip_verticals', []))
+    max_per_query = data.get('max_per_query', 60)
+    locations = data.get('locations', None)  # None = default GWINNETT_CITIES
+    # Capture key from main thread's env (thread-safe)
+    google_key = os.environ.get('GOOGLE_PLACES_API_KEY', '')
+    def run_deep():
+        _scrape_status['running'] = True
+        _scrape_status['error'] = None
+        _scrape_status['started'] = datetime.now().isoformat()
+        try:
+            from prospect_scraper import ProspectScraper
+            scraper = ProspectScraper(google_api_key=google_key)
+            if not scraper.google_api_key:
+                _scrape_status['error'] = 'GOOGLE_PLACES_API_KEY not set in .env'
+                return
+            _scrape_status['results'] = scraper.scrape_deep(
+                skip_verticals=skip_verticals,
+                locations=locations,
+                max_per_query=max_per_query,
+            )
+            # Auto-score all after deep scrape
+            db_service.score_all_prospects()
+        except Exception as e:
+            _scrape_status['error'] = str(e)
+        finally:
+            _scrape_status['running'] = False
+    threading.Thread(target=run_deep, daemon=True).start()
+    cities = locations or ['15 Gwinnett cities (default)']
+    return jsonify({'success': True, 'message': f'Deep scrape started across {len(cities)} locations, skipping: {list(skip_verticals) or "none"}'})
+
+@app.route('/api/consulting/scrape/status', methods=['GET'])
+def scrape_status():
+    return jsonify({
+        'success': True,
+        'running': _scrape_status['running'],
+        'results': _scrape_status['results'],
+        'error': _scrape_status['error'],
+        'started': _scrape_status['started'],
+    })
+
+
+# Website audit endpoints
+_audit_status = {'running': False, 'results': None, 'error': None, 'started': None}
+
+@app.route('/api/consulting/audit', methods=['POST'])
+def trigger_website_audit():
+    import threading
+    if _audit_status['running']:
+        return jsonify({'success': False, 'error': 'Audit already in progress'}), 409
+    data = request.get_json(force=True) or {}
+    limit = data.get('limit')
+    tier = data.get('tier')
+    vertical_id = data.get('vertical_id')
+    force = data.get('force', False)
+    max_concurrent = data.get('max_concurrent', 5)
+    def run_audit():
+        _audit_status['running'] = True
+        _audit_status['error'] = None
+        _audit_status['started'] = datetime.now().isoformat()
+        try:
+            from website_auditor import WebsiteAuditor
+            auditor = WebsiteAuditor()
+            _audit_status['results'] = auditor.audit_all_prospects(
+                max_concurrent=max_concurrent, limit=limit,
+                vertical_id=vertical_id, tier=tier, force=force,
+            )
+            # Re-score after audit (website audit affects prospect scores)
+            db_service.score_all_prospects()
+        except Exception as e:
+            _audit_status['error'] = str(e)
+        finally:
+            _audit_status['running'] = False
+    threading.Thread(target=run_audit, daemon=True).start()
+    return jsonify({'success': True, 'message': f'Website audit started (limit={limit}, tier={tier})'})
+
+@app.route('/api/consulting/audit/status', methods=['GET'])
+def audit_status():
+    return jsonify({
+        'success': True,
+        'running': _audit_status['running'],
+        'results': _audit_status['results'],
+        'error': _audit_status['error'],
+        'started': _audit_status['started'],
+    })
+
+@app.route('/api/consulting/audit/<int:prospect_id>', methods=['POST'])
+def audit_single_prospect(prospect_id):
+    try:
+        from website_auditor import WebsiteAuditor
+        auditor = WebsiteAuditor()
+        result = auditor.audit_prospect(prospect_id)
+        if result:
+            # Re-score this prospect
+            conn = db_service.get_connection()
+            cursor = conn.cursor()
+            cursor.execute('SELECT * FROM consulting_prospects WHERE id = ?', (prospect_id,))
+            row = cursor.fetchone()
+            if row:
+                prospect = {k: row[k] for k in row.keys()}
+                scores = db_service.score_and_tier_prospect(prospect)
+                cursor.execute('''
+                    UPDATE consulting_prospects
+                    SET tier = ?, ai_readiness_score = ?, estimated_revenue_low = ?, estimated_revenue_high = ?,
+                        estimated_employees = ?, priority = ?, updated_at = CURRENT_TIMESTAMP
+                    WHERE id = ?
+                ''', (scores['tier'], scores['ai_readiness_score'], scores['estimated_revenue_low'],
+                      scores['estimated_revenue_high'], scores['estimated_employees'], scores['priority'],
+                      prospect_id))
+                conn.commit()
+            conn.close()
+            return jsonify({'success': True, 'audit': result})
+        return jsonify({'success': False, 'error': 'Could not audit prospect'}), 404
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+# Competitor monitoring endpoints
+_monitor_status = {'running': False, 'results': None, 'error': None, 'started': None}
+
+@app.route('/api/consulting/monitor', methods=['POST'])
+def trigger_competitor_monitor():
+    """Re-audit all prospects and generate competitor alerts for any changes detected."""
+    import threading
+    if _monitor_status['running']:
+        return jsonify({'success': False, 'error': 'Monitor already running'}), 409
+    data = request.get_json(force=True) or {}
+    limit = data.get('limit')
+    max_concurrent = data.get('max_concurrent', 5)
+    def run_monitor():
+        _monitor_status['running'] = True
+        _monitor_status['error'] = None
+        _monitor_status['started'] = datetime.now().isoformat()
+        try:
+            from website_auditor import WebsiteAuditor
+            auditor = WebsiteAuditor()
+            results = auditor.monitor_competitors(max_concurrent=max_concurrent, limit=limit)
+            # Strip change_log from stored results (too verbose for status endpoint)
+            _monitor_status['results'] = {k: v for k, v in results.items() if k != 'change_log'}
+            # Re-score all after monitoring
+            db_service.score_all_prospects()
+        except Exception as e:
+            _monitor_status['error'] = str(e)
+        finally:
+            _monitor_status['running'] = False
+    threading.Thread(target=run_monitor, daemon=True).start()
+    return jsonify({'success': True, 'message': 'Competitor monitoring started'})
+
+@app.route('/api/consulting/monitor/status', methods=['GET'])
+def monitor_status():
+    return jsonify({
+        'success': True,
+        'running': _monitor_status['running'],
+        'results': _monitor_status['results'],
+        'error': _monitor_status['error'],
+        'started': _monitor_status['started'],
+    })
+
+@app.route('/api/consulting/alerts', methods=['GET'])
+def get_competitor_alerts():
+    """Get competitor alerts, optionally filtered by status."""
+    try:
+        status_filter = request.args.get('status', 'new')
+        limit = int(request.args.get('limit', 50))
+        conn = db_service.get_connection()
+        cursor = conn.cursor()
+        if status_filter == 'all':
+            cursor.execute('''
+                SELECT a.*, p.business_name as prospect_name, p.vertical_name, p.phone, p.email, p.city,
+                       c.business_name as competitor_name
+                FROM consulting_competitor_alerts a
+                JOIN consulting_prospects p ON a.prospect_id = p.id
+                JOIN consulting_prospects c ON a.competitor_id = c.id
+                ORDER BY a.created_at DESC LIMIT ?
+            ''', (limit,))
+        else:
+            cursor.execute('''
+                SELECT a.*, p.business_name as prospect_name, p.vertical_name, p.phone, p.email, p.city,
+                       c.business_name as competitor_name
+                FROM consulting_competitor_alerts a
+                JOIN consulting_prospects p ON a.prospect_id = p.id
+                JOIN consulting_prospects c ON a.competitor_id = c.id
+                WHERE a.status = ?
+                ORDER BY a.created_at DESC LIMIT ?
+            ''', (status_filter, limit))
+        rows = cursor.fetchall()
+        alerts = [{k: row[k] for k in row.keys()} for row in rows]
+        conn.close()
+        return jsonify({'success': True, 'alerts': alerts, 'count': len(alerts)})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/consulting/alerts/<int:alert_id>', methods=['PUT'])
+def update_competitor_alert(alert_id):
+    """Mark alert as sent or dismissed."""
+    try:
+        data = request.get_json(force=True) or {}
+        new_status = data.get('status')
+        if new_status not in ('sent', 'dismissed'):
+            return jsonify({'success': False, 'error': 'Status must be sent or dismissed'}), 400
+        conn = db_service.get_connection()
+        cursor = conn.cursor()
+        sent_at = f", sent_at = '{datetime.now().isoformat()}'" if new_status == 'sent' else ''
+        cursor.execute(f"UPDATE consulting_competitor_alerts SET status = ?{sent_at} WHERE id = ?", (new_status, alert_id))
+        conn.commit()
+        conn.close()
+        return jsonify({'success': True})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/consulting/alerts/count', methods=['GET'])
+def get_alert_count():
+    """Quick count of new alerts for badge display."""
+    try:
+        conn = db_service.get_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT COUNT(*) FROM consulting_competitor_alerts WHERE status = 'new'")
+        count = cursor.fetchone()[0]
+        conn.close()
+        return jsonify({'success': True, 'count': count})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 

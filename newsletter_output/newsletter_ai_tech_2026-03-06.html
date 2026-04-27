@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI & Tech Brief — March 6, 2026</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Georgia', 'Times New Roman', serif;
+    background: #0a0a0a;
+    color: #e8e4df;
+    line-height: 1.75;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 40px 24px;
+  }
+
+  .header {
+    padding-bottom: 28px;
+    margin-bottom: 32px;
+    border-bottom: 1px solid #2a2520;
+  }
+
+  .masthead {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #7a6f63;
+    margin-bottom: 16px;
+  }
+
+  .issue-title {
+    font-size: 26px;
+    font-weight: 700;
+    color: #f0ebe4;
+    line-height: 1.35;
+    margin-bottom: 12px;
+  }
+
+  .issue-subtitle {
+    font-size: 16px;
+    color: #a89e93;
+    line-height: 1.6;
+    font-style: italic;
+  }
+
+  .issue-meta {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 12px;
+    color: #5a5049;
+    margin-top: 16px;
+  }
+
+  .editorial {
+    font-size: 16px;
+    color: #c4bdb3;
+    line-height: 1.85;
+    margin-bottom: 36px;
+  }
+
+  .signal {
+    margin-bottom: 32px;
+  }
+
+  .signal-number {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #6a9ec4;
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+
+  .signal-headline {
+    font-size: 19px;
+    font-weight: 700;
+    color: #f0ebe4;
+    line-height: 1.4;
+    margin-bottom: 12px;
+  }
+
+  .signal-body {
+    font-size: 15.5px;
+    color: #b5ada3;
+    line-height: 1.85;
+  }
+
+  .signal-whycare {
+    font-size: 15px;
+    color: #6a9ec4;
+    line-height: 1.75;
+    margin-top: 12px;
+    font-weight: 500;
+  }
+
+  .divider {
+    border: none;
+    border-top: 1px solid #1e1a16;
+    margin: 32px 0;
+  }
+
+  .bottomline {
+    background: #111;
+    border-left: 3px solid #6a9ec4;
+    padding: 20px 24px;
+    margin: 36px 0;
+    border-radius: 0 4px 4px 0;
+  }
+
+  .bottomline-label {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 10px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: #6a9ec4;
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+
+  .bottomline-text {
+    font-size: 15.5px;
+    color: #c4bdb3;
+    line-height: 1.8;
+  }
+
+  .cta-row {
+    text-align: center;
+    margin: 36px 0;
+  }
+
+  .cta-button {
+    display: inline-block;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    text-decoration: none;
+    padding: 12px 28px;
+    border-radius: 4px;
+    margin: 0 6px;
+  }
+
+  .cta-primary {
+    background: #6a9ec4;
+    color: #0a0a0a;
+  }
+
+  .cta-secondary {
+    background: #1e1a16;
+    color: #6a9ec4;
+  }
+
+  .footer {
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid #1e1a16;
+    text-align: center;
+  }
+
+  .footer-text {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 11px;
+    color: #4a443d;
+    line-height: 2;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <div class="header">
+    <div class="masthead">AI & Tech Brief</div>
+    <div class="issue-title">The AI Market Is Splitting Into Three Worlds</div>
+    <div class="issue-subtitle">OpenAI's async reasoning changes everything, Anthropic faces institutional lockout, and open-source infrastructure becomes a liability.</div>
+    <div class="issue-meta">March 6, 2026 &middot; 3 min read</div>
+  </div>
+
+  <div class="editorial">
+    Today's three signals reveal a fundamental reshape of the AI competitive landscape. It's no longer about model quality alone—it's about infrastructure, policy, and trust. The winners won't be determined by whose model reasons best, but by who controls the platforms, the contracts, and the reliable data pipelines.
+  </div>
+
+  
+  <div class="signal">
+    <div class="signal-number">01</div>
+    <div class="signal-headline">GPT-5.4 Shifts From Real-Time API to Batch Processing</div>
+    <div class="signal-body">OpenAI is launching GPT-5.4 with "extreme thinking mode"—the ability to reason for hours on complex problems without requiring instant responses. This fundamentally changes how developers integrate AI: instead of prompt-response loops, teams will submit problems and check back later, like AWS batch jobs. The real shift isn't model capability. It's the product model itself, which advantages OpenAI's infrastructure and makes real-time API dependencies obsolete.</div>
+    <div class="signal-whycare">Watch for developer experience announcements in your toolchain over the next 30 days. Async reasoning is cheaper to run and scales differently than real-time APIs—this reshapes pricing and who can afford to compete.</div>
+  </div>
+  <hr class="divider">
+
+  <div class="signal">
+    <div class="signal-number">02</div>
+    <div class="signal-headline">Pentagon Formally Blocks Anthropic From Military Contracts</div>
+    <div class="signal-body">The U.S. Department of Defense has classified Anthropic as a supply-chain risk, barring them from formal procurement and classified work. This isn't messaging—it's structural exclusion. OpenAI has simultaneously locked in NATO and select U.S. military relationships, creating a geographic moat. Anthropic's bet on transparency-as-competitive-advantage has hit its limit when the buyer can legally lock you out.</div>
+    <div class="signal-whycare">Track whether this Pentagon restriction spreads to other U.S. agencies (DOJ, Treasury, State). If it does, Anthropic's revenue ceiling tightens dramatically. If it stays Pentagon-specific, it's a political wound, not a market collapse.</div>
+  </div>
+  <hr class="divider">
+
+  <div class="signal">
+    <div class="signal-number">03</div>
+    <div class="signal-headline">Wikipedia Compromise Reveals Open-Source Training Data Is a Vulnerability</div>
+    <div class="signal-body">Wikipedia's governance layer was compromised, exposing that the reference data used to train every open-source LLM (Llama, Qwen, Mistral) is now an attack surface. Closed labs like OpenAI and Anthropic control their training pipelines. Open-source labs depend on clean public data—and that data is now a hostile environment. This creates a quiet moat expansion: enterprises will demand indemnification and secure infrastructure around open models.</div>
+    <div class="signal-whycare">If you're betting on open-source models, start asking vendors about data provenance and governance security. The value in open-source is shifting from model code to the orchestration and compliance layers around it.</div>
+  </div>
+  
+
+
+  <div class="bottomline">
+    <div class="bottomline-label">The Bigger Picture</div>
+    <div class="bottomline-text">
+      Three separate moves are crystallizing three separate AI markets. OpenAI is building the async infrastructure layer—faster, cheaper, more efficient than real-time APIs. Anthropic is being pushed into enterprise and EU markets, away from government contracts. And open-source is becoming a cost-center liability rather than a moat, pushing value up the stack to whoever controls the secure hosting and governance layers. By mid-2026, the competitive pressure won't be "whose model is smarter." It'll be "whose platform handles async reasoning at scale, whose contracts are legally defensible, and who can guarantee clean data." Infrastructure, policy, and trust—not capability—are the new differentiators.
+    </div>
+  </div>
+
+  <div class="cta-row">
+    <a href="#" class="cta-button cta-primary">Read the Full Brief</a>
+    <a href="https://ks-podcasts.netlify.app/feed_ai_tech.xml" class="cta-button cta-secondary">&#9658; Listen</a>
+  </div>
+
+  <div class="footer">
+    <div class="footer-text">
+      AI & Tech Brief<br>
+      AI-curated intelligence on artificial intelligence, machine learning, and technology<br>
+      328 signals processed from 5 sources
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,22 @@
+{
+  "name": "Capture Router",
+  "short_name": "Capture",
+  "description": "Content capture camera for Knowledge Studio",
+  "start_url": "/capture",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0a0f1a",
+  "theme_color": "#0a0f1a",
+  "icons": [
+    {
+      "src": "/capture/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/capture/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

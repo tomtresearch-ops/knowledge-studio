@@ -1,0 +1,92 @@
+# ── Secrets ────────────────────────────────────────────
+.env
+.env.*
+!.env.example
+
+# ── Database (snapshots ship via separate backup pipeline) ──
+*.db*
+*.db-journal
+*.db-wal
+
+# ── Python ─────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+venv*/
+.venv/
+
+# ── Generated audio / podcast outputs ─────────────────
+podcast_audio/
+podcast_netlify/
+audio_files/
+audio_generated/
+*.wav
+*.mp3
+*.m4a
+
+# ── Source captures (large, NOT version-controlled) ───
+screenshots/
+
+# ── Internal KS backups (separate snapshot pipeline) ──
+backups/
+
+# ── Logs ──────────────────────────────────────────────
+logs/
+*.log
+
+# ── Process / runtime state ───────────────────────────
+*.pid
+.server.pid
+
+# ── Generated transcripts / processed outputs ─────────
+processed/
+*.transcript.txt
+
+# ── OS / IDE noise ────────────────────────────────────
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# ── Node ──────────────────────────────────────────────
+node_modules/
+
+# ── Build artifacts ───────────────────────────────────
+dist/
+build/
+
+# ── Netlify deploy state ──────────────────────────────
+.netlify
+
+# ── Abandoned subprojects (NOT on Studio anyway) ──────
+knowledge-studio-desktop/
+brief-video-poc/
+
+# ── Archived / scratch ────────────────────────────────
+_archive/
+*.bak.*
+
+# Reference PDFs and other binary docs (not source)
+*.pdf
+
+# Claude Code local config (per-machine)
+.claude/
+
+# rsync partial files
+*.partial
+
+# Pre-.env dev-era backup files (had hardcoded keys)
+youtube_processor_backup*.py
+youtube_processor_old*.py
+youtube_processor_working*.py
+
+# Editor backup files
+*~
+*.bak
+*.orig
+
+# Pre-.env-era prompt backups (had hardcoded keys)
+prompts/enhanced_prompts_backup*

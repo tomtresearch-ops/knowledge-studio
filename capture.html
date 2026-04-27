@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Capture">
+<meta name="theme-color" content="#0a0f1a">
+<link rel="manifest" href="/capture/manifest.json">
+<link rel="apple-touch-icon" sizes="180x180" href="/capture/icon-180.png">
+<link rel="apple-touch-icon" href="/capture/icon-192.png">
+<title>Capture Router</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; cursor: default; }
+  html, body { width: 100%; height: 100%; overflow: hidden; background: #0a0f1a; color: #e0e0e0; font-family: -apple-system, BlinkMacSystemFont, sans-serif; cursor: default; }
+
+  /* --- Main Screen --- */
+  #main-screen { position: fixed; inset: 0; display: flex; flex-direction: column; }
+  #capture-area { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+  #capture-btn {
+    width: 120px; height: 120px; border-radius: 50%; border: 4px solid #00d4aa;
+    background: rgba(0, 212, 170, 0.1); cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: transform 0.1s;
+  }
+  #capture-btn:active { transform: scale(0.93); }
+  #capture-btn svg { width: 48px; height: 48px; fill: #00d4aa; }
+  #capture-label { margin-top: 16px; font-size: 15px; color: #888; }
+  #file-input { display: none; }
+
+  /* --- Bottom bar --- */
+  #bottom-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 24px 40px; background: #0f1520;
+  }
+  #history-btn {
+    position: relative; width: 50px; height: 50px; border-radius: 10px;
+    border: 2px solid #333; background: #1a2235; display: flex;
+    align-items: center; justify-content: center; cursor: pointer; overflow: hidden;
+  }
+  #history-btn img { width: 100%; height: 100%; object-fit: cover; }
+  #history-badge {
+    position: absolute; top: -6px; right: -6px; background: #00d4aa; color: #0a0f1a;
+    font-size: 11px; font-weight: 700; width: 20px; height: 20px; border-radius: 50%;
+    display: none; align-items: center; justify-content: center;
+  }
+  #status-text { font-size: 13px; color: #555; text-align: center; flex: 1; }
+
+  /* --- Preview Screen --- */
+  #preview-screen { position: fixed; inset: 0; display: none; flex-direction: column; background: #0a0f1a; z-index: 20; }
+  #preview-image { flex: 1; object-fit: contain; background: #000; }
+  #preview-controls { display: flex; gap: 16px; padding: 20px 24px 40px; background: #0a0f1a; }
+  #preview-controls button { flex: 1; padding: 16px; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; border: none; }
+  #retake-btn { background: transparent; border: 2px solid #555; color: #e0e0e0; }
+  #send-btn { background: #00d4aa; color: #0a0f1a; }
+  #upload-status { text-align: center; padding: 8px; font-size: 13px; color: #888; min-height: 30px; }
+  #upload-status.uploading { color: #00d4aa; }
+  #upload-status.done { color: #00d4aa; }
+  #upload-status.error { color: #ff5555; }
+
+  /* --- Result Screen --- */
+  #result-screen { position: fixed; inset: 0; display: none; flex-direction: column; background: #0a0f1a; z-index: 30; }
+  #result-scroll { flex: 1; overflow-y: auto; padding: 20px; -webkit-overflow-scrolling: touch; }
+  #result-type {
+    display: inline-block; padding: 6px 16px; border-radius: 20px;
+    background: rgba(0, 212, 170, 0.15); color: #00d4aa;
+    font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
+    margin-bottom: 16px;
+  }
+  #result-title { font-size: 20px; font-weight: 700; color: #fff; margin-bottom: 12px; line-height: 1.3; }
+  #result-body { font-size: 14px; color: #bbb; line-height: 1.6; }
+  #result-body .result-section { margin-bottom: 16px; }
+  #result-body .result-section-label { font-size: 11px; font-weight: 700; color: #00d4aa; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+  #result-body .result-section-content { color: #ddd; }
+  #result-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+  #result-tags .tag { padding: 4px 10px; border-radius: 12px; background: #1a2235; color: #888; font-size: 12px; }
+  #result-error { color: #ff5555; font-size: 14px; line-height: 1.5; }
+  #result-controls { display: flex; gap: 16px; padding: 20px 24px 40px; background: #0a0f1a; }
+  #result-controls button { flex: 1; padding: 16px; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; border: none; }
+  .result-done-btn { background: #00d4aa; color: #0a0f1a; }
+  .result-another-btn { background: transparent; border: 2px solid #555 !important; color: #e0e0e0; }
+
+  /* --- History Panel --- */
+  #history-panel {
+    position: fixed; bottom: 0; left: 0; right: 0; background: #0f1520;
+    border-top-left-radius: 20px; border-top-right-radius: 20px;
+    transform: translateY(100%); transition: transform 0.3s ease;
+    z-index: 40; max-height: 70vh; display: flex; flex-direction: column;
+  }
+  #history-panel.open { transform: translateY(0); }
+  #history-handle { text-align: center; padding: 12px; cursor: pointer; }
+  #history-handle::before { content: ''; display: inline-block; width: 40px; height: 4px; border-radius: 2px; background: #333; }
+  #history-header { display: flex; justify-content: space-between; align-items: center; padding: 0 20px 12px; }
+  #history-header h3 { font-size: 16px; color: #e0e0e0; }
+  #history-header span { color: #888; font-size: 13px; }
+  #history-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; padding: 0 12px 40px; overflow-y: auto; }
+  .history-item { position: relative; aspect-ratio: 1; border-radius: 6px; overflow: hidden; cursor: pointer; }
+  .history-item img { width: 100%; height: 100%; object-fit: cover; }
+  .history-item .type-badge { position: absolute; bottom: 4px; left: 4px; background: rgba(0,0,0,0.7); color: #00d4aa; font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: 600; }
+
+  #overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 35; display: none; }
+  #overlay.visible { display: block; }
+
+  /* Spinner */
+  .spinner { display: inline-block; width: 18px; height: 18px; border: 2px solid rgba(0,212,170,0.3); border-top-color: #00d4aa; border-radius: 50%; animation: spin 0.8s linear infinite; vertical-align: middle; margin-right: 8px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<!-- Main Screen -->
+<div id="main-screen">
+  <div id="capture-area">
+    <button id="capture-btn" onclick="openCamera()">
+      <svg viewBox="0 0 24 24"><path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4z"/><path d="M9 2 7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/></svg>
+    </button>
+    <div id="capture-label">Tap to capture content</div>
+  </div>
+  <div id="bottom-bar">
+    <div id="history-btn" onclick="toggleHistory()">
+      <span id="history-badge">0</span>
+    </div>
+    <div id="status-text">Ready</div>
+    <div style="width:50px"></div>
+  </div>
+</div>
+
+<input type="file" id="file-input" accept="image/*" capture="environment" onchange="handleCapture(event)">
+
+<!-- Preview Screen -->
+<div id="preview-screen">
+  <img id="preview-image" />
+  <div id="upload-status"></div>
+  <div id="preview-controls">
+    <button id="retake-btn" onclick="retake()">Retake</button>
+    <button id="send-btn" onclick="sendCapture()">Send to KS</button>
+  </div>
+</div>
+
+<!-- Result Screen -->
+<div id="result-screen">
+  <div id="result-scroll">
+    <div id="result-type"></div>
+    <div id="result-title"></div>
+    <div id="result-body"></div>
+    <div id="result-tags"></div>
+  </div>
+  <div id="result-controls">
+    <button class="result-another-btn" onclick="captureAnother()">Capture Another</button>
+    <button class="result-done-btn" onclick="dismissResult()">Done</button>
+  </div>
+</div>
+
+<!-- History Panel -->
+<div id="overlay" onclick="toggleHistory()"></div>
+<div id="history-panel">
+  <div id="history-handle" onclick="toggleHistory()"></div>
+  <div id="history-header">
+    <h3>This Session</h3>
+    <span id="history-count">0 captures</span>
+  </div>
+  <div id="history-grid"></div>
+</div>
+
+<script>
+let captures = [];
+let currentFile = null;
+
+// --- Offline Queue (IndexedDB) ---
+const OFFLINE_DB_NAME = 'capture_offline_queue';
+const OFFLINE_STORE = 'pending_captures';
+
+function openOfflineDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(OFFLINE_DB_NAME, 1);
+    req.onupgradeneeded = (e) => {
+      const db = e.target.result;
+      if (!db.objectStoreNames.contains(OFFLINE_STORE)) {
+        db.createObjectStore(OFFLINE_STORE, { keyPath: 'id', autoIncrement: true });
+      }
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function saveToOfflineQueue(file) {
+  try {
+    const db = await openOfflineDB();
+    const arrayBuffer = await file.arrayBuffer();
+    const tx = db.transaction(OFFLINE_STORE, 'readwrite');
+    tx.objectStore(OFFLINE_STORE).add({
+      data: arrayBuffer,
+      filename: `capture_${Date.now()}.jpg`,
+      type: file.type,
+      savedAt: new Date().toISOString()
+    });
+    await new Promise((resolve, reject) => { tx.oncomplete = resolve; tx.onerror = reject; });
+    db.close();
+    return true;
+  } catch (e) {
+    console.error('Failed to save to offline queue:', e);
+    return false;
+  }
+}
+
+async function getOfflineQueueCount() {
+  try {
+    const db = await openOfflineDB();
+    const tx = db.transaction(OFFLINE_STORE, 'readonly');
+    const count = await new Promise((resolve, reject) => {
+      const req = tx.objectStore(OFFLINE_STORE).count();
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+    db.close();
+    return count;
+  } catch (e) { return 0; }
+}
+
+async function retryOfflineQueue() {
+  try {
+    const db = await openOfflineDB();
+    const tx = db.transaction(OFFLINE_STORE, 'readonly');
+    const items = await new Promise((resolve, reject) => {
+      const req = tx.objectStore(OFFLINE_STORE).getAll();
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+    db.close();
+
+    if (items.length === 0) return;
+
+    let sent = 0;
+    let failed = 0;
+    for (const item of items) {
+      try {
+        const blob = new Blob([item.data], { type: item.type || 'image/jpeg' });
+        const file = new File([blob], item.filename, { type: item.type || 'image/jpeg' });
+        const formData = new FormData();
+        formData.append('files', file, item.filename);
+        formData.append('source_context', 'capture_router_offline_retry');
+
+        const resp = await fetch('/api/upload', { method: 'POST', body: formData });
+        const data = await resp.json();
+
+        if (data.success || (data.results && data.results[0])) {
+          // Successfully sent — remove from offline queue
+          const delDb = await openOfflineDB();
+          const delTx = delDb.transaction(OFFLINE_STORE, 'readwrite');
+          delTx.objectStore(OFFLINE_STORE).delete(item.id);
+          await new Promise((resolve) => { delTx.oncomplete = resolve; });
+          delDb.close();
+          sent++;
+        } else {
+          failed++;
+        }
+      } catch (e) {
+        failed++;
+        break; // Server still down, stop retrying
+      }
+    }
+    if (sent > 0) {
+      document.getElementById('status-text').textContent = `Synced ${sent} queued capture${sent > 1 ? 's' : ''}`;
+    }
+    updateOfflineBadge();
+  } catch (e) {
+    console.error('Offline retry error:', e);
+  }
+}
+
+async function updateOfflineBadge() {
+  const count = await getOfflineQueueCount();
+  const statusEl = document.getElementById('status-text');
+  if (count > 0) {
+    statusEl.textContent = `${count} capture${count > 1 ? 's' : ''} queued offline`;
+    statusEl.style.color = '#ffaa00';
+  } else {
+    statusEl.style.color = '';
+  }
+}
+
+// On app load: try to send any queued captures
+document.addEventListener('DOMContentLoaded', async () => {
+  await updateOfflineBadge();
+  retryOfflineQueue();
+});
+
+// Also retry when app regains network
+window.addEventListener('online', () => {
+  retryOfflineQueue();
+});
+
+function openCamera() {
+  document.getElementById('file-input').click();
+}
+
+function handleCapture(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  currentFile = file;
+  const url = URL.createObjectURL(file);
+  document.getElementById('preview-image').src = url;
+  document.getElementById('preview-screen').style.display = 'flex';
+  document.getElementById('upload-status').textContent = '';
+  document.getElementById('upload-status').className = '';
+  document.getElementById('send-btn').disabled = false;
+  event.target.value = '';
+}
+
+function retake() {
+  document.getElementById('preview-screen').style.display = 'none';
+  currentFile = null;
+  openCamera();
+}
+
+async function sendCapture() {
+  if (!currentFile) return;
+  const statusEl = document.getElementById('upload-status');
+  const sendBtn = document.getElementById('send-btn');
+  sendBtn.disabled = true;
+  statusEl.innerHTML = '<span class="spinner"></span>Uploading...';
+  statusEl.className = 'uploading';
+  document.getElementById('status-text').textContent = 'Uploading...';
+
+  const formData = new FormData();
+  const filename = `capture_${Date.now()}.jpg`;
+  formData.append('files', currentFile, filename);
+  formData.append('source_context', 'capture_router');
+
+  try {
+    const resp = await fetch('/api/upload', { method: 'POST', body: formData });
+    const data = await resp.json();
+
+    if (data.success) {
+      const result = data.results && data.results[0];
+      const contentType = result ? (result.content_type || result.status) : 'sent';
+      const captureId = result ? result.capture_id : null;
+
+      // Add to session history and go straight back to main screen
+      const thumbUrl = URL.createObjectURL(currentFile);
+      const captureEntry = { url: thumbUrl, type: contentType, filename, captureId, resultData: null };
+
+      // Store simple result data for YouTube/duplicate cases
+      if (result) captureEntry.simpleResult = result;
+
+      captures.push(captureEntry);
+      updateHistoryUI();
+      document.getElementById('status-text').textContent = `Sent — ${contentType}`;
+      document.getElementById('preview-screen').style.display = 'none';
+      currentFile = null;
+
+      // Fetch full result in background (for history tap-to-review)
+      if (captureId) {
+        fetch(`/api/visual-captures/${captureId}`)
+          .then(r => r.json())
+          .then(detail => { if (detail.success) captureEntry.resultData = detail.capture; })
+          .catch(() => {});
+      }
+
+    } else {
+      statusEl.textContent = `Error: ${data.error || 'Upload failed'}`;
+      statusEl.className = 'error';
+      sendBtn.disabled = false;
+      document.getElementById('status-text').textContent = 'Upload failed';
+    }
+  } catch (err) {
+    // Server unreachable — save to offline queue
+    const saved = await saveToOfflineQueue(currentFile);
+    if (saved) {
+      const thumbUrl = URL.createObjectURL(currentFile);
+      captures.push({ url: thumbUrl, type: 'queued offline', filename, captureId: null, resultData: null, simpleResult: { status: 'queued_offline', message: 'Saved offline — will sync when server is available.' } });
+      updateHistoryUI();
+      statusEl.textContent = 'Saved offline — will sync later';
+      statusEl.className = 'uploading';
+      document.getElementById('preview-screen').style.display = 'none';
+      currentFile = null;
+      updateOfflineBadge();
+    } else {
+      statusEl.textContent = `Network error: ${err.message}`;
+      statusEl.className = 'error';
+      sendBtn.disabled = false;
+    }
+    document.getElementById('status-text').textContent = saved ? 'Queued offline' : 'Network error';
+  }
+}
+
+function showResult(capture, contentType) {
+  const typeEl = document.getElementById('result-type');
+  const titleEl = document.getElementById('result-title');
+  const bodyEl = document.getElementById('result-body');
+  const tagsEl = document.getElementById('result-tags');
+
+  typeEl.textContent = contentType || capture.content_type || 'processed';
+
+  // Parse structured data
+  let structured = {};
+  try {
+    structured = typeof capture.structured_data === 'string' ? JSON.parse(capture.structured_data) : (capture.structured_data || {});
+  } catch (e) { structured = {}; }
+
+  // Check for API error
+  if (structured.error) {
+    titleEl.textContent = 'Processing Error';
+    bodyEl.innerHTML = `<div class="result-section"><div id="result-error">${escHtml(structured.error)}</div></div>`;
+    tagsEl.innerHTML = '';
+    document.getElementById('result-screen').style.display = 'flex';
+    return;
+  }
+
+  // Title
+  titleEl.textContent = structured.title || structured.headline || structured.description || capture.content_type || 'Capture Processed';
+
+  // Build body sections
+  let html = '';
+
+  if (structured.summary || structured.description) {
+    const text = structured.summary || structured.description;
+    if (text !== titleEl.textContent) {
+      html += `<div class="result-section"><div class="result-section-label">Summary</div><div class="result-section-content">${escHtml(text)}</div></div>`;
+    }
+  }
+
+  if (structured.key_points && structured.key_points.length) {
+    html += `<div class="result-section"><div class="result-section-label">Key Points</div><div class="result-section-content">`;
+    structured.key_points.forEach(p => { html += `• ${escHtml(typeof p === 'string' ? p : p.point || JSON.stringify(p))}<br>`; });
+    html += `</div></div>`;
+  }
+
+  if (structured.data_points && structured.data_points.length) {
+    html += `<div class="result-section"><div class="result-section-label">Data</div><div class="result-section-content">`;
+    structured.data_points.forEach(d => { html += `• ${escHtml(typeof d === 'string' ? d : JSON.stringify(d))}<br>`; });
+    html += `</div></div>`;
+  }
+
+  if (structured.source) {
+    html += `<div class="result-section"><div class="result-section-label">Source</div><div class="result-section-content">${escHtml(structured.source)}</div></div>`;
+  }
+
+  // Fallback: show all keys we haven't already displayed
+  const shown = new Set(['title', 'headline', 'summary', 'description', 'key_points', 'data_points', 'source', 'error']);
+  Object.keys(structured).forEach(key => {
+    if (shown.has(key)) return;
+    const val = structured[key];
+    if (val === null || val === undefined || val === '') return;
+    const display = typeof val === 'string' ? val : JSON.stringify(val, null, 2);
+    if (display.length > 500) return; // skip huge blobs
+    html += `<div class="result-section"><div class="result-section-label">${escHtml(key.replace(/_/g, ' '))}</div><div class="result-section-content">${escHtml(display)}</div></div>`;
+  });
+
+  if (!html) {
+    html = `<div class="result-section"><div class="result-section-content" style="color:#666">Capture saved. No structured data extracted.</div></div>`;
+  }
+
+  bodyEl.innerHTML = html;
+
+  // Tags
+  let tags = [];
+  try { tags = typeof capture.tags === 'string' ? JSON.parse(capture.tags) : (capture.tags || []); } catch (e) {}
+  tagsEl.innerHTML = tags.map(t => `<span class="tag">${escHtml(t)}</span>`).join('');
+
+  document.getElementById('result-screen').style.display = 'flex';
+}
+
+function showSimpleResult(result) {
+  const typeEl = document.getElementById('result-type');
+  const titleEl = document.getElementById('result-title');
+  const bodyEl = document.getElementById('result-body');
+  const tagsEl = document.getElementById('result-tags');
+
+  if (result && result.status === 'queued') {
+    typeEl.textContent = 'youtube';
+    titleEl.textContent = 'Added to Video Queue';
+    bodyEl.innerHTML = `<div class="result-section"><div class="result-section-content">This looks like a YouTube screenshot. It's been queued for full video processing — transcript, summary, and categorization.</div></div>`;
+    if (result.video_url) {
+      bodyEl.innerHTML += `<div class="result-section"><div class="result-section-label">Video URL</div><div class="result-section-content">${escHtml(result.video_url)}</div></div>`;
+    }
+  } else if (result && result.status === 'duplicate') {
+    typeEl.textContent = 'duplicate';
+    titleEl.textContent = 'Already in Library';
+    bodyEl.innerHTML = `<div class="result-section"><div class="result-section-content">This video has already been processed and is in your library.</div></div>`;
+  } else {
+    typeEl.textContent = result ? (result.content_type || result.status || 'sent') : 'sent';
+    titleEl.textContent = 'Capture Received';
+    bodyEl.innerHTML = `<div class="result-section"><div class="result-section-content">${escHtml(result ? result.message || 'Sent to Knowledge Studio.' : 'Sent to Knowledge Studio.')}</div></div>`;
+  }
+  tagsEl.innerHTML = '';
+  document.getElementById('result-screen').style.display = 'flex';
+}
+
+function dismissResult() {
+  document.getElementById('result-screen').style.display = 'none';
+}
+
+function captureAnother() {
+  document.getElementById('result-screen').style.display = 'none';
+  openCamera();
+}
+
+function escHtml(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+// --- History ---
+function updateHistoryUI() {
+  const badge = document.getElementById('history-badge');
+  const countEl = document.getElementById('history-count');
+  const grid = document.getElementById('history-grid');
+  const histBtn = document.getElementById('history-btn');
+
+  badge.textContent = captures.length;
+  badge.style.display = captures.length > 0 ? 'flex' : 'none';
+  countEl.textContent = `${captures.length} capture${captures.length !== 1 ? 's' : ''}`;
+
+  if (captures.length > 0) {
+    const last = captures[captures.length - 1];
+    histBtn.innerHTML = `<img src="${last.url}" alt="last"><span id="history-badge" style="display:flex">${captures.length}</span>`;
+  }
+
+  grid.innerHTML = '';
+  for (let i = captures.length - 1; i >= 0; i--) {
+    const c = captures[i];
+    const idx = i;
+    const item = document.createElement('div');
+    item.className = 'history-item';
+    item.innerHTML = `<img src="${c.url}" alt="capture"><div class="type-badge">${c.type}</div>`;
+    item.onclick = () => {
+      toggleHistory();
+      if (c.resultData) showResult(c.resultData, c.type);
+      else if (c.simpleResult) showSimpleResult(c.simpleResult);
+      else showSimpleResult({ status: c.type, message: `${c.type} — ${c.filename}` });
+    };
+    grid.appendChild(item);
+  }
+}
+
+function toggleHistory() {
+  document.getElementById('history-panel').classList.toggle('open');
+  document.getElementById('overlay').classList.toggle('visible');
+}
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/capture/sw.js').catch(() => {});
+}
+</script>
+</body>
+</html>

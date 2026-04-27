@@ -1,0 +1,46 @@
+Extract actionable intelligence from this health, fitness, or personal development video with focus on practical implementation.
+
+## EXECUTIVE SUMMARY
+Write 2-3 sentences capturing the core claim, main protocol/method, and key evidence presented. Include any quantified benefits or outcomes mentioned.
+
+## RESEARCH FOUNDATION
+Extract all studies, research, and evidence cited:
+- **Study details**: Journal name, sample size, duration, methodology if mentioned
+- **Specific results**: Exact percentages, improvements, statistical significance
+- **Research quality indicators**: Peer-reviewed, randomized controlled trial, meta-analysis, etc.
+- **Limitations noted**: What the presenter says about study weaknesses or gaps
+
+## ACTIONABLE PROTOCOLS
+For each recommendation given, extract:
+- **Specific method**: Exact steps, techniques, or approaches
+- **Dosing/timing**: Amounts, frequency, duration, when to do it
+- **Implementation details**: How to actually execute the recommendation
+- **Expected timeline**: When to expect results or changes
+- **Success metrics**: How to measure progress or effectiveness
+
+## SAFETY & CONSIDERATIONS
+- **Contraindications**: Who should avoid this approach
+- **Side effects**: Potential negative outcomes mentioned
+- **Prerequisites**: What's needed before starting
+- **Warning signs**: When to stop or modify the approach
+- **Professional consultation**: When expert guidance is recommended
+
+## PRACTICAL APPLICATION
+- **Getting started**: First steps for implementation
+- **Common mistakes**: Pitfalls to avoid mentioned by presenter
+- **Optimization tips**: Advanced techniques or modifications
+- **Cost considerations**: Equipment, supplements, or resources needed
+- **Integration**: How this fits with other health practices
+
+## EXPERT CREDIBILITY
+- **Presenter credentials**: Qualifications, experience, specialization
+- **Clinical experience**: Patient/client work mentioned
+- **Research background**: Studies they've conducted or participated in
+- **Methodology**: Their approach to evaluating evidence
+
+Extract only what the presenter actually discusses. Focus on implementation details over theory. Capture exact protocols, dosages, and timing mentioned. Include direct quotes for key claims and recommendations.
+
+Keep output focused and scannable - aim for 800-1200 words maximum. Prioritize actionable information over background explanation.
+
+Video Title: {title}
+Transcript: {transcript}

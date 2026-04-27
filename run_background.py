@@ -7,12 +7,26 @@ Runs the file monitoring and processing in the background
 import os
 import sys
 import time
+import json
 import signal
 import subprocess
+import urllib.request
 from datetime import datetime
 from pathlib import Path
 from youtube_processor import YouTubeProcessor, ScreenshotHandler
 from watchdog.observers import Observer
+
+def notify_mattermost(channel, message):
+    """Best-effort Mattermost notification. Never blocks the pipeline."""
+    try:
+        jarvis_path = os.path.expanduser("~/jarvis")
+        if jarvis_path not in sys.path:
+            sys.path.insert(0, jarvis_path)
+        from tools.mattermost_client import mm
+        mm.post(channel, message, username="Pipeline")
+    except Exception:
+        pass  # Mattermost down or unavailable — pipeline continues regardless
+
 
 def should_refresh_feeds():
     """Check if it's time for a scheduled feed refresh (9am, 3pm, 9pm)"""
@@ -32,7 +46,6 @@ def should_generate_briefs():
     """Check if it's time for the nightly brief generation (9:30 PM)
 
     Runs at 9:30 PM to give the 9 PM feed refresh time to complete first.
-    Generates all three verticals: ai_tech, health_longevity, futures_trends.
     """
     now = datetime.now()
     # 9:30-9:35 PM window — after the 9 PM feed refresh has finished
@@ -40,12 +53,57 @@ def should_generate_briefs():
         return True
     return False
 
+def get_verticals_for_today():
+    """Determine which verticals should generate briefs today.
+
+    Core verticals:
+    - ai_tech: daily
+    - health_longevity: Tuesday and Friday
+    - future_medicine: Monday and Thursday
+    - futures_trends: Wednesday (once a week, PAUSED)
+
+    Life-stage verticals (weekly, spread across the week):
+    - Monday:    early_childhood, elementary, middle_school
+    - Tuesday:   high_school, college, early_career
+    - Wednesday: mid_career, late_career, seniors
+    """
+    today = datetime.now()
+    day_of_week = today.weekday()  # 0=Mon, 1=Tue, 2=Wed, 3=Thu, 4=Fri, 5=Sat, 6=Sun
+
+    verticals = ['ai_tech']  # Always daily
+    verticals.append('ai_agents')  # Always daily
+
+    if day_of_week in (1, 4):  # Tuesday, Friday
+        verticals.append('health_longevity')
+
+    if day_of_week in (0, 3):  # Monday, Thursday
+        verticals.append('future_medicine')
+
+    # futures_trends: PAUSED — editorial identity rethink in progress (turned off Feb 28)
+    # if day_of_week == 2:  # Wednesday
+    #     verticals.append('futures_trends')
+
+    if day_of_week in (0, 2, 4):  # Monday, Wednesday, Friday
+        verticals.append('local_ai_intel')
+
+    # Life-stage verticals — PAUSED (editorial design incomplete, running since Feb 23 without review)
+    # Uncomment when editorial quality reviewed and approved by Tom.
+    # lifestage_schedule = {
+    #     0: ['lifestage_early_childhood', 'lifestage_elementary', 'lifestage_middle_school'],
+    #     1: ['lifestage_high_school', 'lifestage_college', 'lifestage_early_career'],
+    #     2: ['lifestage_mid_career', 'lifestage_late_career', 'lifestage_seniors'],
+    # }
+    # verticals.extend(lifestage_schedule.get(day_of_week, []))
+
+    return verticals
+
 def generate_all_briefs():
-    """Generate daily briefs for all three verticals via the local API"""
+    """Generate daily briefs for scheduled verticals via the local API"""
     import urllib.request
     import json
 
-    verticals = ['ai_tech', 'health_longevity', 'futures_trends']
+    verticals = get_verticals_for_today()
+    print(f"📋 Scheduled verticals for today: {', '.join(verticals)}")
     results = {}
 
     for vertical in verticals:
@@ -163,7 +221,10 @@ def main():
     print("📱 Drop screenshots into the folder to process them")
     print("🔍 Use the web interface at http://localhost:5001 to view results")
     print("📡 Auto-refreshing feeds at 9am, 3pm, and 9pm")
-    print("📰 Auto-generating daily briefs at 9:30pm (all verticals)")
+    print("📰 Auto-generating briefs at 9:30pm (AI&Tech daily, Health Tue/Fri, Futures Wed)")
+    print("🎙️  Auto-generating podcasts at 9:45pm (core verticals, except Futures)")
+    print("📧 Auto-generating newsletters at 10:00pm → Ghost drafts")
+    print("🎙️  AI Agents podcast at 10:10pm (staggered to avoid TTS memory strain)")
     print("\nPress Ctrl+C to stop monitoring...\n")
     
     observer.start()
@@ -181,6 +242,25 @@ def main():
 
     # Track nightly brief generation (9:30 PM)
     last_brief_generation_date = None  # Track date to avoid duplicate generation
+
+    # Track podcast generation (runs after briefs complete)
+    last_podcast_generation_date = None
+
+    # Track daily subscriber snapshot
+    last_subscriber_snapshot_date = None
+
+    # Track newsletter generation (runs after podcasts)
+    last_newsletter_generation_date = None
+
+    # Track staggered podcast generation for ai_agents (10:10 PM, after main podcasts finish)
+    last_agents_podcast_date = None
+
+    # Track staggered podcast generation for future_medicine (10:25 PM, after ai_agents)
+    last_medicine_podcast_date = None
+
+    # Track KS verticals (staggered at 11 PM to avoid load conflicts with main pipeline)
+    last_ks_brief_date = None
+    last_ks_podcast_date = None
 
     try:
         while True:
@@ -222,15 +302,251 @@ def main():
                 except Exception as e:
                     print(f"⚠️  Error in feed refresh: {e}")
 
-            # Generate nightly briefs at 9:30 PM (after 9 PM feed refresh)
+            # Snapshot subscriber counts once daily (at 9 PM with the feed refresh)
             today = datetime.now().date()
+            if current_hour == 21 and last_subscriber_snapshot_date != today:
+                try:
+                    print(f"\n📊 Daily subscriber snapshot")
+                    result = processor.refresh_subscriber_counts()
+                    print(f"   ✅ {result['updated']} channels snapshotted")
+                    last_subscriber_snapshot_date = today
+                except Exception as e:
+                    print(f"   ⚠️  Subscriber snapshot error: {e}")
+
+            # Generate nightly briefs at 9:30 PM (after 9 PM feed refresh)
             if should_generate_briefs() and last_brief_generation_date != today:
                 try:
                     print(f"\n📰 Nightly brief generation ({datetime.now().strftime('%I:%M %p')})")
-                    generate_all_briefs()
+                    results = generate_all_briefs()
                     last_brief_generation_date = today
+                    # Notify Mattermost
+                    succeeded = [v for v, s in results.items() if s == 'success']
+                    failed = [v for v, s in results.items() if s != 'success']
+                    if succeeded:
+                        notify_mattermost("producer", f"**Briefs generated:** {', '.join(succeeded)}")
+                    if failed:
+                        notify_mattermost("alerts", f"**Brief generation failed:** {', '.join(failed)}")
                 except Exception as e:
                     print(f"⚠️  Error in brief generation: {e}")
+                    notify_mattermost("alerts", f"**Brief generation error:** {e}")
+
+            # Generate podcast episodes at 9:45 PM (after briefs have finished)
+            # Uses mlx-audio TTS (~8GB peak, safe). Skips futures_trends (not ready yet).
+            now = datetime.now()
+            if now.hour == 21 and 45 <= now.minute < 50 and last_podcast_generation_date != today:
+                try:
+                    print(f"\n🎙️  Podcast generation ({now.strftime('%I:%M %p')})")
+                    tts_python = os.path.expanduser("~/tts-env/bin/python3")
+                    pipeline_script = os.path.join(os.path.dirname(os.path.abspath(__file__)), "podcast_pipeline.py")
+
+                    # Skip verticals not ready for TTS: futures_trends (editorial rethink)
+                    # ai_agents runs at 10:10 PM, future_medicine at 10:25 PM — staggered to avoid TTS memory strain
+                    podcast_skip = {'futures_trends', 'ai_agents', 'future_medicine'}
+                    podcast_verticals = [v for v in get_verticals_for_today() if v not in podcast_skip]
+                    podcast_results = {}
+                    for vertical in podcast_verticals:
+                        print(f"  🎙️  Generating {vertical} podcast...")
+                        result = subprocess.run(
+                            [tts_python, pipeline_script, vertical],
+                            capture_output=True, text=True, timeout=1800
+                        )
+                        if result.returncode == 0:
+                            print(f"  ✅ {vertical} podcast done")
+                            podcast_results[vertical] = 'success'
+                        else:
+                            print(f"  ⚠️  {vertical} podcast failed: {result.stderr[-200:]}")
+                            podcast_results[vertical] = 'failed'
+                        print(result.stdout)
+
+                    last_podcast_generation_date = today
+                    # Notify Mattermost
+                    pod_ok = [v for v, s in podcast_results.items() if s == 'success']
+                    pod_fail = [v for v, s in podcast_results.items() if s != 'success']
+                    if pod_ok:
+                        notify_mattermost("producer", f"**Podcasts generated:** {', '.join(pod_ok)}")
+                    if pod_fail:
+                        notify_mattermost("alerts", f"**Podcast generation failed:** {', '.join(pod_fail)}")
+                except Exception as e:
+                    print(f"⚠️  Error in podcast generation: {e}")
+                    notify_mattermost("alerts", f"**Podcast generation error:** {e}")
+
+            # Generate newsletters at 10:00 PM (after briefs and podcasts)
+            # Creates editorial newsletter from each brief and posts as Ghost draft
+            if now.hour == 22 and 0 <= now.minute < 5 and last_newsletter_generation_date != today:
+                try:
+                    print(f"\n📧 Newsletter generation ({now.strftime('%I:%M %p')})")
+                    newsletter_script = os.path.join(os.path.dirname(os.path.abspath(__file__)), "newsletter_generator.py")
+                    ghost_script = os.path.join(os.path.dirname(os.path.abspath(__file__)), "ghost_api.py")
+
+                    newsletter_verticals = get_verticals_for_today()
+                    nl_results = {}
+                    for vertical in newsletter_verticals:
+                        print(f"  📧 Generating {vertical} newsletter...")
+                        result = subprocess.run(
+                            [sys.executable, newsletter_script, vertical],
+                            capture_output=True, text=True, timeout=120
+                        )
+                        if result.returncode == 0:
+                            print(f"  ✅ {vertical} newsletter generated")
+                            nl_results[vertical] = 'generated'
+                            # Post to Ghost as draft
+                            date_str = datetime.now().strftime("%Y-%m-%d")
+                            json_path = os.path.join(
+                                os.path.dirname(os.path.abspath(__file__)),
+                                "newsletter_output",
+                                f"newsletter_{vertical}_{date_str}.json"
+                            )
+                            if os.path.exists(json_path):
+                                ghost_result = subprocess.run(
+                                    [sys.executable, ghost_script, "post", json_path, vertical],
+                                    capture_output=True, text=True, timeout=30
+                                )
+                                if ghost_result.returncode == 0:
+                                    print(f"  📤 {vertical} posted to Ghost as draft")
+                                    nl_results[vertical] = 'posted to Ghost'
+                                else:
+                                    print(f"  ⚠️  Ghost post failed: {ghost_result.stderr[-200:]}")
+                                    nl_results[vertical] = 'generated (Ghost post failed)'
+                        else:
+                            print(f"  ⚠️  {vertical} newsletter failed: {result.stderr[-200:]}")
+                            nl_results[vertical] = 'failed'
+                        print(result.stdout)
+
+                    last_newsletter_generation_date = today
+                    # Notify Mattermost
+                    nl_ok = [f"{v} ({s})" for v, s in nl_results.items() if 'failed' not in s]
+                    nl_fail = [v for v, s in nl_results.items() if 'failed' in s]
+                    if nl_ok:
+                        notify_mattermost("producer", f"**Newsletters:** {', '.join(nl_ok)}")
+                    if nl_fail:
+                        notify_mattermost("alerts", f"**Newsletter failed:** {', '.join(nl_fail)}")
+                except Exception as e:
+                    print(f"⚠️  Error in newsletter generation: {e}")
+                    notify_mattermost("alerts", f"**Newsletter generation error:** {e}")
+
+            # Generate ai_agents podcast at 10:10 PM (staggered from main podcasts at 9:45)
+            # Gives ~20 min gap so mlx-audio memory is fully released before second TTS run
+            if now.hour == 22 and 10 <= now.minute < 15 and last_agents_podcast_date != today:
+                if 'ai_agents' in get_verticals_for_today():
+                    try:
+                        print(f"\n🎙️  AI Agents podcast — staggered run ({now.strftime('%I:%M %p')})")
+                        tts_python = os.path.expanduser("~/tts-env/bin/python3")
+                        pipeline_script = os.path.join(os.path.dirname(os.path.abspath(__file__)), "podcast_pipeline.py")
+                        result = subprocess.run(
+                            [tts_python, pipeline_script, "ai_agents"],
+                            capture_output=True, text=True, timeout=1800
+                        )
+                        if result.returncode == 0:
+                            print(f"  ✅ ai_agents podcast done")
+                            notify_mattermost("producer", "**Podcast generated:** ai_agents")
+                        else:
+                            print(f"  ⚠️  ai_agents podcast failed: {result.stderr[-200:]}")
+                            notify_mattermost("alerts", f"**Podcast failed:** ai_agents")
+                        print(result.stdout)
+                    except Exception as e:
+                        print(f"⚠️  Error in ai_agents podcast: {e}")
+                        notify_mattermost("alerts", f"**AI Agents podcast error:** {e}")
+                last_agents_podcast_date = today
+
+            # Generate future_medicine podcast at 10:25 PM (staggered after ai_agents)
+            # Only runs Mon/Thu when the brief generates
+            if now.hour == 22 and 25 <= now.minute < 30 and last_medicine_podcast_date != today:
+                if 'future_medicine' in get_verticals_for_today():
+                    try:
+                        print(f"\n🎙️  Future of Medicine podcast — staggered run ({now.strftime('%I:%M %p')})")
+                        tts_python = os.path.expanduser("~/tts-env/bin/python3")
+                        pipeline_script = os.path.join(os.path.dirname(os.path.abspath(__file__)), "podcast_pipeline.py")
+                        result = subprocess.run(
+                            [tts_python, pipeline_script, "future_medicine"],
+                            capture_output=True, text=True, timeout=1800
+                        )
+                        if result.returncode == 0:
+                            print(f"  ✅ future_medicine podcast done")
+                            notify_mattermost("producer", "**Podcast generated:** future_medicine")
+                        else:
+                            print(f"  ⚠️  future_medicine podcast failed: {result.stderr[-200:]}")
+                            notify_mattermost("alerts", f"**Podcast failed:** future_medicine")
+                        print(result.stdout)
+                    except Exception as e:
+                        print(f"⚠️  Error in future_medicine podcast: {e}")
+                        notify_mattermost("alerts", f"**Future of Medicine podcast error:** {e}")
+                last_medicine_podcast_date = today
+
+            # Generate KS briefs at 11:00 PM (staggered from main pipeline)
+            # Two verticals: ks_youtube (content intelligence) and ks_examiner (operations report)
+            if now.hour == 23 and 0 <= now.minute < 5 and last_ks_brief_date != today:
+                try:
+                    print(f"\n📰 KS brief generation ({now.strftime('%I:%M %p')})")
+                    ks_verticals = ['ks_youtube', 'ks_examiner']
+                    ks_brief_results = {}
+                    for vertical in ks_verticals:
+                        try:
+                            print(f"  📝 Generating {vertical} brief...")
+                            payload = json.dumps({'vertical': vertical}).encode('utf-8')
+                            req = urllib.request.Request(
+                                'http://localhost:5001/api/briefs/generate',
+                                data=payload,
+                                method='POST',
+                                headers={'Content-Type': 'application/json'}
+                            )
+                            with urllib.request.urlopen(req, timeout=120) as response:
+                                data = json.loads(response.read().decode())
+                            if data.get('success'):
+                                signal_count = data.get('brief', {}).get('signal_count', '?')
+                                print(f"   ✅ {vertical}: {signal_count} signals synthesized")
+                                ks_brief_results[vertical] = 'success'
+                            else:
+                                print(f"   ⚠️  {vertical}: {data.get('error', 'unknown error')}")
+                                ks_brief_results[vertical] = 'failed'
+                        except Exception as e:
+                            print(f"   ⚠️  {vertical} error: {e}")
+                            ks_brief_results[vertical] = 'failed'
+
+                    last_ks_brief_date = today
+                    succeeded = [v for v, s in ks_brief_results.items() if s == 'success']
+                    failed = [v for v, s in ks_brief_results.items() if s != 'success']
+                    if succeeded:
+                        notify_mattermost("producer", f"**KS Briefs generated:** {', '.join(succeeded)}")
+                    if failed:
+                        notify_mattermost("alerts", f"**KS Brief generation failed:** {', '.join(failed)}")
+                except Exception as e:
+                    print(f"⚠️  Error in KS brief generation: {e}")
+                    notify_mattermost("alerts", f"**KS brief generation error:** {e}")
+
+            # Generate KS podcasts at 11:15 PM (staggered 15 min after briefs)
+            # Only ks_youtube gets a podcast — ks_examiner is read-only operational report
+            if now.hour == 23 and 15 <= now.minute < 20 and last_ks_podcast_date != today:
+                try:
+                    print(f"\n🎙️  KS podcast generation ({now.strftime('%I:%M %p')})")
+                    tts_python = os.path.expanduser("~/tts-env/bin/python3")
+                    pipeline_script = os.path.join(os.path.dirname(os.path.abspath(__file__)), "podcast_pipeline.py")
+                    ks_podcast_verticals = ['ks_youtube']
+                    ks_pod_results = {}
+                    for vertical in ks_podcast_verticals:
+                        print(f"  🎙️  Generating {vertical} podcast...")
+                        result = subprocess.run(
+                            [tts_python, pipeline_script, vertical],
+                            capture_output=True, text=True, timeout=1800
+                        )
+                        if result.returncode == 0:
+                            print(f"  ✅ {vertical} podcast done")
+                            ks_pod_results[vertical] = 'success'
+                        else:
+                            print(f"  ⚠️  {vertical} podcast failed: {result.stderr[-200:]}")
+                            ks_pod_results[vertical] = 'failed'
+                        print(result.stdout)
+
+                    last_ks_podcast_date = today
+                    pod_ok = [v for v, s in ks_pod_results.items() if s == 'success']
+                    pod_fail = [v for v, s in ks_pod_results.items() if s != 'success']
+                    if pod_ok:
+                        notify_mattermost("producer", f"**KS Podcasts generated:** {', '.join(pod_ok)}")
+                    if pod_fail:
+                        notify_mattermost("alerts", f"**KS Podcast generation failed:** {', '.join(pod_fail)}")
+                except Exception as e:
+                    print(f"⚠️  Error in KS podcast generation: {e}")
+                    notify_mattermost("alerts", f"**KS podcast generation error:** {e}")
+
     except KeyboardInterrupt:
         print("\n🛑 Stopping monitoring...")
         observer.stop()

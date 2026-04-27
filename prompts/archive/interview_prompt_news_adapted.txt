@@ -1,0 +1,84 @@
+CRITICAL CONTEXT: This transcript came from someone who screenshots videos instead of watching them. They saw something in the title/thumbnail that made them think "I need this information" and captured it for later processing.
+
+Your job: Extract EVERYTHING from this interview, organizing each major theme with the expert's commentary. Stay completely faithful to source content.
+
+## EXECUTIVE SUMMARY REQUIREMENT:
+- One line stating how many major themes covered and content type
+- Example: "Expert covers 6 major themes including AI predictions, economic analysis, and preparation strategies"
+
+## THEMES COVERED:
+- Provide single-line list of each major theme/topic discussed
+- Use format: "Theme/Topic: Brief description of expert's position"
+- Keep each item to one line for quick scanning
+- List in order of coverage or significance
+
+## INTERVIEW ANALYSIS ORGANIZATION:
+- Use numbered format for each distinct theme covered:
+  **1. [Theme Headline with Key Insights]**
+     - [Expert's analysis and commentary]
+     - [Implications and significance discussed]
+  
+- Extract exact details for each theme:
+  - Specific predictions, timelines, percentages, dollar amounts
+  - Named frameworks, systems, acronyms, and models
+  - Personal anecdotes and their illustrative purpose
+  - Preparation advice and recommendations
+  - Expert references and citations
+
+## COMPREHENSIVE EXTRACTION FOR EACH THEME:
+- **Factual Details:** What exactly the expert predicts/argues
+- **Expert Commentary:** Their analysis of what this means
+- **Framework Components:** If they mention any systems or models, extract every component
+- **Strategic Analysis:** Why this matters, what to watch for
+- **Predictions:** Expert's forecasts about outcomes or next steps
+- **Recommendations:** Specific "what you should do" guidance
+
+## EXTRACT SUPPORTING ELABORATIONS:
+- When expert explains why themes matter, capture full reasoning
+- Include their analysis of implications and market positioning insights
+- Extract their predictions about impact, timeline, and implications
+- Capture connections they draw between different themes
+- Get their assessment of risks/opportunities and strategic advantages
+
+## EXPERT PERSPECTIVE EXTRACTION:
+- Extract expert's overall assessment and trend analysis
+- Include their methodology for evaluating significance of predictions
+- Capture any contrarian takes or unique insights they provide
+- Note their track record references or expertise claims
+- Include their recommendations about what to watch or prepare for
+
+## LOGICAL PRESENTATION ORDER:
+- Present themes in order covered (or group by topic if expert organizes that way)
+- Keep expert's commentary immediately under each theme
+- Maintain flow that builds understanding of overall argument
+- Use expert's natural organization and emphasis
+
+## CONCLUSION REQUIREMENT:
+- End with expert's overall assessment of the themes covered
+- Synthesize their key takeaways about future direction
+- Capture their predictions or recommendations for viewers
+- Include their final emphasis on most important themes
+
+## SOURCE FIDELITY REQUIREMENTS:
+- Use exact terminology, frameworks, and technical terms
+- Preserve expert's specific language for assessments and predictions
+- Include their reasoning and analysis logic, not external interpretations
+- Extract their opinions and judgments about each theme
+- Maintain their voice and analytical perspective throughout
+
+## QUALITY STANDARD:
+Output should be so comprehensive that someone could understand all themes and the expert's complete analysis without watching the video. Each theme should be clearly separated with full details and commentary. Zero external synthesis - pure extraction of the interview content.
+
+Video Title: {title}
+Transcript: {transcript}
+
+
+
+
+
+
+
+
+
+
+

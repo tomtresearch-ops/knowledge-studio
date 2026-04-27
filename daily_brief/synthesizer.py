@@ -58,7 +58,21 @@ def prepare_signal_digest(collected_data: dict) -> str:
             if desc:
                 line += f"\n  Desc: {desc[:150]}"
             yt_lines.append(line)
-        sections.append(f"## YOUTUBE ({len(yt_lines)} videos)\n" + "\n".join(yt_lines))
+        sections.append(f"## YOUTUBE SEARCH ({len(yt_lines)} videos)\n" + "\n".join(yt_lines))
+
+    # YouTube Headlines — curated channel scan (topic signal)
+    yth_items = collected_data.get("sources", {}).get("youtube_headlines", [])
+    if yth_items:
+        yth_lines = []
+        for item in yth_items[:30]:
+            title = item.get("title", "")
+            channel = item.get("channel", "")
+            desc = item.get("description", "")
+            line = f"- [{channel}] {title}"
+            if desc:
+                line += f"\n  Desc: {desc[:150]}"
+            yth_lines.append(line)
+        sections.append(f"## YOUTUBE HEADLINES — TOPIC SIGNAL ({len(yth_lines)} recent uploads from curated channels)\n" + "\n".join(yth_lines))
 
     # Knowledge Studio — recently processed
     ks_items = collected_data.get("sources", {}).get("knowledge_studio", [])
@@ -82,11 +96,32 @@ def prepare_signal_digest(collected_data: dict) -> str:
     return "\n\n".join(sections)
 
 
+def get_previous_brief(vertical: str = "ai_tech", db_path: str = None) -> Optional[str]:
+    """Fetch the most recent brief for this vertical from the database."""
+    import sqlite3
+    if db_path is None:
+        db_path = "/Users/bossmdaddy/Desktop/Coding Projects Master/youtube-intelligence/youtube_intelligence.db"
+    try:
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        cursor.execute(
+            "SELECT content FROM daily_briefs WHERE vertical = ? ORDER BY created_at DESC LIMIT 1",
+            (vertical,)
+        )
+        row = cursor.fetchone()
+        conn.close()
+        return row[0] if row else None
+    except Exception:
+        return None
+
+
 def synthesize_brief(collected_data: dict,
                      vertical: str = "ai_tech",
-                     api_key: Optional[str] = None) -> str:
+                     api_key: Optional[str] = None,
+                     previous_brief: Optional[str] = None) -> str:
     """
     Synthesize collected signals into a structured daily brief.
+    If previous_brief is None, automatically fetches the most recent one from DB.
     """
     client = Anthropic(api_key=api_key) if api_key else Anthropic()
 
@@ -96,11 +131,43 @@ def synthesize_brief(collected_data: dict,
     source_counts = {k: len(v) for k, v in collected_data.get("sources", {}).items()}
     total = sum(source_counts.values())
 
-    prompt = f"""You are an elite intelligence analyst producing a daily brief for a tech entrepreneur and AI strategist.
+    # Auto-fetch previous brief for dedup if not provided
+    if previous_brief is None:
+        previous_brief = get_previous_brief(vertical)
+
+    dedup_section = ""
+    if previous_brief:
+        dedup_section = f"""
+## PREVIOUS BRIEF (DO NOT REPEAT)
+
+The following is the most recent brief that was already published. DO NOT repeat the same stories, findings, or framings. If a topic appeared in the previous brief:
+- SKIP it entirely unless there is genuinely new data, a new development, or a meaningful update
+- If there IS a meaningful update, frame it as "Update on [topic]: [new development]" — do not re-explain the original story
+- If the same underlying signals appear in today's raw data but nothing has changed, ignore them
+- Fill the brief with OTHER signals and findings instead — maintain the same depth and density, just with fresh content
+
+Previous brief:
+{previous_brief}
+
+---
+
+"""
+
+    prompt = f"""You are an AI analyst tracking the biggest story in the world as it unfolds in real time. You produce a daily intelligence brief for someone deeply embedded in the AI space — building with it, investing in it, thinking about where it's going.
 
 Today is {today}. You have {total} signals from: {json.dumps(source_counts)}.
+{dedup_section}
+Your job: synthesize these raw signals into a sharp, high-value daily brief. This is NOT a news roundup. Your value is in reading today's moves and telling the listener what they actually mean — what they reveal about the players' strategies, what they signal about where AI is heading, and what most people are missing.
 
-Your job: synthesize these raw signals into a sharp, high-value daily brief. This is NOT a news roundup — it's intelligence analysis. Connect dots, identify patterns, surface what actually matters.
+Think like a detective reading a chess board. When Anthropic restricts third-party tools, what does that tell you about their capital position? When a model quietly gets better without an announcement, what does that mean for the competitive landscape? Connect the dots that others aren't connecting.
+
+## SOURCE HIERARCHY
+Not all signals are equal. Prioritize in this order:
+1. **Corporate announcements, model releases, regulatory filings, research papers** — primary sources. These are the moves themselves.
+2. **YouTube headlines** — topic signal only. If multiple channels cover the same thing, that's a strong indicator of what matters today. Use the signal to identify important topics, but form your OWN analysis from primary sources.
+3. **Hacker News** — developer/builder sentiment. How the technical community is reacting.
+4. **Reddit** — community sentiment. Broader audience reaction.
+5. **Knowledge Studio** — deep context from previously processed analysis.
 
 ## RAW SIGNALS
 
@@ -110,33 +177,36 @@ Your job: synthesize these raw signals into a sharp, high-value daily brief. Thi
 
 Produce the brief in this exact structure:
 
-# AI & TECH DAILY BRIEF — {today}
+# AI DAILY BRIEF — {today}
 
 ## 🔴 TOP SIGNAL
-The single most important thing today. 2-3 sentences max. Why it matters, not just what happened.
+The single most important development today. 2-3 sentences max. Not just what happened — what it reveals and why it matters.
 
-## ⚡ KEY DEVELOPMENTS
-3-5 items. For each:
-- **Bold headline** — 1-2 sentence analysis. Not a summary of the article — your take on why it matters, what it means, what to watch for.
-- Include the source URL on a new line.
+## ⚡ KEY MOVES
+3-4 significant developments. For each:
+- **Bold headline** — 1-2 sentence analysis. What happened is the setup. What it MEANS is the payload. What does this move reveal about the player's strategy? What does it signal about where the space is heading? What are most people missing about it?
+- Include a primary source URL (company blog, research paper, official announcement) on a new line when available. If no primary source URL exists, omit the URL entirely.
 
-## 🔗 EMERGING PATTERNS
-2-3 observations connecting dots ACROSS the signals. Things like: "Three separate signals point to X trend accelerating..." or "The gap between X and Y is widening because..."
+## 🔗 THE BIGGER PICTURE
+2-3 observations connecting today's signals into larger patterns forming over weeks or months. This is where you step back from individual moves and say what's actually forming. "These three developments suggest..." or "This is the third signal in two weeks that..."
 
-This is where you show strategic thinking, not just reporting.
+This section is the most valuable part of the brief — not reporting, but seeing what's taking shape.
 
-## 📚 WORTH YOUR TIME
-2-3 items worth deeper reading/watching. Brief note on why. Include URLs.
+## 📚 DEEP READS
+2-3 primary source documents worth deeper engagement. Company blog posts, research papers, regulatory filings, key essays. Brief note on why each matters. Include URLs.
 
 ## RULES
 - Be opinionated. Take positions. "This matters because..." not "Some people think..."
-- Prioritize actionable insight over comprehensive coverage. Miss things — that's fine. Don't be boring.
-- Write for someone who's already deeply in this space. High context assumed. No explaining what an LLM is.
+- Read the moves for strategy. Don't just report what happened — tell us what it reveals about what the player is actually doing and why.
+- Connect developments to each other. If today's signals relate, thread them into a narrative rather than listing them separately.
+- NEVER cite YouTube creators, podcasters, or commentators by name. If someone's analysis informed your thinking, own the insight — don't attribute it. This brief speaks with its own voice.
+- NEVER include YouTube video links. Only link to primary sources (company blogs, papers, official announcements, regulatory filings).
+- Write for someone who's already deeply in the AI space. High context assumed. No explaining what an LLM is.
 - Keep the entire brief under 800 words. Density over length.
 - If signals are thin or redundant, say so honestly rather than padding.
-- Group related developments rather than listing them separately.
-- For YouTube links, ALWAYS format as a markdown link with title and channel: [Video Title — Channel Name](https://youtube.com/watch?v=...). Never output bare YouTube URLs.
-- For non-YouTube URLs (HN, Reddit, blogs, etc.), put them on their own line.
+- The AGI question is the backdrop. When today's signals provide genuine evidence about AI capability thresholds — not hype, real evidence — note it. But don't force it.
+- For URLs, put them on their own line below the analysis.
+- NEVER use insider shorthand without explanation. Write "Hacker News" not "HN." Write "Y Combinator" not "YC." Your audience may not know tech community jargon — always use full names on first reference.
 """
 
     print(f"\n[Synthesizer] Generating brief ({total} signals → Claude)...")
@@ -196,8 +266,9 @@ if __name__ == "__main__":
     DB_PATH = "/Users/bossmdaddy/Desktop/Coding Projects Master/youtube-intelligence/youtube_intelligence.db"
     OUTPUT_DIR = "/Users/bossmdaddy/Desktop/Coding Projects Master/youtube-intelligence/daily_brief/output"
 
-    # YouTube API key (same one used by youtube_processor.py)
-    YT_API_KEY = "AIzaSyA5VGDmqxRfYzgab5kqcRwxtLckH35BHNQ"
+    from dotenv import load_dotenv
+    load_dotenv(os.path.join(os.path.dirname(__file__), '..', '.env'))
+    YT_API_KEY = os.getenv("YOUTUBE_API_KEY", "")
 
     brief = generate_daily_brief(
         vertical="ai_tech",

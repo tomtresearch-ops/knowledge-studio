@@ -1,0 +1,31 @@
+{
+  "headline": "The AI race just shifted\u2014and it's no longer about smarter models",
+  "subtitle": "ArXiv is buckling under AI's weight, Bezos is buying manufacturing capacity instead of building models, and the real constraint is now supply chain control, not capability.",
+  "editorial_intro": "Three things happened this week that signal the same shift: the research commons is fracturing, capital is abandoning model development for infrastructure, and the companies winning are the ones controlling bottlenecks, not algorithms. If you're building AI products or investing in this space, the game has changed. Here's what it means.",
+  "signals": [
+    {
+      "headline": "ArXiv just declared independence\u2014and it's a signal that research infrastructure is breaking",
+      "body": "The preprint server that's been the backbone of open AI research for 35 years is splitting from Cornell to handle an explosion of submissions and combat low-quality papers. This isn't about governance\u2014it's about capacity. When the foundational commons needs to restructure just to survive the volume, you're watching a load-bearing constraint fail. The result: research noise is becoming an infrastructure problem, not an editorial one.",
+      "whycare": "Stop treating ArXiv as a reliable source of truth for state-of-the-art results. Build your own validation layer instead. The next advantage goes to teams that can filter signal from noise faster than competitors."
+    },
+    {
+      "headline": "Bezos is spending $100B on manufacturing, not models\u2014and it reveals where capital actually sees value",
+      "body": "The former Amazon CEO is raising a massive fund to acquire manufacturing capacity: chip fabs, power infrastructure, compute supply chains. He's not building another AI model. He's betting that owning the factories that build the machines that train the models is more defensible than owning the models themselves. This signals that the model wars are over\u2014the real constraint is supply, and whoever controls supply controls the market.",
+      "whycare": "Watch what gets acquired in the next 60 days. If Bezos targets chip fabrication or power infrastructure, the competitive game has officially shifted from model capability to supply chain verticalization. Plan accordingly."
+    },
+    {
+      "headline": "Cursor used another company's model without clear attribution\u2014and nobody knows how to track provenance",
+      "body": "Moonshot authorized Cursor's use of their model, but the attribution was missing. This isn't a one-off mistake; it's evidence that the entire dependency chain for AI products is invisible. When a $100M+ company can build on top of someone else's work without explicit tracking, you've got a validation crisis waiting to happen. Enterprises using multiple models (Claude, GPT, local alternatives) have no way to know what they're actually relying on.",
+      "whycare": "Build your own provenance tracking layer for any multi-model stack you own. The ecosystem won't provide it. This becomes table stakes for enterprise AI products within 12 months."
+    }
+  ],
+  "bigger_picture": "Three separate games are now competing for the same capital, and they're no longer competing with each other. Bezos plays supply chain control. Google plays vertical integration across applications. OpenAI and Anthropic play model capability\u2014but that moat is eroding as cheaper alternatives match their performance. The insight: model capability is now table stakes, not a differentiator. The winners own either the bottleneck (Bezos, Nvidia, Google) or the orchestration layer that makes unreliable agents actually work in the real world. If you're building or investing, pick your layer and commit. The era of winning on pure model quality alone is over.",
+  "_meta": {
+    "vertical": "ai_tech",
+    "brief_id": 99,
+    "brief_date": "2026-03-22 01:30:55",
+    "signal_count": 285,
+    "source_count": 5,
+    "generated_at": "2026-03-21T22:00:11.475773"
+  }
+}

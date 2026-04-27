@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Agents Brief — March 20, 2026</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Georgia', 'Times New Roman', serif;
+    background: #0a0a0a;
+    color: #e8e4df;
+    line-height: 1.75;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 40px 24px;
+  }
+
+  .header {
+    padding-bottom: 28px;
+    margin-bottom: 32px;
+    border-bottom: 1px solid #2a2520;
+  }
+
+  .masthead {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #7a6f63;
+    margin-bottom: 16px;
+  }
+
+  .issue-title {
+    font-size: 26px;
+    font-weight: 700;
+    color: #f0ebe4;
+    line-height: 1.35;
+    margin-bottom: 12px;
+  }
+
+  .issue-subtitle {
+    font-size: 16px;
+    color: #a89e93;
+    line-height: 1.6;
+    font-style: italic;
+  }
+
+  .issue-meta {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 12px;
+    color: #5a5049;
+    margin-top: 16px;
+  }
+
+  .editorial {
+    font-size: 16px;
+    color: #c4bdb3;
+    line-height: 1.85;
+    margin-bottom: 36px;
+  }
+
+  .signal {
+    margin-bottom: 32px;
+  }
+
+  .signal-number {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #4a9e8e;
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+
+  .signal-headline {
+    font-size: 19px;
+    font-weight: 700;
+    color: #f0ebe4;
+    line-height: 1.4;
+    margin-bottom: 12px;
+  }
+
+  .signal-body {
+    font-size: 15.5px;
+    color: #b5ada3;
+    line-height: 1.85;
+  }
+
+  .signal-whycare {
+    font-size: 15px;
+    color: #4a9e8e;
+    line-height: 1.75;
+    margin-top: 12px;
+    font-weight: 500;
+  }
+
+  .divider {
+    border: none;
+    border-top: 1px solid #1e1a16;
+    margin: 32px 0;
+  }
+
+  .bottomline {
+    background: #111;
+    border-left: 3px solid #4a9e8e;
+    padding: 20px 24px;
+    margin: 36px 0;
+    border-radius: 0 4px 4px 0;
+  }
+
+  .bottomline-label {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 10px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: #4a9e8e;
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+
+  .bottomline-text {
+    font-size: 15.5px;
+    color: #c4bdb3;
+    line-height: 1.8;
+  }
+
+  .cta-row {
+    text-align: center;
+    margin: 36px 0;
+  }
+
+  .cta-button {
+    display: inline-block;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    text-decoration: none;
+    padding: 12px 28px;
+    border-radius: 4px;
+    margin: 0 6px;
+  }
+
+  .cta-primary {
+    background: #4a9e8e;
+    color: #0a0a0a;
+  }
+
+  .cta-secondary {
+    background: #1e1a16;
+    color: #4a9e8e;
+  }
+
+  .footer {
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid #1e1a16;
+    text-align: center;
+  }
+
+  .footer-text {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 11px;
+    color: #4a443d;
+    line-height: 2;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <div class="header">
+    <div class="masthead">AI Agents Brief</div>
+    <div class="issue-title">The Agent Infrastructure Crisis Is Here</div>
+    <div class="issue-subtitle">Context windows are breaking, production deployments are failing, and the framework wars are just beginning.</div>
+    <div class="issue-meta">March 20, 2026 &middot; 3 min read</div>
+  </div>
+
+  <div class="editorial">
+    After six months of real-world agent deployments, the pattern is clear: model capability isn't the bottleneck anymore. Teams are crashing on orchestration, context management, and coordination. Three signals this week reveal where the actual pain points are—and where the next wave of critical infrastructure needs to be built.
+  </div>
+
+  
+  <div class="signal">
+    <div class="signal-number">01</div>
+    <div class="signal-headline">Claude Code's Context Fork Solves the 50% Wall</div>
+    <div class="signal-body">Claude Code just shipped `context_fork`, a feature that isolates expensive operations (document processing, code analysis, data transformation) into separate context windows. Instead of losing coherence as agents consume context, teams can now declare resource-heavy tasks as isolated units that return only summaries to the main thread. This solves what builders have been manually engineering around for months—agents going incoherent after burning 50%+ of their context window.</div>
+    <div class="signal-whycare">Start testing this immediately if you're running multi-hour autonomous workflows. This moves context management from a constant engineering burden into a declarative framework feature—teams that adopt it first will ship reliably while others are still pruning memory manually.</div>
+  </div>
+  <hr class="divider">
+
+  <div class="signal">
+    <div class="signal-number">02</div>
+    <div class="signal-headline">Security Failures Expose Production Readiness Gap</div>
+    <div class="signal-body">LangGraph, the most widely-used agent orchestration framework, disclosed critical checkpoint deserialization vulnerabilities (unsafe msgpack + Redis injection). More alarming than the bugs themselves: builders treating LangGraph as a system-of-record without defensive serialization. This signals the ecosystem hasn't fully graduated from research code to production-grade thinking. Expect a rapid migration toward managed checkpoint services and abstraction layers.</div>
+    <div class="signal-whycare">Audit your checkpoint storage now—if you're relying on homegrown Redis setups, you're exposed. This vulnerability will accelerate adoption of managed services like LangSmith, but more importantly, it's forcing the industry to treat agent state as seriously as database transactions.</div>
+  </div>
+  <hr class="divider">
+
+  <div class="signal">
+    <div class="signal-number">03</div>
+    <div class="signal-headline">Multi-Agent Scheduling Is the Hidden Bottleneck</div>
+    <div class="signal-body">Reddit signals from builders reveal that 4-agent and 22-agent systems fail silently without temporal coordination. Teams are building custom cron-like schedulers to prevent cascading failures—Agent A expects output from Agent B, but B ran at a different time and didn't complete. Current frameworks handle execution graphs but not long-running temporal dependencies. This is a framework gap that will be filled within Q2.</div>
+    <div class="signal-whycare">If you're orchestrating more than two agents, start building or looking for declarative scheduling primitives now. The first framework to ship Airflow-like task dependencies for agents will become the default choice for multi-agent systems.</div>
+  </div>
+  
+
+
+  <div class="bottomline">
+    <div class="bottomline-label">The Bigger Picture</div>
+    <div class="bottomline-text">
+      Production agent failures are no longer about model capability—they're about orchestration, state management, and coordination. The industry consensus from real deployments is that routing, context management, checkpoint integrity, and multi-agent synchronization are now the constraint. This shifts competitive advantage away from model vendors toward framework builders. Simultaneously, cost arbitrage is driving teams toward transparent, auditable systems (Claude-based) over opaque reasoning systems, and local-first execution is crossing into mainstream. The result: a bifurcation between cheap, auditable agents and premium black-box reasoning—but production reliability will force even black-box systems to expose reasoning traces within 12 months. The winners in the next phase won't be the smartest models; they'll be the frameworks that make orchestration invisible.
+    </div>
+  </div>
+
+  <div class="cta-row">
+    <a href="#" class="cta-button cta-primary">Read the Full Brief</a>
+    
+  </div>
+
+  <div class="footer">
+    <div class="footer-text">
+      AI Agents Brief<br>
+      AI-curated intelligence on autonomous agents, agent frameworks, and the agent economy<br>
+      268 signals processed from 7 sources
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

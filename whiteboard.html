@@ -1,0 +1,2317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Whiteboard - Knowledge Studio</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            line-height: 1.6;
+            overflow: hidden;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 40px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(15, 15, 35, 0.95);
+            z-index: 100;
+            position: relative;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: #8b5cf6;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .logo-text h1 {
+            font-size: 24px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .logo-text p {
+            font-size: 14px;
+            color: #a1a1aa;
+            margin: 0;
+        }
+
+        .nav {
+            display: flex;
+            gap: 32px;
+        }
+
+        .nav a {
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .nav a:hover {
+            color: #8b5cf6;
+        }
+
+        .nav a.active {
+            color: #8b5cf6;
+        }
+
+        /* Whiteboard Controls */
+        .whiteboard-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-left: 20px;
+        }
+
+        .control-btn {
+            padding: 8px 16px;
+            background: rgba(139, 92, 246, 0.2);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 6px;
+            color: #d1c4ff;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .control-btn:hover {
+            background: rgba(139, 92, 246, 0.3);
+            border-color: rgba(139, 92, 246, 0.5);
+        }
+
+        .control-btn.primary {
+            background: #8b5cf6;
+            border-color: #8b5cf6;
+            color: white;
+        }
+
+        .control-btn.primary:hover {
+            background: #7c3aed;
+        }
+
+        .control-btn.danger {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+        }
+
+        .control-btn.danger:hover {
+            background: rgba(239, 68, 68, 0.3);
+        }
+
+        .status-indicator {
+            font-size: 12px;
+            color: #a1a1aa;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 6px;
+        }
+
+        .status-indicator.saving {
+            color: #fbbf24;
+        }
+
+        .status-indicator.saved {
+            color: #10b981;
+        }
+
+        /* Toolbar */
+        .toolbar {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 1000;
+            color: #333;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+            pointer-events: auto;
+        }
+
+        .toolbar.collapsed {
+            transform: translateX(calc(-100% + 50px));
+            opacity: 0.8;
+        }
+
+        .toolbar.collapsed .toolbar-content {
+            display: none;
+        }
+        
+        .toolbar.collapsed .toolbar-header {
+            margin-bottom: 0;
+        }
+
+        .toolbar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .toolbar-header-title {
+            font-size: 12px;
+            font-weight: 600;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .toolbar-toggle-btn {
+            width: 24px;
+            height: 24px;
+            border: none;
+            background: #f3f4f6;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            color: #6b7280;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+            pointer-events: auto;
+            position: relative;
+            z-index: 1001;
+        }
+
+        .toolbar-toggle-btn:hover {
+            background: #e5e7eb;
+        }
+
+        .toolbar.collapsed .toolbar-toggle-btn {
+            transform: rotate(180deg);
+        }
+
+        .toolbar-content {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        /* Whiteboard List Sidebar */
+        .whiteboard-sidebar {
+            position: absolute;
+            top: 80px;
+            right: 20px;
+            width: 250px;
+            max-height: calc(100vh - 120px);
+            background: white;
+            border-radius: 8px;
+            padding: 16px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 50;
+            overflow-y: auto;
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+
+        .whiteboard-sidebar.collapsed {
+            transform: translateX(calc(100% - 60px));
+            opacity: 0.7;
+        }
+
+        .whiteboard-sidebar.collapsed .whiteboard-list,
+        .whiteboard-sidebar.collapsed .whiteboard-sidebar-title span:first-child {
+            display: none;
+        }
+
+        .whiteboard-sidebar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .whiteboard-sidebar-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1f2937;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+        }
+
+        .sidebar-toggle-btn {
+            width: 24px;
+            height: 24px;
+            border: none;
+            background: #f3f4f6;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            color: #6b7280;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+
+        .sidebar-toggle-btn:hover {
+            background: #e5e7eb;
+        }
+
+        .whiteboard-sidebar.collapsed .sidebar-toggle-btn {
+            transform: rotate(180deg);
+        }
+
+        .whiteboard-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .whiteboard-item {
+            padding: 10px 12px;
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .whiteboard-item:hover {
+            background: #f3f4f6;
+            border-color: #8b5cf6;
+        }
+
+        .whiteboard-item.active {
+            background: #ede9fe;
+            border-color: #8b5cf6;
+        }
+
+        .whiteboard-item-name {
+            font-size: 13px;
+            font-weight: 500;
+            color: #1f2937;
+            flex: 1;
+        }
+
+        .whiteboard-item-actions {
+            display: flex;
+            gap: 4px;
+        }
+
+        .whiteboard-item-btn {
+            width: 24px;
+            height: 24px;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            transition: background 0.2s;
+        }
+
+        .whiteboard-item-btn:hover {
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        .whiteboard-item-btn.delete:hover {
+            background: rgba(239, 68, 68, 0.2);
+        }
+
+        .tool-section {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .tool-section-title {
+            font-size: 11px;
+            font-weight: 600;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .tool-row {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .tool-btn {
+            width: 40px;
+            height: 40px;
+            border: 2px solid #e5e7eb;
+            border-radius: 6px;
+            background: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            transition: all 0.2s;
+        }
+
+        .tool-btn:hover {
+            border-color: #8b5cf6;
+            background: #f3f4f6;
+        }
+
+        .tool-btn.active {
+            border-color: #8b5cf6;
+            background: #ede9fe;
+        }
+
+        .color-picker-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .color-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .color-picker {
+            width: 100%;
+            height: 40px;
+            border: 2px solid #e5e7eb;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+
+        .color-picker:hover {
+            border-color: #8b5cf6;
+        }
+
+        .brush-size {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .brush-size input {
+            flex: 1;
+            height: 8px;
+            border-radius: 4px;
+            background: #e5e7eb;
+            outline: none;
+        }
+
+        .brush-size-value {
+            font-size: 12px;
+            color: #6b7280;
+            min-width: 30px;
+            text-align: right;
+        }
+
+        /* Whiteboard Container */
+        #whiteboard-container {
+            width: 100vw;
+            height: calc(100vh - 80px);
+            position: relative;
+            background: #ffffff;
+        }
+
+        #canvas {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">
+            <div class="logo-icon">Φ</div>
+            <div class="logo-text">
+                <h1>Knowledge Studio</h1>
+                <p>Your Second Brain</p>
+            </div>
+        </div>
+        <nav class="nav">
+            <a href="/">Capture</a>
+            <a href="/library">Library</a>
+            <a href="/channels">Channels</a>
+            <a href="/intelligence">Intelligence</a>
+            <a href="/stats">Stats</a>
+            <a href="/workflowy">Workflowy</a>
+            <a href="/whiteboard" class="active">Whiteboard</a>
+        </nav>
+        <div class="whiteboard-controls">
+            <div id="mode-toggle" class="control-btn" style="background: rgba(139, 92, 246, 0.3); border: 1px solid rgba(139, 92, 246, 0.5);">
+                <span id="mode-text">Whiteboard</span>
+            </div>
+            <div id="status-indicator" class="status-indicator">Ready</div>
+            <button id="save-as-btn" class="control-btn primary">💾 Save As...</button>
+            <button id="save-btn" class="control-btn" style="display: none;">💾 Save</button>
+            <button id="clear-btn" class="control-btn danger">🗑️ Clear</button>
+        </div>
+    </header>
+
+    <!-- Whiteboard Sidebar -->
+    <div class="whiteboard-sidebar" id="whiteboard-sidebar">
+        <div class="whiteboard-sidebar-header">
+            <div class="whiteboard-sidebar-title">
+                <span>Saved Whiteboards</span>
+                <div style="display: flex; gap: 4px; align-items: center;">
+                    <button id="new-whiteboard-btn" class="control-btn" style="padding: 4px 8px; font-size: 11px;">+ New</button>
+                    <button id="sidebar-toggle-btn" class="sidebar-toggle-btn" title="Collapse/Expand">◀</button>
+                </div>
+            </div>
+        </div>
+        <div class="whiteboard-list" id="whiteboard-list">
+            <!-- Whiteboard list will be populated here -->
+        </div>
+    </div>
+
+        <!-- Whiteboard Container -->
+    <div id="whiteboard-container">
+        <div class="toolbar" id="toolbar">
+            <div class="toolbar-header">
+                <span class="toolbar-header-title" id="toolbar-title">Tools</span>
+                <button id="toolbar-toggle-btn" class="toolbar-toggle-btn" title="Collapse/Expand">▶</button>
+            </div>
+            <div class="toolbar-content" id="toolbar-content">
+                <!-- Whiteboard tools -->
+                <div class="tool-section" id="whiteboard-tools">
+                    <div class="tool-section-title">Tools</div>
+                    <div class="tool-row">
+                    <button id="tool-select" class="tool-btn active" title="Select">↖</button>
+                    <button id="tool-draw" class="tool-btn" title="Draw">✎</button>
+                    <button id="tool-text" class="tool-btn" title="Text">T</button>
+                </div>
+                <div class="tool-row">
+                    <button id="tool-rect" class="tool-btn" title="Rectangle">▭</button>
+                    <button id="tool-circle" class="tool-btn" title="Circle">○</button>
+                    <button id="tool-line" class="tool-btn" title="Line">─</button>
+                    <button id="tool-arrow" class="tool-btn" title="Arrow">→</button>
+                    </div>
+                </div>
+                
+                <div class="tool-section" id="whiteboard-colors">
+                    <div class="color-label">Stroke Color</div>
+                    <input type="color" id="stroke-color" class="color-picker" value="#000000" title="Stroke Color">
+                </div>
+                
+                <div class="tool-section" id="whiteboard-fill">
+                    <div class="color-label">Fill Color</div>
+                    <input type="color" id="fill-color" class="color-picker" value="#ffffff" title="Fill Color">
+                </div>
+                
+                <div class="tool-section" id="whiteboard-brush">
+                    <div class="color-label">Brush Size</div>
+                    <div class="brush-size">
+                        <input type="range" id="brush-size" min="1" max="20" value="3">
+                        <span class="brush-size-value" id="brush-size-value">3px</span>
+                    </div>
+                </div>
+                
+                <!-- Mind Map tools -->
+                <div class="tool-section" id="mindmap-tools" style="display: none;">
+                    <div class="tool-section-title">Mind Map</div>
+                    <div style="font-size: 11px; color: #6b7280; margin-bottom: 8px;">
+                        Click canvas to add node<br>
+                        Double-click node to edit<br>
+                        Cmd+Click to connect nodes<br>
+                        Cmd+Click again for multi-select
+                    </div>
+                    <button id="mindmap-connect-btn" class="control-btn" style="width: 100%; margin-top: 8px; padding: 8px; background: rgba(16, 185, 129, 0.2); border-color: rgba(16, 185, 129, 0.5);">🔗 Connect Nodes</button>
+                    <button id="mindmap-layout-btn" class="control-btn" style="width: 100%; margin-top: 4px; padding: 8px;">🔄 Auto Layout</button>
+                    <button id="mindmap-delete-btn" class="control-btn danger" style="width: 100%; margin-top: 4px; padding: 8px;">🗑️ Delete Selected</button>
+                </div>
+            </div>
+        </div>
+        <canvas id="canvas"></canvas>
+        <div id="mindmap-container" style="display: none; width: 100%; height: 100%; position: absolute; top: 0; left: 0; background: #ffffff;"></div>
+    </div>
+
+    <!-- Fabric.js via CDN (very reliable) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.0/fabric.min.js"></script>
+    <!-- vis.js for mind mapping -->
+    <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+
+    <script>
+        const STORAGE_KEY_PREFIX = 'ks-whiteboard-';
+        const WHITEBOARD_LIST_KEY = 'ks-whiteboard-list';
+        let currentWhiteboardName = 'default';
+        let canvas;
+        let currentTool = 'select';
+        let isDrawing = false;
+        let lastSaved = null;
+        let saveTimeout = null;
+        let currentStrokeColor = '#000000';
+        let currentFillColor = '#ffffff';
+        let currentBrushSize = 3;
+        let history = [];
+        let historyStep = -1;
+        const MAX_HISTORY = 100; // Increased from 50 for more undo steps
+        
+        // Mind Map history for undo/redo
+        let mindMapHistory = [];
+        let mindMapHistoryStep = -1;
+        let mindMapHistorySaving = false;
+        
+        // Mind Map variables
+        let currentMode = 'whiteboard'; // 'whiteboard' or 'mindmap'
+        let network = null;
+        let nodes = new vis.DataSet([]);
+        let edges = new vis.DataSet([]);
+        let nodeIdCounter = 1;
+        let selectedNodeIds = []; // Array for multi-selection
+        let connectMode = false; // Connect mode toggle
+
+        // Initialize canvas
+        function initCanvas() {
+            // Use larger canvas for infinite feel (can be panned)
+            const canvasWidth = Math.max(window.innerWidth, 3000);
+            const canvasHeight = Math.max(window.innerHeight - 80, 3000);
+            
+            canvas = new fabric.Canvas('canvas', {
+                width: window.innerWidth,
+                height: window.innerHeight - 80,
+                backgroundColor: 'white',
+                // Enable panning for infinite canvas feel
+                allowTouchScrolling: true
+            });
+            
+            // Enable panning with spacebar + drag or middle mouse button
+            let isPanning = false;
+            let lastPanPoint = { x: 0, y: 0 };
+            let spacePressed = false;
+            
+            // Track spacebar state
+            document.addEventListener('keydown', (e) => {
+                if (e.code === 'Space' && !e.target.closest('input, textarea')) {
+                    e.preventDefault(); // Prevent page scroll
+                    spacePressed = true;
+                    canvas.defaultCursor = 'grab';
+                    canvas.hoverCursor = 'grab';
+                }
+            });
+            
+            document.addEventListener('keyup', (e) => {
+                if (e.code === 'Space') {
+                    spacePressed = false;
+                    isPanning = false;
+                    canvas.defaultCursor = 'default';
+                    canvas.hoverCursor = 'move';
+                    canvas.selection = true;
+                }
+            });
+            
+            // Panning handler (only when spacebar is pressed or middle mouse)
+            canvas.on('mouse:down', (opt) => {
+                const evt = opt.e;
+                
+                // Don't interfere with UI elements
+                if (evt.target && (evt.target.closest('.toolbar') || evt.target.closest('.whiteboard-sidebar') || evt.target.closest('input') || evt.target.closest('button'))) {
+                    return;
+                }
+                
+                // Only pan if spacebar is pressed, middle mouse, or right mouse
+                // Don't pan if we're using shape tools
+                if (['rect', 'circle', 'line', 'arrow', 'text'].includes(currentTool)) {
+                    return; // Let shape drawing handle it
+                }
+                
+                if (evt.button === 1 || evt.button === 2 || (evt.button === 0 && spacePressed)) {
+                    isPanning = true;
+                    canvas.selection = false;
+                    lastPanPoint = { x: evt.clientX, y: evt.clientY };
+                    evt.preventDefault();
+                }
+            });
+            
+            canvas.on('mouse:move', (opt) => {
+                if (isPanning && (spacePressed || opt.e.button === 1 || opt.e.button === 2)) {
+                    const evt = opt.e;
+                    const vpt = canvas.viewportTransform;
+                    vpt[4] += evt.clientX - lastPanPoint.x;
+                    vpt[5] += evt.clientY - lastPanPoint.y;
+                    canvas.requestRenderAll();
+                    lastPanPoint = { x: evt.clientX, y: evt.clientY };
+                }
+            });
+            
+            canvas.on('mouse:up', () => {
+                if (isPanning && !spacePressed) {
+                    isPanning = false;
+                    canvas.selection = true;
+                }
+            });
+
+            // Load saved state for current whiteboard
+            loadWhiteboard(currentWhiteboardName);
+
+            // Handle canvas changes for auto-save and history
+            // Only save history on meaningful actions, not during drawing
+            canvas.on('object:added', (e) => {
+                // Don't save history for every path point during drawing
+                if (e.target && e.target.type === 'path' && currentTool === 'draw') {
+                    // Skip - we'll save when drawing ends
+                    return;
+                }
+                // Don't save during shape drawing (we'll save on mouse:up)
+                if (isDrawingShape) {
+                    return;
+                }
+                saveHistory();
+                autoSave();
+            });
+            // Debounce object:modified to only save after user finishes moving/resizing
+            let modifyTimeout = null;
+            canvas.on('object:modified', () => {
+                // Clear existing timeout
+                if (modifyTimeout) {
+                    clearTimeout(modifyTimeout);
+                }
+                // Save history after user stops modifying (300ms delay)
+                modifyTimeout = setTimeout(() => {
+                    saveHistory();
+                    autoSave();
+                }, 300);
+            });
+            canvas.on('object:removed', () => {
+                saveHistory();
+                autoSave();
+            });
+            
+            // Shape drawing mouse handlers
+            canvas.on('mouse:down', (e) => {
+                const evt = e.e;
+                
+                // Don't interfere with UI elements
+                if (evt.target && (evt.target.closest('.toolbar') || evt.target.closest('.whiteboard-sidebar') || evt.target.closest('input') || evt.target.closest('button'))) {
+                    return;
+                }
+                
+                // Handle text tool
+                if (currentTool === 'text') {
+                    const pointer = canvas.getPointer(evt);
+                    const text = new fabric.IText('Type here', {
+                        left: pointer.x,
+                        top: pointer.y,
+                        fontFamily: 'Arial',
+                        fontSize: 20,
+                        fill: currentStrokeColor,
+                        editable: true
+                    });
+                    canvas.add(text);
+                    canvas.setActiveObject(text);
+                    text.enterEditing();
+                    text.selectAll();
+                    canvas.renderAll();
+                    saveHistory();
+                    autoSave();
+                    setTool('select'); // Switch back to select after creating text
+                    return;
+                }
+                
+                if (['rect', 'circle', 'line', 'arrow'].includes(currentTool)) {
+                    const pointer = canvas.getPointer(evt);
+                    shapeStartPoint = pointer;
+                    isDrawingShape = true;
+                    canvas.selection = false;
+                }
+            });
+
+            canvas.on('mouse:move', (e) => {
+                if (isDrawingShape && shapeStartPoint && ['rect', 'circle', 'line', 'arrow'].includes(currentTool)) {
+                    const pointer = canvas.getPointer(e.e);
+                    
+                    if (currentShape) {
+                        canvas.remove(currentShape);
+                    }
+
+                    if (currentTool === 'rect') {
+                        const width = Math.abs(pointer.x - shapeStartPoint.x);
+                        const height = Math.abs(pointer.y - shapeStartPoint.y);
+                        const left = Math.min(pointer.x, shapeStartPoint.x);
+                        const top = Math.min(pointer.y, shapeStartPoint.y);
+                        
+                        currentShape = new fabric.Rect({
+                            left: left,
+                            top: top,
+                            width: width,
+                            height: height,
+                            fill: currentFillColor,
+                            stroke: currentStrokeColor,
+                            strokeWidth: 2
+                        });
+                    } else if (currentTool === 'circle') {
+                        const radius = Math.sqrt(
+                            Math.pow(pointer.x - shapeStartPoint.x, 2) + 
+                            Math.pow(pointer.y - shapeStartPoint.y, 2)
+                        ) / 2;
+                        const centerX = (shapeStartPoint.x + pointer.x) / 2;
+                        const centerY = (shapeStartPoint.y + pointer.y) / 2;
+                        
+                        currentShape = new fabric.Circle({
+                            left: centerX - radius,
+                            top: centerY - radius,
+                            radius: radius,
+                            fill: currentFillColor,
+                            stroke: currentStrokeColor,
+                            strokeWidth: 2
+                        });
+                    } else if (currentTool === 'line') {
+                        currentShape = new fabric.Line([
+                            shapeStartPoint.x,
+                            shapeStartPoint.y,
+                            pointer.x,
+                            pointer.y
+                        ], {
+                            stroke: currentStrokeColor,
+                            strokeWidth: 2,
+                            fill: '',
+                            originX: 'center',
+                            originY: 'center'
+                        });
+                    } else if (currentTool === 'arrow') {
+                        // Calculate arrow properties
+                        const dx = pointer.x - shapeStartPoint.x;
+                        const dy = pointer.y - shapeStartPoint.y;
+                        const angle = Math.atan2(dy, dx);
+                        const arrowLength = 15;
+                        const arrowAngle = Math.PI / 6;
+                        
+                        // Create main line (slightly shorter to make room for arrowhead)
+                        const lineLength = Math.sqrt(dx * dx + dy * dy) - arrowLength;
+                        const lineEndX = shapeStartPoint.x + lineLength * Math.cos(angle);
+                        const lineEndY = shapeStartPoint.y + lineLength * Math.sin(angle);
+                        
+                        const line = new fabric.Line([
+                            shapeStartPoint.x,
+                            shapeStartPoint.y,
+                            lineEndX,
+                            lineEndY
+                        ], {
+                            stroke: currentStrokeColor,
+                            strokeWidth: 2,
+                            fill: ''
+                        });
+                        
+                        // Create arrowhead triangle
+                        const arrowPath = new fabric.Path(
+                            `M ${pointer.x} ${pointer.y} L ${pointer.x - arrowLength * Math.cos(angle - arrowAngle)} ${pointer.y - arrowLength * Math.sin(angle - arrowAngle)} L ${pointer.x - arrowLength * Math.cos(angle + arrowAngle)} ${pointer.y - arrowLength * Math.sin(angle + arrowAngle)} Z`,
+                            {
+                                fill: currentStrokeColor,
+                                stroke: currentStrokeColor,
+                                strokeWidth: 1
+                            }
+                        );
+                        
+                        // Group line and arrowhead
+                        currentShape = new fabric.Group([line, arrowPath], {
+                            left: 0,
+                            top: 0,
+                            originX: 'left',
+                            originY: 'top'
+                        });
+                    }
+
+                    if (currentShape) {
+                        canvas.add(currentShape);
+                        canvas.renderAll();
+                    }
+                }
+            });
+
+            // Save history when drawing ends (mouse up)
+            canvas.on('mouse:up', (e) => {
+                const evt = e.e;
+                
+                // Don't interfere with UI elements
+                if (evt.target && (evt.target.closest('.toolbar') || evt.target.closest('.whiteboard-sidebar') || evt.target.closest('input') || evt.target.closest('button'))) {
+                    return;
+                }
+                
+                // Handle shape drawing completion
+                if (isDrawingShape && currentShape) {
+                    // Finalize the shape
+                    canvas.setActiveObject(currentShape);
+                    
+                    // Enable rotation for lines and arrows
+                    if (currentTool === 'line') {
+                        currentShape.set({
+                            hasControls: true,
+                            hasBorders: true,
+                            lockRotation: false,
+                            borderColor: '#8b5cf6',
+                            cornerColor: '#8b5cf6',
+                            cornerSize: 10,
+                            transparentCorners: false,
+                            hasRotatingPoint: true
+                        });
+                    } else if (currentTool === 'arrow') {
+                        currentShape.set({
+                            hasControls: true,
+                            hasBorders: true,
+                            lockRotation: false,
+                            borderColor: '#8b5cf6',
+                            cornerColor: '#8b5cf6',
+                            cornerSize: 10,
+                            transparentCorners: false,
+                            hasRotatingPoint: true
+                        });
+                    }
+                    
+                    isDrawingShape = false;
+                    shapeStartPoint = null;
+                    const finalShape = currentShape;
+                    currentShape = null;
+                    
+                    // Save history after shape is complete
+                    setTimeout(() => {
+                        saveHistory();
+                        autoSave();
+                    }, 100);
+                    
+                    // Switch back to select tool after drawing
+                    setTool('select');
+                    canvas.selection = true;
+                    canvas.renderAll();
+                } else if (currentTool === 'draw' && e.e && e.e.type === 'mouseup') {
+                    // Small delay to ensure path is complete
+                    setTimeout(() => {
+                        saveHistory();
+                        autoSave();
+                    }, 100);
+                }
+            });
+            
+            // Also save when path creation completes
+            canvas.on('path:created', () => {
+                // Delay to ensure path is fully created
+                setTimeout(() => {
+                    saveHistory();
+                    autoSave();
+                }, 50);
+            });
+
+            // Handle window resize
+            window.addEventListener('resize', () => {
+                canvas.setWidth(window.innerWidth);
+                canvas.setHeight(window.innerHeight - 80);
+                canvas.renderAll();
+            });
+        }
+
+        // Auto-save function
+        // Saves 10 seconds after last change - good balance of safety and performance
+        function autoSave() {
+            if (saveTimeout) {
+                clearTimeout(saveTimeout);
+            }
+
+            saveTimeout = setTimeout(() => {
+                saveToLocalStorage();
+            }, 10000); // 10 seconds - reasonable interval
+        }
+
+        // Get current whiteboard storage key
+        function getStorageKey(name) {
+            return STORAGE_KEY_PREFIX + name;
+        }
+
+        // Load whiteboard by name
+        function loadWhiteboard(name) {
+            currentWhiteboardName = name;
+            const storageKey = getStorageKey(name);
+            const saved = localStorage.getItem(storageKey);
+            
+            if (saved) {
+                try {
+                    const state = JSON.parse(saved);
+                    
+                    // Check if it's a mind map
+                    if (state.type === 'mindmap') {
+                        // Switch to mind map mode if not already
+                        if (currentMode !== 'mindmap') {
+                            switchMode('mindmap');
+                        }
+                        // Load mind map data
+                        nodes.clear();
+                        edges.clear();
+                        nodes.add(state.nodes || []);
+                        edges.add(state.edges || []);
+                        nodeIdCounter = state.nodeIdCounter || 1;
+                        if (network) {
+                            network.setData({ nodes: nodes, edges: edges });
+                        }
+                    } else {
+                        // Switch to whiteboard mode if not already
+                        if (currentMode !== 'whiteboard') {
+                            switchMode('whiteboard');
+                        }
+                        // Load whiteboard canvas
+                        canvas.loadFromJSON(state.canvas, () => {
+                            canvas.renderAll();
+                        });
+                        if (state.lastSaved) {
+                            lastSaved = new Date(state.lastSaved);
+                            updateStatusIndicator();
+                        }
+                    }
+                } catch (e) {
+                    console.error('Error loading:', e);
+                }
+            } else {
+                // New - clear current mode
+                if (currentMode === 'mindmap') {
+                    nodes.clear();
+                    edges.clear();
+                    nodeIdCounter = 1;
+                    if (network) {
+                        network.setData({ nodes: nodes, edges: edges });
+                    }
+                } else {
+                    canvas.clear();
+                    canvas.backgroundColor = 'white';
+                    canvas.renderAll();
+                    lastSaved = null;
+                    updateStatusIndicator();
+                }
+            }
+            
+            // Reset history for new whiteboard
+            if (currentMode === 'whiteboard') {
+                history = [];
+                historyStep = -1;
+                setTimeout(() => {
+                    saveHistory();
+                }, 100);
+            }
+            
+            // Update UI
+            updateWhiteboardList();
+            updateActiveWhiteboard();
+        }
+
+        // Get list of all saved whiteboards
+        function getWhiteboardList() {
+            const list = localStorage.getItem(WHITEBOARD_LIST_KEY);
+            if (list) {
+                try {
+                    return JSON.parse(list);
+                } catch (e) {
+                    return [];
+                }
+            }
+            return [];
+        }
+
+        // Save whiteboard list
+        function saveWhiteboardList(list) {
+            localStorage.setItem(WHITEBOARD_LIST_KEY, JSON.stringify(list));
+        }
+
+        // Add whiteboard to list if not exists
+        function addToWhiteboardList(name) {
+            const list = getWhiteboardList();
+            if (!list.includes(name)) {
+                list.push(name);
+                saveWhiteboardList(list);
+            }
+        }
+
+        // Remove whiteboard from list
+        function removeFromWhiteboardList(name) {
+            const list = getWhiteboardList();
+            const filtered = list.filter(n => n !== name);
+            saveWhiteboardList(filtered);
+        }
+
+        // Update whiteboard list UI
+        function updateWhiteboardList() {
+            const list = getWhiteboardList();
+            const listContainer = document.getElementById('whiteboard-list');
+            if (!listContainer) return;
+            
+            listContainer.innerHTML = '';
+
+            list.forEach(name => {
+                const item = document.createElement('div');
+                item.className = 'whiteboard-item';
+                if (name === currentWhiteboardName) {
+                    item.classList.add('active');
+                }
+                
+                item.innerHTML = `
+                    <span class="whiteboard-item-name">${name}</span>
+                    <div class="whiteboard-item-actions">
+                        <button class="whiteboard-item-btn delete" onclick="deleteWhiteboard('${name}')" title="Delete">🗑️</button>
+                    </div>
+                `;
+                
+                item.addEventListener('click', (e) => {
+                    if (!e.target.closest('.whiteboard-item-btn')) {
+                        loadWhiteboard(name);
+                    }
+                });
+                
+                listContainer.appendChild(item);
+            });
+        }
+
+        // Update active whiteboard indicator
+        function updateActiveWhiteboard() {
+            document.querySelectorAll('.whiteboard-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            const activeItem = Array.from(document.querySelectorAll('.whiteboard-item-name'))
+                .find(el => el.textContent === currentWhiteboardName);
+            if (activeItem) {
+                activeItem.closest('.whiteboard-item').classList.add('active');
+            }
+        }
+
+        // Delete whiteboard
+        window.deleteWhiteboard = function(name) {
+            if (confirm(`Delete whiteboard "${name}"? This cannot be undone.`)) {
+                // Remove from localStorage
+                localStorage.removeItem(getStorageKey(name));
+                removeFromWhiteboardList(name);
+                
+                // If deleting current whiteboard, switch to default
+                if (name === currentWhiteboardName) {
+                    loadWhiteboard('default');
+                } else {
+                    updateWhiteboardList();
+                }
+            }
+        }
+
+        // Save to localStorage
+        function saveToLocalStorage() {
+            const indicator = document.getElementById('status-indicator');
+            indicator.textContent = 'Saving...';
+            indicator.classList.add('saving');
+
+            try {
+                canvas.toJSON(['selectable', 'evented'], (json) => {
+                    const state = {
+                        canvas: json,
+                        lastSaved: new Date().toISOString()
+                    };
+                    const storageKey = getStorageKey(currentWhiteboardName);
+                    localStorage.setItem(storageKey, JSON.stringify(state));
+                    
+                    // Update whiteboard list
+                    addToWhiteboardList(currentWhiteboardName);
+                    updateWhiteboardList();
+                    
+                    lastSaved = new Date();
+                    updateStatusIndicator();
+                });
+            } catch (e) {
+                console.error('Error saving:', e);
+                indicator.textContent = 'Save failed';
+                indicator.style.color = '#ef4444';
+            }
+        }
+
+        // Update status indicator
+        function updateStatusIndicator() {
+            const indicator = document.getElementById('status-indicator');
+            indicator.classList.remove('saving');
+            indicator.classList.add('saved');
+            
+            if (lastSaved) {
+                indicator.textContent = `Saved at ${lastSaved.toLocaleTimeString()}`;
+            } else {
+                indicator.textContent = 'Saved';
+            }
+
+            setTimeout(() => {
+                indicator.classList.remove('saved');
+                if (lastSaved) {
+                    indicator.textContent = `Last saved: ${lastSaved.toLocaleTimeString()}`;
+                } else {
+                    indicator.textContent = 'Ready';
+                }
+            }, 2000);
+        }
+
+        // Tool selection
+        let isDrawingShape = false;
+        let shapeStartPoint = null;
+        let currentShape = null;
+
+        function setTool(tool) {
+            currentTool = tool;
+            document.querySelectorAll('.tool-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`tool-${tool}`).classList.add('active');
+
+            // Reset canvas selection mode
+            canvas.isDrawingMode = false;
+            canvas.selection = false;
+            canvas.defaultCursor = 'crosshair';
+            canvas.hoverCursor = 'crosshair';
+
+            if (tool === 'draw') {
+                canvas.isDrawingMode = true;
+                canvas.freeDrawingBrush.width = currentBrushSize;
+                canvas.freeDrawingBrush.color = currentStrokeColor;
+                canvas.defaultCursor = 'crosshair';
+            } else if (tool === 'select') {
+                canvas.selection = true;
+                canvas.defaultCursor = 'default';
+                canvas.hoverCursor = 'move';
+            } else {
+                // Shape tools - prepare for drawing
+                canvas.selection = false;
+                canvas.defaultCursor = 'crosshair';
+            }
+        }
+
+
+        // Color picker handlers
+        document.getElementById('stroke-color').addEventListener('change', (e) => {
+            currentStrokeColor = e.target.value;
+            if (currentTool === 'draw') {
+                canvas.freeDrawingBrush.color = currentStrokeColor;
+            }
+            // Update selected objects
+            const activeObject = canvas.getActiveObject();
+            if (activeObject && activeObject.type !== 'group') {
+                if (activeObject.stroke !== undefined) {
+                    activeObject.set('stroke', currentStrokeColor);
+                    canvas.renderAll();
+                    autoSave();
+                }
+            }
+        });
+
+        document.getElementById('fill-color').addEventListener('change', (e) => {
+            currentFillColor = e.target.value;
+            // Update selected objects
+            const activeObject = canvas.getActiveObject();
+            if (activeObject && activeObject.type !== 'group') {
+                if (activeObject.fill !== undefined) {
+                    activeObject.set('fill', currentFillColor);
+                    canvas.renderAll();
+                    autoSave();
+                }
+            }
+        });
+
+        // Brush size handler
+        const brushSizeInput = document.getElementById('brush-size');
+        const brushSizeValue = document.getElementById('brush-size-value');
+        brushSizeInput.addEventListener('input', (e) => {
+            currentBrushSize = parseInt(e.target.value);
+            brushSizeValue.textContent = currentBrushSize + 'px';
+            if (currentTool === 'draw') {
+                canvas.freeDrawingBrush.width = currentBrushSize;
+            }
+        });
+
+        // Tool button handlers
+        document.getElementById('tool-select').addEventListener('click', () => setTool('select'));
+        document.getElementById('tool-draw').addEventListener('click', () => setTool('draw'));
+        document.getElementById('tool-text').addEventListener('click', () => {
+            setTool('text');
+        });
+        document.getElementById('tool-rect').addEventListener('click', () => {
+            setTool('rect');
+        });
+        document.getElementById('tool-circle').addEventListener('click', () => {
+            setTool('circle');
+        });
+        document.getElementById('tool-line').addEventListener('click', () => {
+            setTool('line');
+        });
+        document.getElementById('tool-arrow').addEventListener('click', () => {
+            setTool('arrow');
+        });
+
+        // Save button (hidden, but kept for compatibility)
+        const saveBtn = document.getElementById('save-btn');
+        if (saveBtn) {
+            saveBtn.addEventListener('click', () => {
+                saveToLocalStorage();
+            });
+        }
+
+        // Clear button
+        document.getElementById('clear-btn').addEventListener('click', () => {
+            if (currentMode === 'mindmap') {
+                clearMindMap();
+            } else {
+                if (confirm('Are you sure you want to clear the whiteboard? This cannot be undone.')) {
+                    canvas.clear();
+                    canvas.backgroundColor = 'white';
+                    canvas.renderAll();
+                    saveHistory();
+                    saveToLocalStorage();
+                    
+                    const indicator = document.getElementById('status-indicator');
+                    indicator.textContent = 'Cleared';
+                    setTimeout(() => {
+                        indicator.textContent = 'Ready';
+                    }, 2000);
+                }
+            }
+        });
+
+        // Save As button
+        document.getElementById('save-as-btn').addEventListener('click', () => {
+            const name = prompt('Enter name:', currentWhiteboardName);
+            if (name && name.trim()) {
+                const trimmedName = name.trim();
+                // Save current content first
+                if (currentMode === 'mindmap') {
+                    saveMindMap();
+                } else {
+                    saveToLocalStorage();
+                }
+                // Switch to new name
+                currentWhiteboardName = trimmedName;
+                addToWhiteboardList(trimmedName);
+                if (currentMode === 'mindmap') {
+                    saveMindMap();
+                } else {
+                    saveToLocalStorage();
+                }
+                updateWhiteboardList();
+                updateActiveWhiteboard();
+            }
+        });
+
+        // New whiteboard button
+        document.getElementById('new-whiteboard-btn').addEventListener('click', () => {
+            const name = prompt('Enter name for new whiteboard:', 'Whiteboard ' + (getWhiteboardList().length + 1));
+            if (name && name.trim()) {
+                const trimmedName = name.trim();
+                // Save current whiteboard first
+                saveToLocalStorage();
+                // Switch to new whiteboard
+                loadWhiteboard(trimmedName);
+                addToWhiteboardList(trimmedName);
+            }
+        });
+
+        // History management
+        let historySaving = false;
+        function saveHistory() {
+            if (historySaving) return; // Prevent multiple simultaneous saves
+            historySaving = true;
+            
+            // Remove any future history if we're not at the end
+            if (historyStep < history.length - 1) {
+                history = history.slice(0, historyStep + 1);
+            }
+            
+            // Save current state
+            try {
+                const json = canvas.toJSON(['selectable', 'evented']);
+                const jsonString = JSON.stringify(json);
+                
+                // Only save if state actually changed
+                if (history.length === 0 || history[history.length - 1] !== jsonString) {
+                    history.push(jsonString);
+                    historyStep++;
+                    
+                    // Limit history size
+                    if (history.length > MAX_HISTORY) {
+                        history.shift();
+                        historyStep--;
+                    }
+                }
+            } catch (e) {
+                console.error('Error saving history:', e);
+            } finally {
+                historySaving = false;
+            }
+        }
+
+        // Undo function
+        function undo() {
+            if (historyStep > 0) {
+                historyStep--;
+                try {
+                    const state = JSON.parse(history[historyStep]);
+                    canvas.loadFromJSON(state, () => {
+                        canvas.renderAll();
+                        // Don't auto-save on undo/redo to avoid creating new history
+                    }, (o, object) => {
+                        // Callback for each object loaded
+                    });
+                } catch (e) {
+                    console.error('Error undoing:', e);
+                }
+            }
+        }
+
+        // Redo function
+        function redo() {
+            if (historyStep < history.length - 1) {
+                historyStep++;
+                try {
+                    const state = JSON.parse(history[historyStep]);
+                    canvas.loadFromJSON(state, () => {
+                        canvas.renderAll();
+                        // Don't auto-save on undo/redo to avoid creating new history
+                    }, (o, object) => {
+                        // Callback for each object loaded
+                    });
+                } catch (e) {
+                    console.error('Error redoing:', e);
+                }
+            }
+        }
+
+        // Keyboard shortcuts - use capture phase to intercept before browser
+        function setupKeyboardShortcuts() {
+            const handleKeyDown = (e) => {
+                // Don't interfere with UI elements
+                if (e.target.closest('.toolbar') || e.target.closest('.whiteboard-sidebar') || e.target.closest('input') || e.target.closest('button') || e.target.closest('textarea')) {
+                    return;
+                }
+                
+                // Only handle if not typing in an input field
+                if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.isContentEditable) {
+                    return;
+                }
+                
+                // Check if we're editing text - if so, let Fabric.js handle it
+                const activeObject = canvas.getActiveObject();
+                if (activeObject && (activeObject.type === 'i-text' || activeObject.type === 'text') && activeObject.isEditing) {
+                    // Let Fabric.js handle text editing (including delete/backspace)
+                    return;
+                }
+                
+                // Handle Delete key (only when NOT editing text and in whiteboard mode)
+                if (e.key === 'Delete' || e.key === 'Backspace') {
+                    // Only handle in whiteboard mode - let mind map handle its own Delete
+                    if (currentMode === 'whiteboard' && activeObject && !activeObject.isEditing) {
+                        canvas.remove(activeObject);
+                        saveHistory();
+                        autoSave();
+                        canvas.renderAll();
+                    }
+                    // Don't return here - let mind map handler process if in mind map mode
+                    if (currentMode === 'whiteboard') {
+                        return;
+                    }
+                }
+
+                // Cmd+Z or Ctrl+Z for undo
+                if ((e.metaKey || e.ctrlKey) && (e.key === 'z' || e.key === 'Z') && !e.shiftKey) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    e.stopImmediatePropagation();
+                    if (currentMode === 'whiteboard') {
+                        undo();
+                    } else if (currentMode === 'mindmap') {
+                        undoMindMap();
+                    }
+                    return false;
+                }
+                // Cmd+Shift+Z or Ctrl+Shift+Z for redo
+                if ((e.metaKey || e.ctrlKey) && (e.key === 'z' || e.key === 'Z') && e.shiftKey) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    e.stopImmediatePropagation();
+                    if (currentMode === 'whiteboard') {
+                        redo();
+                    } else if (currentMode === 'mindmap') {
+                        redoMindMap();
+                    }
+                    return false;
+                }
+                // Cmd+Y or Ctrl+Y for redo (alternative)
+                if ((e.metaKey || e.ctrlKey) && (e.key === 'y' || e.key === 'Y')) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    e.stopImmediatePropagation();
+                    if (currentMode === 'whiteboard') {
+                        redo();
+                    } else if (currentMode === 'mindmap') {
+                        redoMindMap();
+                    }
+                    return false;
+                }
+            };
+
+            // Use capture phase (true) to catch before browser handles it
+            document.addEventListener('keydown', handleKeyDown, true);
+            
+            // Also make canvas focusable and focus it on click
+            canvas.wrapperEl.setAttribute('tabindex', '0');
+            canvas.wrapperEl.style.outline = 'none';
+            canvas.wrapperEl.addEventListener('click', () => {
+                canvas.wrapperEl.focus();
+            });
+        }
+
+        // Setup sidebar collapse
+        function setupSidebarCollapse() {
+            const sidebar = document.getElementById('whiteboard-sidebar');
+            const toggleBtn = document.getElementById('sidebar-toggle-btn');
+            const newBtn = document.getElementById('new-whiteboard-btn');
+            
+            if (!toggleBtn || !sidebar) return;
+            
+            toggleBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                sidebar.classList.toggle('collapsed');
+                // Show/hide new button when expanded/collapsed
+                if (newBtn) {
+                    if (sidebar.classList.contains('collapsed')) {
+                        newBtn.style.display = 'none';
+                    } else {
+                        newBtn.style.display = 'inline-block';
+                    }
+                }
+            });
+        }
+
+        // Mind Map Functions
+        function initMindMap() {
+            const container = document.getElementById('mindmap-container');
+            if (!container) return;
+            
+            // Set container size
+            container.style.width = window.innerWidth + 'px';
+            container.style.height = (window.innerHeight - 80) + 'px';
+            
+            const data = {
+                nodes: nodes,
+                edges: edges
+            };
+            
+            const options = {
+                nodes: {
+                    shape: 'box',
+                    font: { size: 14, color: '#1f2937' },
+                    color: {
+                        background: '#ffffff',
+                        border: '#8b5cf6',
+                        highlight: {
+                            background: '#ede9fe',
+                            border: '#8b5cf6'
+                        }
+                    },
+                    borderWidth: 2,
+                    shadow: true,
+                    margin: 10
+                },
+                edges: {
+                    color: { color: '#8b5cf6', highlight: '#7c3aed' },
+                    width: 2,
+                    smooth: {
+                        type: 'continuous',
+                        roundness: 0.5
+                    },
+                    arrows: {
+                        to: { enabled: true, scaleFactor: 0.8 }
+                    }
+                },
+                physics: {
+                    enabled: false  // Disable physics by default - only enable during auto-layout
+                },
+                interaction: {
+                    dragNodes: true,
+                    dragView: true,
+                    zoomView: true,
+                    selectConnectedEdges: true,
+                    multiselect: false,  // Disable built-in - we'll handle it manually
+                    zoomSpeed: 0.3,  // Reduce zoom sensitivity (default is 1)
+                    wheelSensitivity: 0.3  // Reduce scroll wheel sensitivity
+                },
+                layout: {
+                    hierarchical: {
+                        enabled: false,
+                        direction: 'UD',
+                        sortMethod: 'directed'
+                    }
+                }
+            };
+            
+            network = new vis.Network(container, data, options);
+            
+            // Track selection changes - this fires AFTER vis.js processes the click
+            network.on('select', (params) => {
+                // Only update if we're not in manual multi-select mode
+                if (params.nodes && !modifierKeyPressed) {
+                    selectedNodeIds = params.nodes;
+                }
+            });
+            
+            // Connection state
+            let connectionStartNode = null;
+            let modifierKeyPressed = false;
+            
+            // Track modifier keys globally
+            document.addEventListener('keydown', (e) => {
+                if (e.metaKey || e.ctrlKey) {
+                    modifierKeyPressed = true;
+                }
+            });
+            
+            // Handle Delete key for mind map - add to container so it's scoped to mind map
+            container.addEventListener('keydown', (e) => {
+                // Handle Delete/Backspace key for deleting selected nodes in mind map mode
+                if (currentMode === 'mindmap' && network) {
+                    if (e.key === 'Delete' || e.key === 'Backspace') {
+                        const selected = network.getSelectedNodes();
+                        if (selected && selected.length > 0) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            deleteSelectedNode();
+                            return false;
+                        }
+                    }
+                }
+            });
+            
+            // Make container focusable so it can receive keyboard events
+            container.setAttribute('tabindex', '0');
+            container.style.outline = 'none';
+            
+            // Focus container when clicking on it so Delete key works
+            container.addEventListener('click', () => {
+                container.focus();
+            });
+            
+            document.addEventListener('keyup', (e) => {
+                if (e.metaKey === false && e.ctrlKey === false) {
+                    modifierKeyPressed = false;
+                }
+            });
+            
+            // Track selection state before vis.js processes clicks
+            let selectionBeforeClick = [];
+            
+            // Also track on mouse events
+            container.addEventListener('mousedown', (e) => {
+                modifierKeyPressed = e.metaKey || e.ctrlKey;
+                // Capture current selection before vis.js processes the click
+                if (network) {
+                    selectionBeforeClick = [...network.getSelectedNodes()];
+                }
+            });
+            
+            container.addEventListener('mouseup', (e) => {
+                // Keep state until next check
+            });
+            
+            // Prevent context menu on Cmd+Click
+            container.addEventListener('contextmenu', (e) => {
+                // If Cmd or Ctrl is pressed, prevent context menu
+                if (e.ctrlKey || e.metaKey) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    return false;
+                }
+            });
+            
+            // Combined click handler
+            network.on('click', (params) => {
+                // Check modifier key from global state or event
+                const isModifierPressed = modifierKeyPressed || 
+                    (params.event && (params.event.ctrlKey || params.event.metaKey)) ||
+                    (params.event && params.event.srcEvent && (params.event.srcEvent.ctrlKey || params.event.srcEvent.metaKey));
+                
+                // Cmd+Click for connections - always enabled (no need for connectMode toggle)
+                // Priority: If we have a connection start node, Cmd+Click creates connection
+                // Otherwise, if no nodes are selected, Cmd+Click starts connection mode
+                if (isModifierPressed && params.nodes.length > 0 && !connectMode) {
+                    if (connectionStartNode !== null) {
+                        // We're in connection mode - create connection
+                        if (connectionStartNode !== params.nodes[0]) {
+                            // Second node clicked - create connection
+                            const targetNode = params.nodes[0];
+                            // Check if edge already exists
+                            const existingEdge = edges.get().find(e => 
+                                (e.from === connectionStartNode && e.to === targetNode) ||
+                                (e.from === targetNode && e.to === connectionStartNode)
+                            );
+                            if (!existingEdge) {
+                                const newEdge = { 
+                                    from: parseInt(connectionStartNode), 
+                                    to: parseInt(targetNode),
+                                    color: { color: '#8b5cf6' },
+                                    arrows: { to: { enabled: true } }
+                                };
+                                edges.add(newEdge);
+                                saveMindMap();
+                            }
+                            // Reset node colors
+                            const startNodeData = nodes.get(connectionStartNode);
+                            const targetNodeData = nodes.get(targetNode);
+                            if (startNodeData) {
+                                nodes.update({ id: connectionStartNode, color: { border: '#8b5cf6', background: '#ffffff' } });
+                            }
+                            if (targetNodeData) {
+                                nodes.update({ id: targetNode, color: { border: '#8b5cf6', background: '#ffffff' } });
+                            }
+                        }
+                        connectionStartNode = null;
+                        network.unselectAll();
+                        return; // Don't process as regular click
+                    } else {
+                        // No connection start - check if we should start connection or do multi-select
+                        const currentSelection = network.getSelectedNodes() || [];
+                        if (currentSelection.length === 0) {
+                            // No nodes selected - start connection mode
+                            connectionStartNode = params.nodes[0];
+                            network.selectNodes([connectionStartNode]);
+                            // Visual feedback
+                            const nodeData = nodes.get(connectionStartNode);
+                            if (nodeData) {
+                                nodes.update({ id: connectionStartNode, color: { border: '#10b981', background: '#d1fae5' } });
+                            }
+                            return; // Don't process as regular click
+                        }
+                        // Otherwise fall through to multi-select logic below
+                    }
+                }
+                
+                // Legacy connectMode support (if button is toggled on)
+                if (connectMode && isModifierPressed && params.nodes.length > 0) {
+                    // Prevent default context menu (vis.js event might not have these methods)
+                    try {
+                        if (params.event && typeof params.event.preventDefault === 'function') {
+                            params.event.preventDefault();
+                        }
+                        if (params.event && typeof params.event.stopPropagation === 'function') {
+                            params.event.stopPropagation();
+                        }
+                        // Also try srcEvent if available
+                        if (params.event && params.event.srcEvent) {
+                            if (typeof params.event.srcEvent.preventDefault === 'function') {
+                                params.event.srcEvent.preventDefault();
+                            }
+                            if (typeof params.event.srcEvent.stopPropagation === 'function') {
+                                params.event.srcEvent.stopPropagation();
+                            }
+                        }
+                    } catch (e) {
+                        // Ignore if methods don't exist
+                    }
+                    
+                    if (connectionStartNode === null) {
+                        // First node selected for connection
+                        connectionStartNode = params.nodes[0];
+                        network.selectNodes([connectionStartNode]);
+                        // Visual feedback
+                        const nodeData = nodes.get(connectionStartNode);
+                        if (nodeData) {
+                            nodes.update({ id: connectionStartNode, color: { border: '#10b981', background: '#d1fae5' } });
+                        }
+                    } else if (connectionStartNode !== params.nodes[0]) {
+                        // Second node clicked - create connection
+                        const targetNode = params.nodes[0];
+                        // Check if edge already exists
+                        const existingEdge = edges.get().find(e => 
+                            (e.from === connectionStartNode && e.to === targetNode) ||
+                            (e.from === targetNode && e.to === connectionStartNode)
+                        );
+                        if (!existingEdge) {
+                            const newEdge = { 
+                                from: parseInt(connectionStartNode), 
+                                to: parseInt(targetNode),
+                                color: { color: '#8b5cf6' },
+                                arrows: { to: { enabled: true } }
+                            };
+                            edges.add(newEdge);
+                            saveMindMap();
+                        }
+                        // Reset node colors
+                        const startNodeData = nodes.get(connectionStartNode);
+                        const targetNodeData = nodes.get(targetNode);
+                        if (startNodeData) {
+                            nodes.update({ id: connectionStartNode, color: { border: '#8b5cf6', background: '#ffffff' } });
+                        }
+                        if (targetNodeData) {
+                            nodes.update({ id: targetNode, color: { border: '#8b5cf6', background: '#ffffff' } });
+                        }
+                        connectionStartNode = null;
+                        network.unselectAll();
+                    } else {
+                        // Same node clicked again - cancel connection
+                        connectionStartNode = null;
+                        network.unselectAll();
+                    }
+                    return; // Don't process as regular click
+                }
+                
+                // If connectMode is false and Cmd is pressed, let vis.js handle multi-select naturally
+                // Don't interfere with vis.js's built-in multi-select behavior
+                
+                // Handle connect mode (alternative to Cmd+Click)
+                if (connectMode && params.nodes.length > 0) {
+                    if (connectionStartNode === null) {
+                        connectionStartNode = params.nodes[0];
+                        network.selectNodes([connectionStartNode]);
+                        const nodeData = nodes.get(connectionStartNode);
+                        if (nodeData) {
+                            nodes.update({ id: connectionStartNode, color: { border: '#10b981', background: '#d1fae5' } });
+                        }
+                        return;
+                    } else if (connectionStartNode !== params.nodes[0]) {
+                        const targetNode = params.nodes[0];
+                        const existingEdge = edges.get().find(e => 
+                            (e.from === connectionStartNode && e.to === targetNode) ||
+                            (e.from === targetNode && e.to === connectionStartNode)
+                        );
+                        if (!existingEdge) {
+                            const newEdge = { 
+                                from: parseInt(connectionStartNode), 
+                                to: parseInt(targetNode),
+                                color: { color: '#8b5cf6' },
+                                arrows: { to: { enabled: true } }
+                            };
+                            edges.add(newEdge);
+                            saveMindMap();
+                        }
+                        const startNodeData = nodes.get(connectionStartNode);
+                        const targetNodeData = nodes.get(targetNode);
+                        if (startNodeData) {
+                            nodes.update({ id: connectionStartNode, color: { border: '#8b5cf6', background: '#ffffff' } });
+                        }
+                        if (targetNodeData) {
+                            nodes.update({ id: targetNode, color: { border: '#8b5cf6', background: '#ffffff' } });
+                        }
+                        connectionStartNode = null;
+                        connectMode = false; // Exit connect mode after connection
+                        updateConnectButton();
+                        network.unselectAll();
+                        return;
+                    }
+                }
+                
+                // Regular click handling
+                if (params.nodes.length === 0 && params.edges.length === 0) {
+                    // Clicked on empty space
+                    // Cancel connection mode if active
+                    if (connectionStartNode !== null) {
+                        const nodeData = nodes.get(connectionStartNode);
+                        if (nodeData) {
+                            nodes.update({ id: connectionStartNode, color: { border: '#8b5cf6', background: '#ffffff' } });
+                        }
+                        connectionStartNode = null;
+                        network.unselectAll();
+                    }
+                    // Add new node
+                    const pos = params.pointer.canvas;
+                    addNode(pos.x, pos.y);
+                } else if (params.nodes.length > 0) {
+                    // Node clicked - handle multi-select manually when Cmd/Ctrl is pressed
+                    const isModifierPressed = modifierKeyPressed || 
+                        (params.event && (params.event.ctrlKey || params.event.metaKey)) ||
+                        (params.event && params.event.srcEvent && (params.event.srcEvent.ctrlKey || params.event.srcEvent.metaKey));
+                    
+                    // If Cmd+Click and we're not connecting, do multi-select
+                    // (Connection logic handles Cmd+Click first, so this only runs if connection didn't happen)
+                    if (isModifierPressed && !connectMode && connectionStartNode === null) {
+                        // Multi-select mode: add/remove node from selection
+                        const clickedNodeId = params.nodes[0];
+                        // Use the selection we captured BEFORE vis.js processed the click
+                        const currentSelection = selectionBeforeClick.length > 0 ? [...selectionBeforeClick] : [];
+                        
+                        // Toggle the clicked node
+                        let newSelection;
+                        if (currentSelection.includes(clickedNodeId)) {
+                            // Deselect if already selected
+                            newSelection = currentSelection.filter(id => id !== clickedNodeId);
+                        } else {
+                            // Add to selection (keep existing selections)
+                            newSelection = [...new Set([...currentSelection, clickedNodeId])];
+                        }
+                        
+                        // Apply the new selection immediately
+                        network.setSelection({ nodes: newSelection, edges: [] });
+                        selectedNodeIds = newSelection;
+                        selectionBeforeClick = newSelection; // Update for next click
+                        
+                        // Don't let vis.js process this as a regular click
+                        return;
+                    } else {
+                        // Single select (no modifier or connectMode is on)
+                        selectedNodeIds = params.nodes;
+                        // Reset connection state on regular click (unless we're in connection mode)
+                        if (!connectMode) {
+                            connectionStartNode = null;
+                        }
+                    }
+                } else {
+                    // Clicked on empty space - clear selection (only if no modifier)
+                    const isModifierPressed = modifierKeyPressed || 
+                        (params.event && (params.event.ctrlKey || params.event.metaKey));
+                    if (!isModifierPressed) {
+                        network.setSelection({ nodes: [], edges: [] });
+                        selectedNodeIds = [];
+                    }
+                }
+            });
+            
+            // Double-click to edit
+            network.on('doubleClick', (params) => {
+                if (params.nodes.length > 0) {
+                    editNode(params.nodes[0]);
+                }
+            });
+        }
+        
+        function addNode(x, y) {
+            const newNode = {
+                id: nodeIdCounter++,
+                label: 'New Node',
+                x: x || Math.random() * 400 + 200,
+                y: y || Math.random() * 400 + 200,
+                fixed: false
+            };
+            nodes.add(newNode);
+            saveMindMap();
+            return newNode.id;
+        }
+        
+        function editNode(nodeId) {
+            const node = nodes.get(nodeId);
+            if (!node) return;
+            
+            const newLabel = prompt('Edit node text:', node.label);
+            if (newLabel !== null && newLabel.trim() !== '') {
+                nodes.update({ id: nodeId, label: newLabel.trim() });
+                saveMindMap();
+            }
+        }
+        
+        function switchMode(newMode) {
+            // Save current content before switching
+            if (currentMode === 'mindmap' && network) {
+                saveMindMap();
+            } else if (currentMode === 'whiteboard' && canvas) {
+                saveToLocalStorage();
+            }
+            
+            currentMode = newMode;
+            const canvasEl = document.getElementById('canvas');
+            const mindmapEl = document.getElementById('mindmap-container');
+            const whiteboardTools = document.getElementById('whiteboard-tools');
+            const mindmapTools = document.getElementById('mindmap-tools');
+            const whiteboardColors = document.getElementById('whiteboard-colors');
+            const whiteboardFill = document.getElementById('whiteboard-fill');
+            const whiteboardBrush = document.getElementById('whiteboard-brush');
+            const modeText = document.getElementById('mode-text');
+            const toolbarTitle = document.getElementById('toolbar-title');
+            
+            if (newMode === 'mindmap') {
+                canvasEl.style.display = 'none';
+                // Focus mind map container so it can receive keyboard events
+                const mindmapContainer = document.getElementById('mindmap-container');
+                if (mindmapContainer) {
+                    mindmapContainer.focus();
+                }
+                mindmapEl.style.display = 'block';
+                // Resize container
+                mindmapEl.style.width = window.innerWidth + 'px';
+                mindmapEl.style.height = (window.innerHeight - 80) + 'px';
+                whiteboardTools.style.display = 'none';
+                whiteboardColors.style.display = 'none';
+                whiteboardFill.style.display = 'none';
+                whiteboardBrush.style.display = 'none';
+                mindmapTools.style.display = 'block';
+                modeText.textContent = 'Mind Map';
+                toolbarTitle.textContent = 'Mind Map';
+                
+                if (!network) {
+                    initMindMap();
+                } else {
+                    // Resize network on window resize
+                    network.setSize(window.innerWidth, window.innerHeight - 80);
+                }
+                // Load mind map for current whiteboard
+                loadMindMap();
+            } else {
+                canvasEl.style.display = 'block';
+                mindmapEl.style.display = 'none';
+                whiteboardTools.style.display = 'block';
+                whiteboardColors.style.display = 'block';
+                whiteboardFill.style.display = 'block';
+                whiteboardBrush.style.display = 'block';
+                mindmapTools.style.display = 'none';
+                modeText.textContent = 'Whiteboard';
+                toolbarTitle.textContent = 'Tools';
+                // Load whiteboard for current name
+                loadWhiteboard(currentWhiteboardName);
+            }
+        }
+        
+        function saveMindMap() {
+            if (currentMode !== 'mindmap') return;
+            
+            const data = {
+                type: 'mindmap',
+                nodes: nodes.get(),
+                edges: edges.get(),
+                nodeIdCounter: nodeIdCounter
+            };
+            
+            const key = STORAGE_KEY_PREFIX + currentWhiteboardName;
+            localStorage.setItem(key, JSON.stringify(data));
+            updateStatus('Saved', 'saved');
+            
+            // Save to history for undo/redo
+            saveMindMapHistory();
+        }
+        
+        function saveMindMapHistory() {
+            if (mindMapHistorySaving) return; // Prevent multiple simultaneous saves
+            mindMapHistorySaving = true;
+            
+            // Remove any future history if we're not at the end
+            if (mindMapHistoryStep < mindMapHistory.length - 1) {
+                mindMapHistory = mindMapHistory.slice(0, mindMapHistoryStep + 1);
+            }
+            
+            // Save current state
+            try {
+                const data = {
+                    nodes: nodes.get(),
+                    edges: edges.get(),
+                    nodeIdCounter: nodeIdCounter
+                };
+                const jsonString = JSON.stringify(data);
+                
+                // Only save if state actually changed
+                if (mindMapHistory.length === 0 || mindMapHistory[mindMapHistory.length - 1] !== jsonString) {
+                    mindMapHistory.push(jsonString);
+                    mindMapHistoryStep++;
+                    
+                    // Limit history size
+                    if (mindMapHistory.length > MAX_HISTORY) {
+                        mindMapHistory.shift();
+                        mindMapHistoryStep--;
+                    }
+                }
+            } catch (e) {
+                console.error('Error saving mind map history:', e);
+            } finally {
+                mindMapHistorySaving = false;
+            }
+        }
+        
+        function undoMindMap() {
+            if (mindMapHistoryStep > 0) {
+                mindMapHistoryStep--;
+                try {
+                    const state = JSON.parse(mindMapHistory[mindMapHistoryStep]);
+                    nodes.clear();
+                    edges.clear();
+                    nodes.add(state.nodes);
+                    edges.add(state.edges);
+                    nodeIdCounter = state.nodeIdCounter || nodeIdCounter;
+                    // Don't save to history during undo
+                    mindMapHistorySaving = true;
+                    const key = STORAGE_KEY_PREFIX + currentWhiteboardName;
+                    const data = {
+                        type: 'mindmap',
+                        nodes: state.nodes,
+                        edges: state.edges,
+                        nodeIdCounter: state.nodeIdCounter
+                    };
+                    localStorage.setItem(key, JSON.stringify(data));
+                    mindMapHistorySaving = false;
+                } catch (e) {
+                    console.error('Error undoing mind map:', e);
+                }
+            }
+        }
+        
+        function redoMindMap() {
+            if (mindMapHistoryStep < mindMapHistory.length - 1) {
+                mindMapHistoryStep++;
+                try {
+                    const state = JSON.parse(mindMapHistory[mindMapHistoryStep]);
+                    nodes.clear();
+                    edges.clear();
+                    nodes.add(state.nodes);
+                    edges.add(state.edges);
+                    nodeIdCounter = state.nodeIdCounter || nodeIdCounter;
+                    // Don't save to history during redo
+                    mindMapHistorySaving = true;
+                    const key = STORAGE_KEY_PREFIX + currentWhiteboardName;
+                    const data = {
+                        type: 'mindmap',
+                        nodes: state.nodes,
+                        edges: state.edges,
+                        nodeIdCounter: state.nodeIdCounter
+                    };
+                    localStorage.setItem(key, JSON.stringify(data));
+                    mindMapHistorySaving = false;
+                } catch (e) {
+                    console.error('Error redoing mind map:', e);
+                }
+            }
+        }
+        
+        function loadMindMap() {
+            if (currentMode !== 'mindmap') return;
+            
+            const key = STORAGE_KEY_PREFIX + currentWhiteboardName;
+            const saved = localStorage.getItem(key);
+            
+            if (saved) {
+                try {
+                    const data = JSON.parse(saved);
+                    if (data.type === 'mindmap') {
+                        nodes.clear();
+                        edges.clear();
+                        nodes.add(data.nodes || []);
+                        edges.add(data.edges || []);
+                        nodeIdCounter = data.nodeIdCounter || 1;
+                        
+                        if (network) {
+                            network.setData({ nodes: nodes, edges: edges });
+                        }
+                    }
+                } catch (e) {
+                    console.error('Error loading mind map:', e);
+                }
+            }
+            
+            if (!network) {
+                initMindMap();
+            }
+            
+            // Initialize history after loading
+            mindMapHistory = [];
+            mindMapHistoryStep = -1;
+            saveMindMapHistory(); // Save initial state
+        }
+        
+        function clearMindMap() {
+            if (confirm('Clear the entire mind map?')) {
+                nodes.clear();
+                edges.clear();
+                nodeIdCounter = 1;
+                saveMindMap();
+            }
+        }
+        
+        function deleteSelectedNode() {
+            // Get currently selected nodes from network (supports multi-select)
+            const selected = network ? network.getSelectedNodes() : [];
+            
+            if (selected && selected.length > 0) {
+                // Remove all selected nodes
+                nodes.remove(selected);
+                
+                // Remove all edges connected to selected nodes
+                const selectedSet = new Set(selected);
+                const edgesToRemove = edges.get().filter(e => 
+                    selectedSet.has(e.from) || selectedSet.has(e.to)
+                );
+                edges.remove(edgesToRemove.map(e => e.id));
+                
+                // Clear selection
+                if (network) {
+                    network.unselectAll();
+                }
+                selectedNodeIds = [];
+                saveMindMap();
+            } else {
+                alert('No nodes selected. Click nodes to select them, or Cmd+Click (Mac) / Ctrl+Click (Windows) for multiple selection.');
+            }
+        }
+        
+        function autoLayout() {
+            if (!network) return;
+            
+            // Enable physics temporarily for layout
+            const options = network.getOptions();
+            options.physics.enabled = true;
+            options.physics.hierarchicalRepulsion = {
+                centralGravity: 0.0,
+                springLength: 200,
+                springConstant: 0.01,
+                nodeDistance: 150,
+                damping: 0.09
+            };
+            options.layout.hierarchical.enabled = true;
+            network.setOptions(options);
+            
+            // After layout settles, disable physics and hierarchical layout
+            setTimeout(() => {
+                options.physics.enabled = false;
+                options.layout.hierarchical.enabled = false;
+                network.setOptions(options);
+                // Fix node positions so they don't move
+                const positions = network.getPositions();
+                nodes.update(Object.keys(positions).map(id => ({
+                    id: parseInt(id),
+                    x: positions[id].x,
+                    y: positions[id].y,
+                    fixed: false  // Allow manual dragging after layout
+                })));
+                saveMindMap();
+            }, 2000);
+        }
+        
+        // Setup mode toggle
+        function setupModeToggle() {
+            const modeToggle = document.getElementById('mode-toggle');
+            if (modeToggle) {
+                modeToggle.addEventListener('click', () => {
+                    const newMode = currentMode === 'whiteboard' ? 'mindmap' : 'whiteboard';
+                    switchMode(newMode);
+                    if (newMode === 'mindmap') {
+                        loadMindMap();
+                    }
+                });
+            }
+            
+            // Mind map controls
+            const connectBtn = document.getElementById('mindmap-connect-btn');
+            const layoutBtn = document.getElementById('mindmap-layout-btn');
+            const deleteBtn = document.getElementById('mindmap-delete-btn');
+            
+            if (connectBtn) {
+                connectBtn.addEventListener('click', () => {
+                    connectMode = !connectMode;
+                    updateConnectButton();
+                    if (!connectMode) {
+                        connectionStartNode = null;
+                        network.unselectAll();
+                    }
+                });
+            }
+            
+            if (layoutBtn) {
+                layoutBtn.addEventListener('click', autoLayout);
+            }
+            
+            if (deleteBtn) {
+                deleteBtn.addEventListener('click', deleteSelectedNode);
+            }
+        }
+        
+        function updateConnectButton() {
+            const connectBtn = document.getElementById('mindmap-connect-btn');
+            const hint = document.getElementById('connect-mode-hint');
+            if (connectBtn) {
+                if (connectMode) {
+                    connectBtn.style.background = 'rgba(16, 185, 129, 0.4)';
+                    connectBtn.style.borderColor = 'rgba(16, 185, 129, 0.8)';
+                    connectBtn.textContent = '✅ Connect Mode (click 2 nodes)';
+                    if (hint) hint.textContent = 'Connect mode active - click 2 nodes';
+                } else {
+                    connectBtn.style.background = 'rgba(16, 185, 129, 0.2)';
+                    connectBtn.style.borderColor = 'rgba(16, 185, 129, 0.5)';
+                    connectBtn.textContent = '🔗 Connect Nodes';
+                    if (hint) hint.textContent = 'Click "Connect" then click 2 nodes';
+                }
+            }
+        }
+        
+        // Setup toolbar collapse
+        function setupToolbarCollapse() {
+            setTimeout(() => {
+                const toolbar = document.getElementById('toolbar');
+                const toggleBtn = document.getElementById('toolbar-toggle-btn');
+                
+                if (!toggleBtn || !toolbar) {
+                    console.error('Toolbar collapse setup failed');
+                    return;
+                }
+                
+                // Use capture phase to catch before canvas
+                toggleBtn.addEventListener('mousedown', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    e.stopImmediatePropagation();
+                    toolbar.classList.toggle('collapsed');
+                    return false;
+                }, true);
+                
+                toggleBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    e.stopImmediatePropagation();
+                    toolbar.classList.toggle('collapsed');
+                    return false;
+                }, true);
+            }, 200);
+        }
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            if (currentMode === 'mindmap' && network) {
+                const container = document.getElementById('mindmap-container');
+                if (container) {
+                    container.style.width = window.innerWidth + 'px';
+                    container.style.height = (window.innerHeight - 80) + 'px';
+                    network.setSize(window.innerWidth, window.innerHeight - 80);
+                }
+            } else if (canvas) {
+                canvas.setWidth(window.innerWidth);
+                canvas.setHeight(window.innerHeight - 80);
+                canvas.renderAll();
+            }
+        });
+
+        // Initialize when page loads
+        window.addEventListener('load', () => {
+            initCanvas();
+            setupSidebarCollapse();
+            setupToolbarCollapse();
+            setupModeToggle();
+            // Setup keyboard shortcuts after canvas is ready
+            setTimeout(() => {
+                saveHistory();
+                setupKeyboardShortcuts();
+                // Initialize whiteboard list
+                updateWhiteboardList();
+                // Ensure default whiteboard is in list
+                if (currentWhiteboardName === 'default') {
+                    addToWhiteboardList('default');
+                    updateWhiteboardList();
+                }
+            }, 100);
+        });
+    </script>
+</body>
+</html>

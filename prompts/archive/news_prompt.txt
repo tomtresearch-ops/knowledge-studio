@@ -1,0 +1,60 @@
+CRITICAL CONTEXT: This transcript came from someone who screenshots videos instead of watching them. They saw something in the title/thumbnail that made them think "I need this information" and captured it for later processing.
+
+Your job: Create a comprehensive, scannable summary that captures everything essential from this content.
+
+---
+
+## SUMMARY
+**LENGTH TARGET: 800-1200 words.** This must be comprehensive yet scannable - readable in 3-4 minutes. The goal is to give the user complete understanding without needing to watch the video.
+
+**STRUCTURE:**
+
+**1. BRIEF CONTEXT (ONLY IF ADDITIVE - 1 clause max)**
+- Half a sentence (a clause) about the host/show - e.g., "Tech news host covers..." - ONLY if it adds context. Skip if obvious or redundant.
+
+**2. MAIN CONTENT (600-1000 words)**
+Provide comprehensive information in flowing narrative paragraphs:
+- Overview: how many developments covered and content type (1-2 sentences)
+- For each major development (prioritize most important):
+  - Headline with key facts (integrated into narrative)
+  - Host's analysis and commentary (narrative paragraphs)
+  - Implications and significance (weave into narrative)
+  - Market impact (integrated)
+- Most important predictions with timelines
+- Host's overall assessment and key takeaways
+- Extended context: background information, connections between developments, deeper reasoning
+
+**3. PROMISED LISTS (IF APPLICABLE)**
+- **If video promises specific deliverables** (e.g., "5 key developments"): List ALL promised items
+- **If it's a descriptive/metaphorical number** (e.g., "what I learned from 500 videos"): Extract the takeaways, NOT a list of 500 items
+- **Distinguish:** Promised deliverables = list them. Descriptive numbers = extract insights.
+
+**4. CONCLUSION (ONLY IF ADDITIVE)**
+Brief wrap-up (1-2 sentences) if it adds value - skip if redundant.
+
+**CRITICAL RULES:**
+- **DO include all major developments** - prioritize most important but cover all significant items
+- **DO include host's full analysis** - their reasoning, assessment, and strategic implications
+- **DO use narrative paragraphs** - flowing, readable prose that weaves information together
+- **DO prioritize the most important developments** - what matters most, but include complete context
+- **DO keep it scannable** - use clear headings, short paragraphs (3-4 sentences max)
+- **DO be smart about lists** - promised deliverables get listed completely, descriptive numbers get insights extracted
+
+**QUALITY BAR:** After reading this summary (3-4 minutes), the user should have complete understanding of the most important developments, the host's key analysis, and strategic implications. They should feel fully informed without needing to watch the video.
+
+---
+
+## SOURCE FIDELITY REQUIREMENTS:
+- Use exact company names, product names, and technical terms
+- Preserve host's specific language for assessments and predictions
+- Include their reasoning and analysis logic, not external interpretations
+- Extract their opinions and judgments about each development
+- Maintain their voice and analytical perspective throughout
+
+## FORMATTING:
+- Comprehensive but scannable - use headings, bullets, and clear structure
+- Zero external synthesis - pure extraction of the roundup content
+- Write densely but readably - include every specific worth knowing
+
+Video Title: {title}
+Transcript: {transcript}

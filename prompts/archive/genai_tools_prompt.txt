@@ -1,0 +1,83 @@
+You're creating a comprehensive but scannable summary for a CEO who captures dozens of AI/tech tool videos daily. Target: 500-600 words. Complete enough to be your primary consumption, tight enough to read in 2-3 minutes.
+
+---
+
+## STRUCTURE
+
+**WHAT THIS COVERS** (1-2 sentences)
+Core topic/tool/update and why it matters right now.
+
+**STRATEGIC CONTEXT** (2-3 sentences, ONLY if essential)
+Include brief exposition ONLY when it provides critical context that makes the rest actionable:
+- Why this approach works now (market timing, policy changes, opportunity windows)
+- Non-obvious reasoning that explains techniques (e.g., "mixing real footage creates cognitive believability")
+- Strategic positioning (when to use this vs alternatives)
+
+Skip generic transitions or obvious statements. If it doesn't add strategic value, cut it.
+
+**KEY POINTS** (The bulk: ~400-500 words)
+Dense, specific, actionable content. Format based on content type:
+
+**For tool lists:**
+- **Tool Name** - one-line description with key capability and specific price ("$29/month" not "affordable")
+- Include all promised tools if it's a "10 tools for X" video
+
+**For workflows/techniques:**
+- Workflow name as header
+- Steps as sub-bullets (one line each)
+- Include critical settings, parameters, exact prompts
+- Tool names in bold with specific model/version when relevant
+- Time estimates when provided ("2-3 hours" not "quick")
+
+**For comparisons:**
+- Side-by-side differentiators: what each does better/worse
+- Specific use cases for each option
+- Price and performance tradeoffs with actual numbers
+- When to choose one over the other
+
+**For updates/releases:**
+- **New feature name** - what it enables and why it matters
+- Specific capabilities unlocked with concrete examples
+- Performance improvements with metrics (not "faster" but "3x faster")
+- Breaking changes or limitations
+
+**For deep dives:**
+- Core capabilities (what it actually does)
+- Complete workflow if demonstrated (mandatory - use workflow format above)
+- Key use cases and applications with specifics
+- **Limitations/drawbacks** - when NOT to use, failure modes, edge cases, cost/time constraints
+
+**ALWAYS include when present:**
+- Specific prices ("$29/month" or "free tier: 100 credits/month")
+- Performance metrics ("processes in 3-5 seconds" not "fast")
+- Exact tool names with versions (Claude 3.5 Sonnet, Midjourney v6, 11Labs v3)
+- Complete workflows (non-negotiable when demonstrated)
+- Limitations and when-not-to-use (as valuable as strengths)
+- Time estimates for processes
+- Technical requirements or dependencies
+
+**BOTTOM LINE** (1-2 sentences)
+Who this is for, when to use it, or key strategic takeaway. Make it actionable.
+
+---
+
+## RULES
+
+- **Target 500-600 words total** - comprehensive but consumable in 2-3 minutes
+- **Use brief exposition (2-3 sentences) only for strategic context** - market timing, non-obvious reasoning, why-this-works explanations
+- **Default to bullets for everything else** - tools, steps, features, insights, recommendations
+- **Be ruthlessly specific:**
+  - "$29/month" not "affordable"
+  - "3-5 seconds" not "fast" 
+  - "Claude 3.5 Sonnet" not "Claude"
+  - "Free tier: 100 generations/month" not "free tier available"
+- **Workflows are mandatory** - if demonstrated, extract complete step-by-step in sub-bullets
+- **Lists must be complete** - if "10 tools" is promised, show all 10
+- **Include limitations** - drawbacks and failure modes are as valuable as strengths
+- **No filler** - every sentence and bullet must add specific, actionable information
+- **Dense but scannable** - use bold for tool names, sub-bullets for steps, brief paragraphs only for strategic context
+
+**QUALITY BAR:** After reading this (2-3 minutes), the reader should have complete understanding without feeling like they're missing critical context. They shouldn't need to watch the video OR read a longer version to feel fully informed and able to execute.
+
+Video Title: {title}
+Transcript: {transcript}

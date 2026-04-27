@@ -1,0 +1,103 @@
+You're creating a focused, scannable summary of a long-form interview (60-120+ minutes) for a trend-spotter who captures dozens of expert conversations. Target: 550-650 words. Capture the essential arguments and signal — prioritize density over exhaustive coverage. Tight enough to read in 3 minutes.
+
+---
+
+## STRUCTURE
+
+**TL;DR** (3-5 lines)
+Capture the full essence of this interview. Who is this person, what is their core argument or insight, and why does it matter? This should be substantive enough that someone reading only these lines understands the real takeaway - not a teaser, but the actual substance. Don't force brevity at the expense of missing something important.
+
+**🔮 SIGNAL EXTRACTION** (120-180 words - Extract FIRST, this is the priority)
+
+Output as **separate bullet points**, one insight per line. Scan the entire conversation for:
+
+• **Predictions**: Any "by 2025/2026...", "in 6 months...", "a year from now..." statements (ALWAYS include timeframe)
+• **Developments**: What's new? Recent announcements, breakthroughs, shifts?
+• **Trend shifts**: What patterns are emerging? What's accelerating/decelerating?
+• **Novel capabilities**: What's now possible that wasn't before?
+• **Who's moving**: Key players, adoption signals, talent/capital shifts?
+• **Expert's experience**: What have THEY personally tried, built, discovered, or found surprising?
+• **Personal motivation**: Why are they working on this? What problem are they solving for themselves? (building for own needs = high signal)
+• **Contrarian signals**: Anything challenging consensus? Unexpected data?
+• **Implications**: Second-order effects? What does this enable or prevent?
+
+**CRITICAL: Each signal gets its own bullet (•). No dense paragraphs. The 15% summary will pull from this section first, so every bullet must stand alone as valuable intelligence.**
+
+**WHAT THIS COVERS** (2-3 sentences)
+Who the expert is (name, credential, key work), their core thesis or main argument, and why this conversation matters right now.
+
+**STRATEGIC CONTEXT** (2-4 sentences, ONLY if essential)
+Include brief exposition ONLY when it provides critical context that makes the rest actionable:
+- How this thinking differs from mainstream consensus (e.g., "most researchers say alignment is solvable; Yampolskiy argues it's fundamentally impossible")
+- Why this expert's position matters (unique data access, contrarian track record, institutional influence)
+- Market/policy timing that makes this urgent (e.g., "with $1.5T infrastructure spend accelerating timelines...")
+
+Skip generic transitions or obvious statements. If it doesn't add strategic value, cut it.
+
+**KEY ARGUMENTS** (The bulk: ~350-400 words)
+Dense, specific extraction of their core thinking. Format based on content type:
+
+**For framework-heavy interviews:**
+- **Framework/Model Name** as header
+- Complete breakdown of all components with explanations
+- For acronyms: spell out each letter with meaning (e.g., "FACE-RIPS: F=Focus (explanation), A=Attention (explanation)...")
+- For process models: numbered steps with reasoning for each
+- For mental models: core logic, application scenarios, limitations
+
+**For prediction-focused interviews:**
+- **Timeline/Topic** as header (e.g., "2026-2027 AGI Capability Threshold")
+- Specific prediction with quantified claims
+- Supporting reasoning and evidence cited
+- Confidence level if stated
+- Conditions or dependencies ("if X happens, then Y by date Z")
+
+**For argument-driven interviews:**
+- **Main Claim** as header
+- 3-5 supporting sub-arguments as bullets (25-35 words each)
+- Each bullet = claim + reasoning + evidence/example
+- Include counterarguments addressed and expert's rebuttal
+- Cite specific studies, data, or examples mentioned
+
+**For multi-topic discussions:**
+Organize by the expert's natural conversation flow. Create headers for each major topic (3-6 topics typical), then extract using formats above within each section.
+
+**ALWAYS include when present:**
+- **Specific numbers**: percentages, dollar amounts, timeframes, quantities ("47% job displacement by 2027" not "significant job loss soon")
+- **Named people/studies**: who said what, which research, what institution ("McKinsey 2024 report" not "recent study")
+- **Complete frameworks**: every component explained, no partial extraction
+- **Exact predictions**: dates, confidence levels, conditions ("70% confident AGI by 2027 if compute scales linearly")
+- **Quantified risks**: "20% unemployment" not "high unemployment"
+- **Direct quotes**: use sparingly (15 words max) only for uniquely powerful phrasing
+- **Limitations acknowledged**: what the expert admits they don't know or where their model breaks down
+
+**CONTEXT** (2-4 sentences, only if genuinely additive - omit entirely if not)
+Add perspective the interview doesn't provide, drawing from world knowledge. Examples: relevant developments since this was recorded, how this expert's view compares to the broader consensus, counterarguments worth knowing, what's missing from their take. This is NOT a conclusion or recap - it's Claude adding something the viewer wouldn't get from the interview alone. If there's nothing real to add, skip this section entirely.
+
+---
+
+## RULES
+
+- **Target 550-650 words total** - focused and consumable in 3 minutes
+- **Signal extraction is mandatory** - predictions, projections, and forward-looking statements are high-value; never bury them
+- **Use brief exposition (2-4 sentences) only for strategic context** - why this expert matters, how they differ from consensus, timing urgency
+- **Default to structured extraction for everything else** - frameworks get broken down, predictions get timelines, arguments get supporting bullets
+- **Be ruthlessly specific:**
+  - "47% job displacement within 24 months" not "significant job losses coming"
+  - "$2.7 trillion global military spending" not "massive military budgets"
+  - "2026-2027 timeline" not "soon"
+  - "McKinsey 2024 labor study" not "recent research"
+  - "70% confidence" not "likely"
+  
+- **Frameworks are mandatory** - if mentioned, extract EVERY component with explanations. Acronyms must be spelled out completely.
+- **No redundancy across sections** - each framework/argument/prediction should appear once in the most logical place
+- **Include expert's reasoning** - not just claims, but WHY they believe it (the logic, evidence, mechanism)
+- **Capture nuance** - conditions, caveats, confidence levels, acknowledged uncertainties
+- **No filler** - every sentence must add specific, substantive information
+- **Dense but scannable** - use headers for major topics, bold for framework names, bullets for supporting points
+
+**QUALITY BAR:** After reading this (5-7 minutes), the reader should have complete understanding of the expert's thinking without feeling like they're missing critical frameworks or predictions. They shouldn't need to watch the 2-hour video to feel fully informed about this expert's perspective and arguments.
+
+IMPORTANT: This video was published on {published_at}. Today's date is {current_date}. Interpret ALL time references in the transcript (e.g., "next year," "in two years," "by 2027") relative to the video's publish date, NOT your training data.
+
+Video Title: {title}
+Transcript: {transcript}

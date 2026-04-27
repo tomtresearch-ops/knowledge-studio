@@ -1,0 +1,32 @@
+{
+  "headline": "Agents Stop Thinking, Start Talking\u2014And It Changes Everything",
+  "subtitle": "Messaging layers are eating orchestration, security is moving into the kernel, and free is winning.",
+  "editorial_intro": "The agent market just completed a quiet inversion. A year ago, we debated which model could reason best. Today, the winners are solving something simpler and more brutal: how do agents actually talk to each other, to humans, and to themselves across time? Three signals converge this week that rewrite the competitive map.",
+  "signals": [
+    {
+      "headline": "Agents Are Becoming Network Peers, Not Task Executors",
+      "body": "Claude Code Channels, the emerging Pilot Protocol, and Telegram/Discord integrations signal a fundamental shift: agents now coordinate asynchronously with each other and humans, not just execute commands. The old model was hierarchical (human calls agent, agent returns result). The new model is distributed\u2014agents are peers in a messaging system, autonomous 24/7 without cloud orchestration. This unlocks genuinely hands-off team workflows.",
+      "whycare": "Start architecting agents as members of a communication layer, not subordinates in a call chain. If you're still building agents that wait for synchronous requests, you're already building yesterday's product."
+    },
+    {
+      "headline": "Security Just Moved From Compliance Theater to the Execution Kernel",
+      "body": "Nvidia's OpenShell embeds role-based access control and action blacklists into the agent runtime itself\u2014not bolted on afterward, not in a policy layer, but in the execution kernel. This is a direct response to real breaches (Meta's data leak from yesterday's brief) and signals that the industry is consolidating around one architectural pattern: security as infrastructure, not as an afterthought. Enterprise deployments will demand this within 90 days.",
+      "whycare": "Evaluate any agent framework you're considering on whether security is baked into the runtime or requires custom implementation. In 90 days, the latter will be a disqualifier for production workloads."
+    },
+    {
+      "headline": "The Free Agent Just Shipped Production Code\u2014And It's Collapsing Margins",
+      "body": "Google AI Studio 2.0 dropped this week with a fully autonomous coding agent that generates multiplayer apps, dashboards, and games from prompts and ships directly to GitHub\u2014for free. This isn't code completion; it's a deployment pipeline. The competitive signal is unmistakable: the gap between \"write a spec\" and \"ship a product\" is now minutes, and zero-cost. Expect immediate pressure on agent platforms that charge per deployment or per artifact.",
+      "whycare": "If you're selling agent tooling, your monetization model needs to shift downstream (managed services, infrastructure lock-in) or you'll lose the game on margin alone. Building for free is now table-stakes for market entry."
+    }
+  ],
+  "bigger_picture": "The agent market is inverting its competitive hierarchy. Cost, security, and reliability now matter more than reasoning capability. In parallel, two architectures are crystallizing: ambient agents (embedded in human workflows via messaging and browsers) and distributed agent networks (agents coordinating with each other). The real battle isn't over which model is smartest\u2014it's over who owns the messaging layer and who can ship at zero marginal cost. Expect consolidation by Q4 around one standard for agent-to-agent communication, and watch for incumbents that can't compete on free to get displaced rapidly.",
+  "footer_note": "Agent signal density this week: VERY HIGH. The binding constraints have shifted from reasoning to operations. Watch: Nvidia's OpenShell adoption in production deployments, Google's downstream monetization strategy, and whether LangChain fixes cross-session memory before Q2 freeze.",
+  "_meta": {
+    "vertical": "ai_agents",
+    "brief_id": 100,
+    "brief_date": "2026-03-22 01:31:49",
+    "signal_count": 264,
+    "source_count": 7,
+    "generated_at": "2026-03-21T22:00:22.994177"
+  }
+}

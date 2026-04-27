@@ -1,0 +1,31 @@
+{
+  "headline": "The Agent Infrastructure Wars Have Begun",
+  "subtitle": "Meta buys the coordination layer, developers abandon function calling, and open models are winning where it matters.",
+  "editorial_intro": "The AI frontier just shifted. It's no longer about which lab trains the best model\u2014it's about who owns the infrastructure where agents actually work. Today's three signals point to a hardening consensus: closed-weight models are losing ground in real deployments, infrastructure beats raw capability, and the operational layer is where competitive advantage lives now.",
+  "signals": [
+    {
+      "headline": "Meta Acquires Moltbook: Agent Coordination Becomes Infrastructure",
+      "body": "Meta isn't buying a social network\u2014it's buying the plumbing for agent-to-agent coordination. Combined with Meta's new inference chip, the strategy is clear: own the hardware, own the coordination layer, own where agents interact. This inverts the org chart entirely. Instead of agents replacing human teams, agents become the team structure itself.",
+      "whycare": "Start thinking about agent orchestration, not just agent capability. If Meta controls how agents coordinate, that's a moat that matters more than model weights. Watch whether this stays closed or opens to external models."
+    },
+    {
+      "headline": "Function Calling Is Already Obsolete\u2014Developers Have Moved On",
+      "body": "The agentic interface that became the standard best practice is being abandoned by teams actually shipping at scale. A former backend lead revealed that systems built without function calling are outperforming those built with it. This signals we're in a local maximum\u2014good enough to establish consensus, but not good enough to stay competitive.",
+      "whycare": "Track what replaces function calling in production. That becomes the next competitive advantage. The developer community is moving faster than research consensus, so pay attention to Reddit and Discord before academic papers."
+    },
+    {
+      "headline": "Open-Weight Models Are Winning in Agentic Coding, and Cost Isn't the Only Reason",
+      "body": "Eight Reddit communities are benchmarking Qwen3.5 and OmniCoder for real agentic workloads. Developers aren't choosing open models just because they're cheaper\u2014they're choosing them because they're more controllable and don't carry ideological overhead. Meanwhile, Anthropic is losing internal credibility over Pentagon work while staying externally transparent about job displacement. The result: open models are consolidating fast in the agentic coding space.",
+      "whycare": "If frontier models aren't winning where agents actually get deployed, closed-weight model makers have a real structural problem. Start benchmarking your agentic workflows on open models locally. The economics and control matter more than raw capability."
+    }
+  ],
+  "bigger_picture": "Three things are converging: infrastructure is decoupling from model capability, developer consensus around open-weight models for agents is hardening faster than predicted, and the labor implications are bifurcating\u2014humans either own verification and decisions, or they compress. Meta, Nvidia, and the open-source ecosystem are all betting on infrastructure plays over model plays. This means competitive advantage is shifting from research (which model trains better) to operations (which stack deploys smarter). If you're building on frontier models, you're betting that pure capability trumps everything else. The market is increasingly skeptical of that bet.",
+  "_meta": {
+    "vertical": "ai_tech",
+    "brief_id": 76,
+    "brief_date": "2026-03-13 01:30:51",
+    "signal_count": 256,
+    "source_count": 5,
+    "generated_at": "2026-03-12T22:01:51.604527"
+  }
+}

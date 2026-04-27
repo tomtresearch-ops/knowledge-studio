@@ -1,0 +1,99 @@
+CRITICAL: Generate content in the EXACT format of the reference image - structured, dense, scannable executive brief with clear hierarchy and bullet points. This is DIRECT TRANSCRIPT EXTRACTION with ZERO LLM synthesis.
+
+## REQUIRED FORMAT STRUCTURE:
+
+**I. [MAJOR SECTION TITLE]**
+**1. [Sub-section Title]:**
+- **Keyword:** Description of key point
+- **Keyword:** Description of key point
+- **Keyword:** Description of key point
+
+**2. [Sub-section Title]:**
+- **Keyword:** Description of key point
+- **Keyword:** Description of key point
+
+**II. [MAJOR SECTION TITLE]**
+**1. [Sub-section Title]:**
+- **Keyword:** Description of key point
+- **Keyword:** Description of key point
+
+## CONTENT REQUIREMENTS:
+
+**MAJOR SECTIONS (I., II., III.):**
+- Use Roman numerals for the speaker's main themes or concepts
+- Bold, large headers that capture their primary topics
+- Extract their natural organizational structure from the transcript
+- Let their content drive the section titles, not imposed templates
+
+**SUB-SECTIONS (1., 2., 3.):**
+- Numbered sub-sections that break down each major theme
+- Bold headers that reflect how the speaker organizes their thoughts
+- Extract their natural sub-topics and frameworks
+- Use their terminology and conceptual groupings
+
+**BULLET POINTS:**
+- Start each bullet with **Bold Keyword:** followed by ONE SENTENCE explanation
+- Extract key terms, concepts, predictions, or frameworks the speaker uses
+- Use their exact terminology as the bold keywords
+- Keep descriptions to exactly ONE SENTENCE - concise but complete
+- Focus on WHAT the speaker is talking about, not analysis
+- Extract their specific claims, predictions, and insights
+
+**DENSITY REQUIREMENTS:**
+- Maximum information density
+- Minimal spacing between elements
+- Every line should contain valuable information
+- No fluff or filler content
+- Extract every significant claim, prediction, and insight
+
+        **EXTRACTION FOCUS:**
+        - Every specific prediction with timeline
+        - Every percentage, statistic, number mentioned
+        - Every framework, acronym, or system they use (especially multi-part frameworks like "Tools, Connection, Truth, Ethics")
+        - Every named person, company, or reference
+        - Every warning or risk factor
+        - Every example or case study
+        - Every contrarian claim with reasoning
+        - Extract their exact frameworks and present them as structured lists
+        - When they mention systems or frameworks, extract each component with one-sentence explanations
+        - Capture their unique terminology and conceptual language
+        - Extract their specific examples and evidence
+        - Look for numbered lists, step-by-step processes, or systematic approaches they describe
+
+**LANGUAGE STYLE:**
+- Use their exact terminology and frameworks
+- Preserve their voice and perspective
+- Include direct quotes for key claims
+- Maintain their reasoning and logic
+- Extract their evidence, not interpretations
+- ZERO LLM synthesis - pure extraction only
+
+## OUTPUT FORMAT:
+Generate content that matches the reference image exactly - structured, dense, scannable executive brief with clear hierarchy, bold keywords, and comprehensive extraction of all insights from the transcript.
+
+        **EXAMPLE FORMAT:**
+        **I. [Speaker's Main Theme/Concept]**
+        **1. [First Sub-topic]:**
+        - **[Key Term]:** One sentence explaining what the speaker means by this term.
+        - **[Key Term]:** One sentence explaining this concept or prediction.
+        - **[Key Term]:** One sentence explaining this framework or system.
+
+        **2. [Second Sub-topic]:**
+        - **[Key Term]:** One sentence explaining this aspect.
+        - **[Key Term]:** One sentence explaining this prediction or insight.
+
+        **II. [Speaker's Second Main Theme]**
+        **1. [Sub-topic]:**
+        - **[Key Term]:** One sentence explanation.
+        - **[Key Term]:** One sentence explanation.
+
+        **OUTPUT STRUCTURE:**
+        - Begin with a brief executive summary (1-2 sentences) providing context
+        - Follow with the structured brief content using Roman numerals and bullet points
+        - End with a brief conclusion (1-2 sentences) synthesizing key implications
+        - NO format explanations or technical notes
+        - NO "I apologize" or "Let me help" statements
+        - Focus on executive value and strategic insights
+
+        Video Title: {title}
+        Transcript: {transcript}

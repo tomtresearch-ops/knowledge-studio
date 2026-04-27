@@ -1,0 +1,88 @@
+You're creating a focused summary of a tool demo, workflow tutorial, or step-by-step process. Target: 250-325 words. Be concise — extract signal and key specs with a futurist lens. Prioritize what's new and notable over exhaustive how-to steps.
+
+---
+
+## TL;DR (3-5 lines)
+Capture the full essence of this video. What tool or workflow is shown, what's the core insight, and why does it matter? This should be substantive enough that someone reading only these lines understands the real takeaway - not a teaser, but the actual substance. Don't force brevity at the expense of missing something important.
+
+---
+
+## 🔮 SIGNAL (Extract FIRST - this is the priority)
+**Goal:** Capture trend-relevant intelligence in scannable bullet format
+**Length:** 100-150 words
+
+Output as **separate bullet points**, one insight per line:
+
+• **Predictions**: Any "in X months/years..." or "imagine this by 2026..." statements (include timeframe)
+• **Developments**: What's genuinely new? Announcements, capabilities, breakthroughs?
+• **Trend shifts**: What patterns does this reveal? What's accelerating/decelerating?
+• **Novel capabilities**: What's now possible that wasn't before?
+• **Who's moving**: Adoption signals, key players, smart money mentioned?
+• **Creator's experience**: What did THEY personally discover, try, or find surprising? What tool choices did they make and why?
+• **Creator's motivation**: Why did they build/explore this? What personal workflow problem were they solving? (vibecoding for their own needs = high signal)
+• **Implications**: What does this mean for the bigger picture?
+
+**CRITICAL: Each signal gets its own bullet. No dense paragraphs. If the creator mentions needing a specific tool (like a web clipper) or discovering something unexpected - that's signal.**
+
+If purely tactical tutorial with no signal: "Tactical tutorial - no trend signal detected."
+
+---
+
+## 🥇 WHAT & WHY (60-80 words)
+Single paragraph: What tool/workflow is shown, what problem it solves, who should care.
+
+---
+
+## 🎯 CREATOR'S EXPERIENCE & KEY STEPS (150-200 words)
+**Prioritize the creator's personal experience over generic how-to steps:**
+
+• What did they actually build/test/try?
+• What worked, what didn't, what surprised them?
+• What tools/integrations did they decide they needed (and why)?
+• Key decision points and their reasoning
+
+**Then** include essential workflow steps - but only the critical ones, not exhaustive detail. If someone needs the full tutorial, they'll watch the video.
+
+---
+
+## 📊 SPECS (80-100 words)
+Bullets covering (as applicable):
+- Pricing/access (cost, tiers, availability)
+- Platform requirements
+- Key capabilities and limitations
+- Performance notes if mentioned
+
+---
+
+## 💡 CONTEXT (2-4 sentences, only if genuinely additive - omit entirely if not)
+Add perspective the video doesn't provide, drawing from world knowledge. Examples: how this tool compares to alternatives not mentioned, relevant updates or limitations the creator missed, broader ecosystem context. This is NOT a conclusion or recap - it's Claude adding something the viewer wouldn't get from the video alone. If there's nothing real to add, skip this section entirely.
+
+---
+
+## FORMATTING REQUIREMENTS
+
+**Word Budget:**
+- TL;DR: 30-50 (2-3 lines)
+- Signal: 80-120 (bullet format, one insight per line)
+- What & Why: 40-60
+- Creator's Experience & Key Steps: 60-80
+- Specs: 40-60
+- Context: 0-30 (only if genuinely additive, otherwise omit)
+- **TOTAL: 250-325 words**
+
+**Signal Format Rules:**
+- Each signal point gets its own bullet (•)
+- One insight per line - no run-on paragraphs
+- Include specific timeframes when predictions are made
+- Capture creator's personal discoveries and tool choices
+
+**Priority Order:**
+1. Signal (predictions, trends, creator discoveries)
+2. Creator's actual experience
+3. Practical specs
+4. Generic workflow steps (minimize)
+
+IMPORTANT: This video was published on {published_at}. Today's date is {current_date}. Interpret ALL time references in the transcript (e.g., "next year," "in two years," "by 2027") relative to the video's publish date, NOT your training data.
+
+Video Title: {title}
+Transcript: {transcript}

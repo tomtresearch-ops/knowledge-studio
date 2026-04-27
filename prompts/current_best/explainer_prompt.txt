@@ -1,0 +1,113 @@
+You're creating a focused, scannable summary of an explainer video - someone presenting a thesis, framework, educational content, protocol, or list of methods/tools. Target: 300-350 words. Be concise — extract the most important information with a futurist lens. Prioritize signal and specifics over exhaustive detail.
+
+---
+
+## STRUCTURE
+
+**TL;DR** (3-5 lines)
+Capture the full essence of the video. What is the core point, why does it matter, and what should the reader walk away knowing? This should be substantive enough that someone reading only these lines understands the real takeaway - not a teaser, but the actual substance. Don't force brevity at the expense of missing something important.
+
+**🔮 SIGNAL** (100-150 words - Extract FIRST, this is the priority)
+
+Output as **separate bullet points**, one insight per line:
+
+• **Predictions**: Any "in X months/years...", "imagine this in 2026...", "heading toward..." (ALWAYS include timeframe)
+• **Developments**: What's genuinely new? Recent breakthroughs, announcements?
+• **Trend shifts**: What patterns does this reveal? What's accelerating/decelerating?
+• **Novel capabilities**: What's now possible that wasn't before? New use cases?
+• **Creator's experience**: What have THEY personally tried, discovered, or found surprising?
+• **Creator's motivation**: Why did they make this? What personal problem were they solving? (building for own workflow = high signal)
+• **Who's moving**: Adoption signals, key players, smart money?
+• **Implications**: What does this mean for the bigger picture?
+
+**CRITICAL: Each signal gets its own bullet (•). No dense paragraphs. The 15% summary pulls from this first, so every bullet must stand alone.**
+
+If purely educational with no trend signal: "Educational content - no trend signal detected."
+
+**WHAT THIS COVERS** (1-2 sentences)
+Speaker/creator (if named), core topic or thesis, and why this matters right now.
+
+**STRATEGIC CONTEXT** (2-3 sentences, ONLY if essential)
+Include brief exposition ONLY when it provides critical context that makes the rest actionable:
+- Why this approach works or differs from alternatives (mechanism, research basis, unique insight)
+- Timing factors that make this relevant now (new research, policy changes, market conditions)
+- Who this is for or when to apply it (use cases, target audience, scenarios)
+
+Skip generic transitions or obvious statements. If it doesn't add strategic value, cut it.
+
+**CORE CONTENT** (The bulk: ~150-200 words)
+Dense, specific extraction. Format based on content type:
+
+**For list-based content ("10 tools for X" or "15 ways to Y"):**
+- List ALL items promised in title (if video promises 15, show all 15)
+- Format: **Item Name/Number** - one-line description with key capability, price, or distinguishing feature
+- Include specific details: costs, versions, requirements, limitations
+- Do NOT summarize as "covers various tools/methods" - extraction must be complete
+
+**For protocols/programs (diet, routine, supplement stack, training method):**
+- Extract COMPLETE protocol with all components
+- **Phase/Step names** as headers if multi-phase
+- Specific dosages, timing, quantities, frequencies ("200mg magnesium before bed" not "take magnesium")
+- Exact parameters: heart rate zones, rep ranges, meal timing, duration
+- What's included AND what's excluded (allowed/forbidden foods, rest days, contraindications)
+- Do NOT summarize as "multi-step approach" - spell out every step
+
+**For study/research compilations ("5 studies show X"):**
+- List ALL studies mentioned with key findings
+- Format: **Study citation or description** - core finding with specific metrics
+- Include: sample size, duration, key results, limitations if discussed
+- Preserve actual numbers: "23% improvement" not "significant improvement"
+
+**For frameworks/mental models:**
+- **Framework name** as header
+- Complete breakdown of all components
+- For acronyms: spell out each letter with meaning and explanation
+- For process models: numbered steps with reasoning for each
+- Application scenarios and limitations
+
+**For thesis/argument content:**
+- **Main claim** as header
+- 3-5 supporting sub-arguments as bullets (25-35 words each)
+- Each bullet = claim + reasoning + evidence/example
+- Include counterarguments addressed and rebuttal
+- Cite specific studies, data, or examples mentioned
+
+**ALWAYS include when present:**
+- **Specific numbers**: dosages, percentages, dollar amounts, timeframes, quantities
+- **Complete lists**: if "10 X" promised, show all 10 with details
+- **Exact protocols**: every step, timing, parameter spelled out
+- **Named studies/sources**: who conducted it, sample size, key finding
+- **Prices and versions**: "$29/month" or "free tier: 100 credits", "ChatGPT-4" not "ChatGPT"
+- **Limitations/contraindications**: when NOT to use, who shouldn't do this, failure modes
+- **Direct quotes**: use sparingly (10 words max) only for uniquely powerful phrasing
+
+**CONTEXT** (2-4 sentences, only if genuinely additive - omit entirely if not)
+Add perspective the video doesn't provide, drawing from world knowledge. Examples: relevant developments the creator didn't mention, how this fits into a broader trend, counterarguments worth knowing, what's missing from this take. This is NOT a conclusion or recap - it's Claude adding something the viewer wouldn't get from the video alone. If there's nothing real to add, skip this section entirely.
+
+---
+
+## RULES
+
+- **Target 300-350 words total** - concise and consumable in 1-2 minutes
+- **Signal extraction is mandatory** - predictions, projections, and forward-looking statements are high-value; never bury them
+- **Use brief exposition (2-3 sentences) only for strategic context** - mechanism, timing, differentiation
+- **Default to complete extraction for everything else** - lists, protocols, studies, frameworks must be fully spelled out
+- **Be ruthlessly specific:**
+  - "200mg magnesium glycinate before bed" not "take magnesium supplement"
+  - "Zone 2: 60-70% max heart rate, 45-60 minutes, 3-4x/week" not "moderate cardio regularly"
+  - "$29/month for Pro tier" not "affordable subscription"
+  - "Northwestern 2023 study, n=847, 23% improvement" not "recent research shows benefits"
+  
+- **Lists are mandatory and complete** - if "15 tools" promised, show all 15. If "7-step protocol," show all 7 steps with details.
+- **Protocols need exact parameters** - dosages, timing, quantities, frequencies, heart rates, rep ranges, meal timing
+- **No summarizing away detail** - "multi-phase approach" or "various methods discussed" is a failure. Spell it out.
+- **Include what NOT to do** - exclusions, contraindications, limitations, failure modes
+- **No filler** - every sentence and bullet must add specific, actionable information
+- **Dense but scannable** - use headers for major sections, bold for item names, bullets for supporting points
+
+**QUALITY BAR:** After reading this (2-3 minutes), the reader should be able to execute the protocol, use the tools, or understand the complete framework without watching the video. If it's a "10 tools" video, they have all 10. If it's a supplement protocol, they know exactly what to buy and when to take it. If it's a framework, they understand every component.
+
+IMPORTANT: This video was published on {published_at}. Today's date is {current_date}. Interpret ALL time references in the transcript (e.g., "next year," "in two years," "by 2027") relative to the video's publish date, NOT your training data.
+
+Video Title: {title}
+Transcript: {transcript}

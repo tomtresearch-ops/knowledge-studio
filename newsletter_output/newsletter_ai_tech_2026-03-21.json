@@ -1,0 +1,31 @@
+{
+  "headline": "The Real AI Race Isn't About Models Anymore",
+  "subtitle": "Medical AI is silently failing in production, Anthropic and Google are fighting over different bottlenecks, and GPU access just became a federal crime.",
+  "editorial_intro": "Three things happened this week that reveal what actually matters in AI right now\u2014and it's not model capability. The constraint that wins determines who owns the next decade of AI infrastructure. Here's what you need to see.",
+  "signals": [
+    {
+      "headline": "Medical AI Degrades 66% in the Real World\u2014and No One's Catching It",
+      "body": "A major study shows that medical AI trained on automatically-labeled data performs fine on benchmarks but fails catastrophically in production\u2014a 66% performance drop that standard evaluations completely miss. The entire industry has optimized for measuring what's easy (benchmark scores) rather than what matters (robustness to real data). This isn't a model problem. It's a validation problem.",
+      "whycare": "Start treating validation infrastructure and data quality as your competitive advantage, not an afterthought. The vendors that can credibly certify performance in *your* actual environment\u2014not theirs\u2014will capture enterprise deals worth $50B+ that competitors can't even bid on."
+    },
+    {
+      "headline": "Anthropic and Google Are Betting on Completely Different Constraints",
+      "body": "Anthropic shipped Claude Code Channels with permission-gating that silently blocks unauthorized users\u2014betting that enterprises want safety over speed. Google launched AI Studio's free tier that generates full production apps in minutes\u2014betting that adoption velocity and ecosystem lock-in matter more. These aren't competing on the same thing. They're each defending a different bottleneck.",
+      "whycare": "Figure out which constraint your business actually hits first: safety and liability (Anthropic's bet) or developer velocity and cost (Google's bet). Your choice of platform partner should depend on which one is your real constraint, not which one has the fancier feature list."
+    },
+    {
+      "headline": "Compute Access Just Became Worth Federal Prison Time",
+      "body": "Supermicro's co-founder was arrested for allegedly smuggling $2.5B in GPUs to China. That someone would risk federal charges proves what the real scarcity is. Model capability is no longer the binding constraint\u2014access to training compute is. Companies and countries are now explicitly competing for the scarce resource that actually matters.",
+      "whycare": "If you're building AI strategy without securing long-term compute supply, you're building on borrowed time. Watch for M&A in compute infrastructure to accelerate in the next 90 days\u2014that's where the real competitive moats are being built."
+    }
+  ],
+  "bigger_picture": "Three separate battles are happening in parallel, and they all point to the same shift: infrastructure and supply chain now matter more than model capability. Anthropic is defending the permission layer. Google is defending developer experience. And companies everywhere are racing to lock in GPU supply before the scarcity becomes permanent. The winner won't be the lab with the smartest model\u2014it'll be whoever controls the constraint that can't be worked around. For medical AI, that's validation frameworks. For developers, it's ecosystem stickiness. For everyone, it's compute access. The model race is real. But the infrastructure race is where the actual power lives.",
+  "_meta": {
+    "vertical": "ai_tech",
+    "brief_id": 97,
+    "brief_date": "2026-03-21 01:30:52",
+    "signal_count": 345,
+    "source_count": 5,
+    "generated_at": "2026-03-20T22:00:10.205768"
+  }
+}

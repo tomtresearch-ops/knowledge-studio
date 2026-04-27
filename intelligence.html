@@ -1,0 +1,1827 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intelligence - Knowledge Studio</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 40px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: #8b5cf6;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .logo-text h1 {
+            font-size: 24px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .logo-text p {
+            font-size: 14px;
+            color: #a1a1aa;
+            margin: 0;
+        }
+
+        .nav {
+            display: flex;
+            gap: 32px;
+        }
+
+        .nav a {
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .nav a:hover {
+            color: #8b5cf6;
+        }
+
+        .nav a.active {
+            color: #8b5cf6;
+        }
+
+        /* Main Content */
+        .main-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 40px;
+        }
+
+        .page-header {
+            margin-bottom: 40px;
+        }
+
+        .page-header h1 {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .page-header p {
+            font-size: 16px;
+            color: #a1a1aa;
+        }
+
+        /* Sparks Section */
+        .sparks-section {
+            margin-bottom: 32px;
+            background: rgba(20, 20, 40, 0.6);
+            border: 1px solid rgba(251, 191, 36, 0.2);
+            border-radius: 16px;
+            padding: 24px;
+        }
+        .sparks-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+        .sparks-header h2 {
+            font-size: 20px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .sparks-input-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+        .sparks-input-row input {
+            flex: 1;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            border-radius: 10px;
+            color: #e5e7eb;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .sparks-input-row input:focus {
+            border-color: rgba(251, 191, 36, 0.6);
+        }
+        .sparks-input-row input::placeholder {
+            color: #71717a;
+        }
+        .sparks-input-row button {
+            padding: 12px 20px;
+            background: rgba(251, 191, 36, 0.2);
+            border: 1px solid rgba(251, 191, 36, 0.4);
+            color: #fbbf24;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .sparks-input-row button:hover {
+            background: rgba(251, 191, 36, 0.35);
+        }
+        .sparks-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .spark-card {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 10px;
+            transition: all 0.2s;
+        }
+        .spark-card:hover {
+            border-color: rgba(251, 191, 36, 0.2);
+            background: rgba(255, 255, 255, 0.05);
+        }
+        .spark-content {
+            flex: 1;
+            font-size: 14px;
+            color: #e5e7eb;
+            line-height: 1.5;
+        }
+        .spark-meta {
+            font-size: 11px;
+            color: #71717a;
+            margin-top: 4px;
+        }
+        .spark-actions {
+            display: flex;
+            gap: 4px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+        .spark-card:hover .spark-actions {
+            opacity: 1;
+        }
+        .spark-action-btn {
+            background: none;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #a1a1aa;
+            padding: 4px 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+        .spark-action-btn:hover {
+            background: rgba(139, 92, 246, 0.2);
+            border-color: rgba(139, 92, 246, 0.4);
+            color: #e5e7eb;
+        }
+        .spark-action-btn.archive:hover {
+            background: rgba(16, 185, 129, 0.2);
+            border-color: rgba(16, 185, 129, 0.4);
+            color: #34d399;
+        }
+        .spark-action-btn.delete:hover {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: rgba(239, 68, 68, 0.4);
+            color: #fca5a5;
+        }
+        .sparks-empty {
+            text-align: center;
+            padding: 24px;
+            color: #71717a;
+            font-size: 14px;
+        }
+        .sparks-toggle-archived {
+            background: none;
+            border: none;
+            color: #71717a;
+            font-size: 12px;
+            cursor: pointer;
+            padding: 4px 8px;
+            transition: color 0.2s;
+        }
+        .sparks-toggle-archived:hover {
+            color: #a1a1aa;
+        }
+
+        /* Dashboard Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        .intelligence-type-card {
+            background: rgba(20, 20, 40, 0.6);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            border-radius: 16px;
+            padding: 24px;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            min-height: 320px;
+            position: relative;
+        }
+
+        .intelligence-type-card:hover {
+            border-color: rgba(139, 92, 246, 0.4);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(139, 92, 246, 0.15);
+        }
+
+        .intelligence-type-card.dragging {
+            opacity: 0.5;
+            cursor: grabbing;
+        }
+
+        .intelligence-type-card.drag-over {
+            border-color: rgba(139, 92, 246, 0.6);
+            transform: scale(1.02);
+        }
+
+        .drag-handle {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            cursor: grab;
+            color: #a1a1aa;
+            font-size: 18px;
+            padding: 4px;
+            opacity: 0;
+            transition: opacity 0.2s;
+            z-index: 10;
+            user-select: none;
+        }
+
+        .intelligence-type-card:hover .drag-handle {
+            opacity: 1;
+        }
+
+        .drag-handle:active {
+            cursor: grabbing;
+        }
+
+        .type-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 16px;
+            min-height: 64px;
+        }
+
+        .type-icon {
+            width: 48px;
+            height: 48px;
+            min-width: 48px;
+            min-height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            background: rgba(139, 92, 246, 0.2);
+            flex-shrink: 0;
+        }
+
+        .type-title {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .type-title h2 {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            line-height: 1.2;
+        }
+
+        .type-title p {
+            font-size: 13px;
+            color: #a1a1aa;
+            line-height: 1.4;
+            min-height: 36px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .type-stats {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 20px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            min-height: 80px;
+            align-items: flex-start;
+        }
+
+        .stat-item {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #8b5cf6;
+            line-height: 1.2;
+            min-height: 29px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #a1a1aa;
+            margin-top: 4px;
+            line-height: 1.2;
+        }
+
+        .recent-entries {
+            margin-top: auto;
+            margin-bottom: 16px;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .recent-entry {
+            background: rgba(139, 92, 246, 0.05);
+            border: 1px solid rgba(139, 92, 246, 0.1);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 12px;
+            transition: all 0.2s ease;
+        }
+
+        .recent-entry:hover {
+            background: rgba(139, 92, 246, 0.1);
+            border-color: rgba(139, 92, 246, 0.2);
+        }
+
+        .recent-entry-title {
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 6px;
+            color: #ffffff;
+        }
+
+        .recent-entry-meta {
+            font-size: 12px;
+            color: #a1a1aa;
+            display: flex;
+            gap: 12px;
+        }
+
+        .view-all-btn {
+            width: 100%;
+            padding: 12px;
+            background: rgba(139, 92, 246, 0.1);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 8px;
+            color: #d1c4ff;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-top: auto;
+            flex-shrink: 0;
+        }
+
+        .view-all-btn:hover {
+            background: rgba(139, 92, 246, 0.2);
+            border-color: rgba(139, 92, 246, 0.5);
+            color: #ffffff;
+        }
+
+        .add-entry-btn {
+            width: 100%;
+            padding: 10px;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 8px;
+            color: #6ee7b7;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-top: 8px;
+            font-size: 13px;
+        }
+
+        .add-entry-btn:hover {
+            background: rgba(16, 185, 129, 0.2);
+            border-color: rgba(16, 185, 129, 0.5);
+            color: #ffffff;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: rgba(20, 20, 40, 0.95);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 16px;
+            padding: 32px;
+            max-width: 800px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .modal-header h2 {
+            font-size: 24px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: #a1a1aa;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .modal-close:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+        }
+
+        .modal-body {
+            margin-bottom: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: #e5e7eb;
+        }
+
+        .form-textarea {
+            width: 100%;
+            min-height: 300px;
+            padding: 12px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: #ffffff;
+            font-family: inherit;
+            font-size: 14px;
+            line-height: 1.6;
+            resize: vertical;
+        }
+
+        .form-textarea:focus {
+            outline: none;
+            border-color: rgba(139, 92, 246, 0.5);
+        }
+
+        .form-help {
+            font-size: 12px;
+            color: #a1a1aa;
+            margin-top: 6px;
+        }
+
+        .modal-footer {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        .btn-modal {
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 14px;
+        }
+
+        .btn-modal-primary {
+            background: rgba(139, 92, 246, 0.2);
+            color: #d1c4ff;
+            border: 1px solid rgba(139, 92, 246, 0.3);
+        }
+
+        .btn-modal-primary:hover {
+            background: rgba(139, 92, 246, 0.3);
+            border-color: rgba(139, 92, 246, 0.5);
+        }
+
+        .btn-modal-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            color: #a1a1aa;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-modal-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+        }
+
+        .preview-section {
+            margin-top: 20px;
+            padding: 16px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .preview-section h4 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #8b5cf6;
+        }
+
+        .preview-item {
+            padding: 8px;
+            margin-bottom: 8px;
+            background: rgba(139, 92, 246, 0.05);
+            border-radius: 6px;
+            font-size: 13px;
+            color: #e5e7eb;
+        }
+
+        /* Type View */
+        .type-view {
+            display: none;
+        }
+
+        .type-view.active {
+            display: block;
+        }
+
+        .entries-list {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .intelligence-entry {
+            background: rgba(20, 20, 40, 0.6);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            border-radius: 16px;
+            padding: 24px;
+            transition: all 0.3s ease;
+        }
+
+        .intelligence-entry:hover {
+            border-color: rgba(139, 92, 246, 0.4);
+            box-shadow: 0 8px 24px rgba(139, 92, 246, 0.15);
+        }
+
+        .entry-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+
+        .entry-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            flex: 1;
+        }
+
+        .entry-meta {
+            display: flex;
+            gap: 16px;
+            font-size: 13px;
+            color: #a1a1aa;
+            margin-bottom: 16px;
+        }
+
+        .entry-content {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .entry-content h1, .entry-content h2, .entry-content h3 {
+            color: #ffffff;
+            margin-top: 24px;
+            margin-bottom: 12px;
+        }
+
+        .entry-content p {
+            margin-bottom: 12px;
+            color: #e5e7eb;
+        }
+
+        .entry-content ul, .entry-content ol {
+            margin-left: 24px;
+            margin-bottom: 12px;
+        }
+
+        .entry-content li {
+            margin-bottom: 6px;
+        }
+
+        .entry-content code {
+            background: rgba(139, 92, 246, 0.2);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        .entry-content pre {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 16px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin-bottom: 12px;
+        }
+
+        .entry-content pre code {
+            background: none;
+            padding: 0;
+        }
+
+        .entry-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 16px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            border: none;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 13px;
+        }
+
+        .btn-primary {
+            background: rgba(139, 92, 246, 0.2);
+            color: #d1c4ff;
+            border: 1px solid rgba(139, 92, 246, 0.3);
+        }
+
+        .btn-primary:hover {
+            background: rgba(139, 92, 246, 0.3);
+            border-color: rgba(139, 92, 246, 0.5);
+        }
+
+        .btn-danger {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-danger:hover {
+            background: rgba(239, 68, 68, 0.3);
+            border-color: rgba(239, 68, 68, 0.5);
+        }
+
+        .source-videos {
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .source-videos h4 {
+            font-size: 14px;
+            color: #a1a1aa;
+            margin-bottom: 8px;
+        }
+
+        .source-video-link {
+            display: inline-block;
+            padding: 6px 12px;
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 6px;
+            color: #93c5fd;
+            text-decoration: none;
+            font-size: 12px;
+            margin-right: 8px;
+            margin-bottom: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .source-video-link:hover {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: rgba(59, 130, 246, 0.4);
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            background: rgba(139, 92, 246, 0.1);
+            border: 1px solid rgba(139, 92, 246, 0.3);
+            border-radius: 8px;
+            color: #d1c4ff;
+            text-decoration: none;
+            font-weight: 500;
+            margin-bottom: 24px;
+            transition: all 0.2s ease;
+        }
+
+        .back-btn:hover {
+            background: rgba(139, 92, 246, 0.2);
+            border-color: rgba(139, 92, 246, 0.5);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #a1a1aa;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #a1a1aa;
+        }
+
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .empty-state h3 {
+            font-size: 20px;
+            margin-bottom: 8px;
+            color: #ffffff;
+        }
+
+        @media (max-width: 1400px) {
+            .dashboard-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .main-content {
+                padding: 20px;
+            }
+
+            .nav {
+                gap: 16px;
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">
+            <div class="logo-icon">🧠</div>
+            <div class="logo-text">
+                <h1>Knowledge Studio</h1>
+                <p>Intelligence</p>
+            </div>
+        </div>
+        <nav class="nav">
+            <a href="/">Capture</a>
+            <a href="/library">Library</a>
+            <a href="/channels">Channels</a>
+            <a href="/briefing">Briefing Room</a>
+            <a href="/intelligence" class="active">Intelligence</a>
+            <a href="/stats">Stats</a>
+            <a href="/studio">Studio</a>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Dashboard View -->
+        <div id="dashboardView">
+            <div class="page-header">
+                <h1>Intelligence Dashboard</h1>
+                <p>Claude-generated syntheses, predictions, scripts, and timelines</p>
+            </div>
+
+            <!-- Sparks / Ideas -->
+            <div class="sparks-section" id="sparksSection">
+                <div class="sparks-header">
+                    <h2>💡 Sparks <span id="sparksCount" style="font-size: 14px; color: #71717a; font-weight: 400;"></span></h2>
+                    <button class="sparks-toggle-archived" id="sparksArchiveToggle" onclick="toggleArchivedSparks()">Show archived</button>
+                </div>
+                <div class="sparks-input-row">
+                    <input type="text" id="sparkInput" placeholder="Capture a spark, idea, or signal..." onkeydown="if(event.key==='Enter') addSpark()">
+                    <button onclick="addSpark()">+ Add Spark</button>
+                </div>
+                <div class="sparks-list" id="sparksList">
+                </div>
+            </div>
+
+            <div class="dashboard-grid" id="dashboardGrid">
+                <div class="loading">Loading intelligence data...</div>
+            </div>
+        </div>
+
+        <!-- Type Views -->
+        <div id="typeViews" style="display: none;">
+            <a href="#" class="back-btn" onclick="showDashboard(); return false;">← Back to Dashboard</a>
+            <div class="page-header" style="display: flex; justify-content: space-between; align-items: flex-end;">
+                <div>
+                    <h1 id="typeViewTitle">Intelligence</h1>
+                    <p id="typeViewDescription"></p>
+                </div>
+                <button class="add-entry-btn" id="typeViewAddBtn" onclick="showAddEntryModalFromTypeView()" style="width: auto; padding: 10px 20px; margin: 0;">+ Add Entry</button>
+            </div>
+            <div class="entries-list" id="typeEntriesList">
+                <div class="loading">Loading entries...</div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const TYPE_CONFIG = {
+            synthesis: {
+                icon: '🔗',
+                title: 'Syntheses',
+                description: 'Cross-video analysis and connections',
+                color: '#8b5cf6'
+            },
+            prediction: {
+                icon: '🔮',
+                title: 'Predictions',
+                description: 'Future predictions and forecasts',
+                color: '#10b981'
+            },
+            script: {
+                icon: '📝',
+                title: 'Scripts',
+                description: 'Generated scripts and content',
+                color: '#3b82f6'
+            },
+            query: {
+                icon: '🔍',
+                title: 'Timelines',
+                description: 'Cached research queries and results',
+                color: '#f59e0b'
+            },
+            trends: {
+                icon: '📈',
+                title: 'Trends',
+                description: 'Emerging trends and patterns',
+                color: '#ec4899'
+            },
+            pattern: {
+                icon: '🔄',
+                title: 'Patterns',
+                description: 'Recurring cycles and structural patterns',
+                color: '#f59e0b'
+            },
+            workflows: {
+                icon: '⚙️',
+                title: 'Workflows',
+                description: 'Processes, workflows, and procedures',
+                color: '#06b6d4'
+            },
+            strategy: {
+                icon: '🎯',
+                title: 'Strategic Intelligence',
+                description: 'Distribution strategy, competitive analysis, market research',
+                color: '#dc2626'
+            },
+            insight: {
+                icon: '💡',
+                title: 'Insights',
+                description: 'Key insights and observations worth capturing',
+                color: '#38bdf8'
+            }
+        };
+
+        let intelligenceStats = {};
+        let intelligenceEntries = {};
+
+        // Load dashboard data
+        async function loadDashboard() {
+            try {
+                // Load stats
+                const statsResponse = await fetch('/api/intelligence/stats');
+                const statsData = await statsResponse.json();
+                if (statsData.success) {
+                    intelligenceStats = statsData.stats;
+                }
+
+                // Load recent entries for each type
+                for (const type of Object.keys(TYPE_CONFIG)) {
+                    const entriesResponse = await fetch(`/api/intelligence?type=${type}&limit=2`);
+                    const entriesData = await entriesResponse.json();
+                    if (entriesData.success) {
+                        intelligenceEntries[type] = entriesData.intelligence;
+                    }
+                }
+
+                renderDashboard();
+            } catch (error) {
+                console.error('Error loading dashboard:', error);
+                document.getElementById('dashboardGrid').innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚠️</div><h3>Error loading data</h3><p>Please refresh the page</p></div>';
+            }
+        }
+
+        function renderDashboard() {
+            const grid = document.getElementById('dashboardGrid');
+            grid.innerHTML = '';
+
+            // Get saved order or use default: trends, prediction, synthesis, script, query, workflows
+            const defaultOrder = ['trends', 'prediction', 'pattern', 'insight', 'synthesis', 'script', 'query', 'workflows'];
+            let savedOrder = getSavedOrder();
+            // Merge any new types not in saved order
+            if (savedOrder.length > 0) {
+                const missing = defaultOrder.filter(t => !savedOrder.includes(t));
+                if (missing.length > 0) savedOrder = savedOrder.concat(missing);
+            }
+            const types = savedOrder.length > 0 ? savedOrder : defaultOrder;
+
+            for (const type of types) {
+                if (!TYPE_CONFIG[type]) continue; // Skip if type doesn't exist
+                
+                const config = TYPE_CONFIG[type];
+                const stats = intelligenceStats[type] || { count: 0, latest: null };
+                const entries = intelligenceEntries[type] || [];
+
+                const card = document.createElement('div');
+                card.className = 'intelligence-type-card';
+                card.draggable = true;
+                card.dataset.type = type;
+                card.style.position = 'relative';
+                card.innerHTML = `
+                    <div class="drag-handle" title="Drag to reorder">⋮⋮</div>
+                    <div class="type-header">
+                        <div class="type-icon">${config.icon}</div>
+                        <div class="type-title">
+                            <h2>${config.title}</h2>
+                            <p>${config.description}</p>
+                        </div>
+                    </div>
+                    <div class="type-stats">
+                        <div class="stat-item">
+                            <div class="stat-value">${stats.count}</div>
+                            <div class="stat-label">Entries</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" style="font-size: 14px; font-weight: 700; color: #8b5cf6; line-height: 1.2; min-height: 29px;">${stats.latest ? formatDate(stats.latest) : 'None'}</div>
+                            <div class="stat-label">Latest</div>
+                        </div>
+                    </div>
+                    <div class="recent-entries">
+                        ${entries.length > 0 ? entries.map(entry => `
+                            <div class="recent-entry" onclick="viewEntry(${entry.id})">
+                                <div class="recent-entry-title">${escapeHtml(entry.title)}</div>
+                                <div class="recent-entry-meta">
+                                    <span>${formatDate(entry.created_at)}</span>
+                                    ${entry.source_video_ids && entry.source_video_ids.length > 0 ? `<span>${entry.source_video_ids.length} source${entry.source_video_ids.length > 1 ? 's' : ''}</span>` : ''}
+                                </div>
+                            </div>
+                        `).join('') : ''}
+                    </div>
+                    <button class="view-all-btn" onclick="showTypeView('${type}')">View All ${config.title}</button>
+                    <button class="add-entry-btn" onclick="showAddEntryModal('${type}')" style="margin-top: 8px;">+ Add ${config.title}</button>
+                `;
+                
+                // Add drag event listeners
+                card.addEventListener('dragstart', handleDragStart);
+                card.addEventListener('dragend', handleDragEnd);
+                card.addEventListener('dragover', handleDragOver);
+                card.addEventListener('drop', handleDrop);
+                card.addEventListener('dragenter', handleDragEnter);
+                card.addEventListener('dragleave', handleDragLeave);
+                
+                grid.appendChild(card);
+            }
+        }
+
+        let draggedElement = null;
+
+        function handleDragStart(e) {
+            draggedElement = this;
+            this.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/html', this.innerHTML);
+        }
+
+        function handleDragEnd(e) {
+            this.classList.remove('dragging');
+            // Remove drag-over class from all cards
+            document.querySelectorAll('.intelligence-type-card').forEach(card => {
+                card.classList.remove('drag-over');
+            });
+        }
+
+        function handleDragOver(e) {
+            if (e.preventDefault) {
+                e.preventDefault();
+            }
+            e.dataTransfer.dropEffect = 'move';
+            return false;
+        }
+
+        function handleDragEnter(e) {
+            if (this !== draggedElement) {
+                this.classList.add('drag-over');
+            }
+        }
+
+        function handleDragLeave(e) {
+            this.classList.remove('drag-over');
+        }
+
+        function handleDrop(e) {
+            if (e.stopPropagation) {
+                e.stopPropagation();
+            }
+
+            if (draggedElement !== this) {
+                const grid = document.getElementById('dashboardGrid');
+                const allCards = Array.from(grid.querySelectorAll('.intelligence-type-card'));
+                const draggedIndex = allCards.indexOf(draggedElement);
+                const targetIndex = allCards.indexOf(this);
+
+                if (draggedIndex < targetIndex) {
+                    grid.insertBefore(draggedElement, this.nextSibling);
+                } else {
+                    grid.insertBefore(draggedElement, this);
+                }
+
+                // Save new order
+                saveOrder();
+            }
+
+            this.classList.remove('drag-over');
+            return false;
+        }
+
+        function getSavedOrder() {
+            try {
+                const saved = localStorage.getItem('intelligenceModuleOrder');
+                if (saved) {
+                    const order = JSON.parse(saved);
+                    // Validate order - make sure all types exist
+                    const validOrder = order.filter(type => TYPE_CONFIG[type]);
+                    // Add any missing types to the end
+                    const allTypes = Object.keys(TYPE_CONFIG);
+                    const missingTypes = allTypes.filter(type => !validOrder.includes(type));
+                    return [...validOrder, ...missingTypes];
+                }
+            } catch (e) {
+                console.error('Error loading saved order:', e);
+            }
+            return [];
+        }
+
+        function saveOrder() {
+            try {
+                const grid = document.getElementById('dashboardGrid');
+                const cards = Array.from(grid.querySelectorAll('.intelligence-type-card'));
+                const order = cards.map(card => card.dataset.type);
+                localStorage.setItem('intelligenceModuleOrder', JSON.stringify(order));
+            } catch (e) {
+                console.error('Error saving order:', e);
+            }
+        }
+
+        let currentTypeView = null;
+
+        function showTypeView(type) {
+            currentTypeView = type;
+            window.location.hash = type;
+            document.getElementById('dashboardView').style.display = 'none';
+            document.getElementById('typeViews').style.display = 'block';
+
+            const config = TYPE_CONFIG[type];
+            document.getElementById('typeViewTitle').textContent = config.title;
+            document.getElementById('typeViewDescription').textContent = config.description;
+
+            loadTypeEntries(type);
+        }
+
+        function showAddEntryModalFromTypeView() {
+            if (currentTypeView) {
+                showAddEntryModal(currentTypeView);
+            }
+        }
+
+        function showDashboard() {
+            document.getElementById('dashboardView').style.display = 'block';
+            document.getElementById('typeViews').style.display = 'none';
+        }
+
+        async function loadTypeEntries(type) {
+            const list = document.getElementById('typeEntriesList');
+            list.innerHTML = '<div class="loading">Loading entries...</div>';
+
+            try {
+                const response = await fetch(`/api/intelligence?type=${type}&limit=100`);
+                const data = await response.json();
+
+                if (data.success && data.intelligence.length > 0) {
+                    list.innerHTML = data.intelligence.map(entry => renderEntry(entry)).join('');
+                } else {
+                    list.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">${TYPE_CONFIG[type].icon}</div>
+                            <h3>No ${TYPE_CONFIG[type].title.toLowerCase()} yet</h3>
+                            <p>Claude can save ${TYPE_CONFIG[type].title.toLowerCase()} using the save_intelligence MCP function</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error loading entries:', error);
+                list.innerHTML = '<div class="empty-state"><div class="empty-state-icon">⚠️</div><h3>Error loading entries</h3><p>Please refresh the page</p></div>';
+            }
+        }
+
+        function renderEntry(entry) {
+            const config = TYPE_CONFIG[entry.type];
+            return `
+                <div class="intelligence-entry">
+                    <div class="entry-header">
+                        <div style="flex: 1;">
+                            <div class="entry-title">${escapeHtml(entry.title)}</div>
+                            <div class="entry-meta">
+                                <span>${formatDate(entry.created_at)}</span>
+                                ${entry.tags ? `<span>Tags: ${escapeHtml(entry.tags)}</span>` : ''}
+                                ${entry.source_title ? `<span>Source: ${entry.source_url ? `<a href="${escapeHtml(entry.source_url)}" target="_blank" style="color: ${config ? config.color : '#8b5cf6'}; text-decoration: none;">${escapeHtml(entry.source_title)}</a>` : escapeHtml(entry.source_title)}</span>` : ''}
+                                ${entry.source_channel ? `<span>${escapeHtml(entry.source_channel)}</span>` : ''}
+                                ${entry.source_video_ids && entry.source_video_ids.length > 0 && !entry.source_title ? `<span>${entry.source_video_ids.length} source video${entry.source_video_ids.length > 1 ? 's' : ''}</span>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="entry-content">
+                        ${renderMarkdown(entry.content)}
+                    </div>
+                    ${entry.source_video_ids && entry.source_video_ids.length > 0 ? `
+                        <div class="source-videos">
+                            <h4>Source Videos:</h4>
+                            ${entry.source_video_ids.map(vid => `
+                                <a href="/library#video-${vid}" class="source-video-link">Video #${vid}</a>
+                            `).join('')}
+                        </div>
+                    ` : ''}
+                    <div class="entry-actions">
+                        <button class="btn btn-danger" onclick="deleteEntry(${entry.id})">Delete</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function viewEntry(id) {
+            // For now, just show the type view and scroll to entry
+            // Could be enhanced to show a detail modal
+            const type = Object.keys(TYPE_CONFIG).find(t => 
+                intelligenceEntries[t]?.some(e => e.id === id)
+            );
+            if (type) {
+                showTypeView(type);
+                setTimeout(() => {
+                    const entry = document.querySelector(`[data-entry-id="${id}"]`);
+                    if (entry) entry.scrollIntoView({ behavior: 'smooth' });
+                }, 500);
+            }
+        }
+
+        async function deleteEntry(id) {
+            if (!confirm('Are you sure you want to delete this intelligence entry?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/intelligence/${id}`, {
+                    method: 'DELETE'
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    // Reload current view
+                    const currentType = document.getElementById('typeViewTitle').textContent.toLowerCase();
+                    const type = Object.keys(TYPE_CONFIG).find(t => TYPE_CONFIG[t].title === currentType);
+                    if (type) {
+                        loadTypeEntries(type);
+                    } else {
+                        loadDashboard();
+                    }
+                } else {
+                    alert('Error deleting entry: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Error deleting entry:', error);
+                alert('Error deleting entry');
+            }
+        }
+
+        function renderMarkdown(text) {
+            // Simple markdown rendering
+            if (!text) return '';
+            
+            let html = escapeHtml(text);
+            
+            // Headers
+            html = html.replace(/^### (.*$)/gim, '<h3>$1</h3>');
+            html = html.replace(/^## (.*$)/gim, '<h2>$1</h2>');
+            html = html.replace(/^# (.*$)/gim, '<h1>$1</h1>');
+            
+            // Bold
+            html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            
+            // Italic
+            html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+            
+            // Code blocks
+            html = html.replace(/```([\s\S]*?)```/g, '<pre><code>$1</code></pre>');
+            
+            // Inline code
+            html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+            
+            // Links
+            html = html.replace(/\[([^\]]+)\]\(([^\)]+)\)/g, '<a href="$2" target="_blank">$1</a>');
+            
+            // Line breaks
+            html = html.replace(/\n\n/g, '</p><p>');
+            html = '<p>' + html + '</p>';
+            
+            // Lists
+            html = html.replace(/^\* (.*$)/gim, '<li>$1</li>');
+            html = html.replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>');
+            
+            return html;
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return 'Unknown';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Show add entry modal - supports both single and bulk
+        function showAddEntryModal(type) {
+            const config = TYPE_CONFIG[type];
+            const modal = document.createElement('div');
+            modal.className = 'modal-overlay';
+            modal.id = 'addEntryModal';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2>Add ${config.title}</h2>
+                        <button class="modal-close" onclick="closeAddEntryModal()">×</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group" style="margin-bottom: 16px;">
+                            <label class="form-label">Mode</label>
+                            <div style="display: flex; gap: 12px;">
+                                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                                    <input type="radio" name="entryMode" value="single" checked onchange="toggleEntryMode()">
+                                    <span>Single Entry (for long content like summaries)</span>
+                                </label>
+                                <label style="display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                                    <input type="radio" name="entryMode" value="bulk" onchange="toggleEntryMode()">
+                                    <span>Bulk Import (multiple entries)</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div id="singleEntryMode">
+                            <div class="form-group">
+                                <label class="form-label">Title</label>
+                                <input type="text" id="singleTitle" class="form-textarea" style="min-height: auto; height: 40px;" placeholder="Enter a title for this entry">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Content</label>
+                                <textarea 
+                                    id="singleContent" 
+                                    class="form-textarea" 
+                                    placeholder="Paste your content here (can be multiple lines, paragraphs, etc.)"
+                                ></textarea>
+                                <div class="form-help">
+                                    Paste any length of content - summaries, long-form text, etc.
+                                </div>
+                            </div>
+                        </div>
+                        <div id="bulkEntryMode" style="display: none;">
+                            <div class="form-group">
+                                <label class="form-label">Paste ${config.title.toLowerCase()} (one per line, or separated by double line breaks)</label>
+                                <textarea 
+                                    id="bulkContent" 
+                                    class="form-textarea" 
+                                    placeholder="Paste your ${config.title.toLowerCase()} here, one per line or separated by double line breaks.&#10;&#10;Example:&#10;Prediction 1: AI will transform healthcare&#10;Prediction 2: Quantum computing will be mainstream&#10;&#10;Or:&#10;Prediction 1: AI will transform healthcare&#10;&#10;Prediction 2: Quantum computing will be mainstream"
+                                ></textarea>
+                                <div class="form-help">
+                                    Each line (or block separated by double line breaks) will become a separate entry. The first 100 characters will be used as the title.
+                                </div>
+                            </div>
+                            <div id="previewSection" class="preview-section" style="display: none;">
+                                <h4>Preview (<span id="previewCount">0</span> entries will be created):</h4>
+                                <div id="previewItems"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn-modal btn-modal-secondary" onclick="closeAddEntryModal()">Cancel</button>
+                        <button class="btn-modal btn-modal-primary" id="saveButton" onclick="saveEntries('${type}')">Save</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            
+            // Update preview as user types (bulk mode only)
+            const bulkTextarea = document.getElementById('bulkContent');
+            if (bulkTextarea) {
+                bulkTextarea.addEventListener('input', () => updatePreview(type));
+            }
+            
+            // Close on overlay click
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    closeAddEntryModal();
+                }
+            });
+        }
+
+        function toggleEntryMode() {
+            const mode = document.querySelector('input[name="entryMode"]:checked').value;
+            const singleMode = document.getElementById('singleEntryMode');
+            const bulkMode = document.getElementById('bulkEntryMode');
+            const saveButton = document.getElementById('saveButton');
+            
+            if (mode === 'single') {
+                singleMode.style.display = 'block';
+                bulkMode.style.display = 'none';
+                saveButton.textContent = 'Save';
+            } else {
+                singleMode.style.display = 'none';
+                bulkMode.style.display = 'block';
+                saveButton.textContent = 'Save All';
+            }
+        }
+
+        function updatePreview(type) {
+            const textarea = document.getElementById('bulkContent');
+            const content = textarea.value.trim();
+            const previewSection = document.getElementById('previewSection');
+            const previewItems = document.getElementById('previewItems');
+            const previewCount = document.getElementById('previewCount');
+            
+            if (!content) {
+                previewSection.style.display = 'none';
+                return;
+            }
+            
+            // Split by double line breaks first, then by single line breaks
+            const entries = content.split(/\n\s*\n/).filter(entry => entry.trim().length > 0);
+            
+            // If no double line breaks, fall back to single line breaks
+            if (entries.length === 1 && content.includes('\n')) {
+                const lines = content.split('\n').filter(line => line.trim().length > 0);
+                previewCount.textContent = lines.length;
+                previewSection.style.display = 'block';
+                
+                previewItems.innerHTML = lines.slice(0, 10).map((line, idx) => {
+                    const title = line.trim().substring(0, 100);
+                    return `<div class="preview-item">${idx + 1}. ${escapeHtml(title)}${line.trim().length > 100 ? '...' : ''}</div>`;
+                }).join('');
+                
+                if (lines.length > 10) {
+                    previewItems.innerHTML += `<div class="preview-item" style="color: #a1a1aa; font-style: italic;">... and ${lines.length - 10} more</div>`;
+                }
+            } else {
+                previewCount.textContent = entries.length;
+                previewSection.style.display = 'block';
+                
+                previewItems.innerHTML = entries.slice(0, 10).map((entry, idx) => {
+                    const firstLine = entry.split('\n')[0].trim();
+                    const title = firstLine.substring(0, 100);
+                    return `<div class="preview-item">${idx + 1}. ${escapeHtml(title)}${firstLine.length > 100 ? '...' : ''}</div>`;
+                }).join('');
+                
+                if (entries.length > 10) {
+                    previewItems.innerHTML += `<div class="preview-item" style="color: #a1a1aa; font-style: italic;">... and ${entries.length - 10} more</div>`;
+                }
+            }
+        }
+
+        function closeAddEntryModal() {
+            const modal = document.getElementById('addEntryModal');
+            if (modal) {
+                modal.remove();
+            }
+        }
+
+        async function saveEntries(type) {
+            const mode = document.querySelector('input[name="entryMode"]:checked').value;
+            const saveButton = event.target;
+            const originalText = saveButton.textContent;
+            saveButton.textContent = 'Saving...';
+            saveButton.disabled = true;
+            
+            try {
+                if (mode === 'single') {
+                    // Single entry mode
+                    const title = document.getElementById('singleTitle').value.trim();
+                    const content = document.getElementById('singleContent').value.trim();
+                    
+                    if (!title) {
+                        alert('Please enter a title');
+                        saveButton.textContent = originalText;
+                        saveButton.disabled = false;
+                        return;
+                    }
+                    
+                    if (!content) {
+                        alert('Please enter content');
+                        saveButton.textContent = originalText;
+                        saveButton.disabled = false;
+                        return;
+                    }
+                    
+                    const response = await fetch('/api/intelligence', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            type: type,
+                            title: title,
+                            content: content,
+                            tags: ''
+                        })
+                    });
+                    
+                    const data = await response.json();
+                    if (data.success) {
+                        alert('✅ Entry saved successfully!');
+                        closeAddEntryModal();
+                        loadDashboard();
+                        
+                        // If we're in a type view, reload that too
+                        const currentType = document.getElementById('typeViewTitle').textContent.toLowerCase();
+                        const typeKey = Object.keys(TYPE_CONFIG).find(t => TYPE_CONFIG[t].title === currentType);
+                        if (typeKey) {
+                            loadTypeEntries(typeKey);
+                        }
+                    } else {
+                        alert('Error saving entry: ' + data.error);
+                    }
+                } else {
+                    // Bulk mode
+                    const textarea = document.getElementById('bulkContent');
+                    const content = textarea.value.trim();
+                    
+                    if (!content) {
+                        alert('Please paste some content first');
+                        saveButton.textContent = originalText;
+                        saveButton.disabled = false;
+                        return;
+                    }
+                    
+                    // Split by double line breaks first, then by single line breaks
+                    let entries = content.split(/\n\s*\n/).filter(entry => entry.trim().length > 0);
+                    
+                    // If no double line breaks, fall back to single line breaks
+                    if (entries.length === 1 && content.includes('\n')) {
+                        entries = content.split('\n').filter(line => line.trim().length > 0);
+                    }
+                    
+                    if (entries.length === 0) {
+                        alert('No valid entries found');
+                        saveButton.textContent = originalText;
+                        saveButton.disabled = false;
+                        return;
+                    }
+                    
+                    if (!confirm(`Create ${entries.length} ${TYPE_CONFIG[type].title.toLowerCase()}?`)) {
+                        saveButton.textContent = originalText;
+                        saveButton.disabled = false;
+                        return;
+                    }
+                    
+                    let successCount = 0;
+                    let errorCount = 0;
+                    
+                    // Save entries one by one with delays to avoid database locks
+                    for (let i = 0; i < entries.length; i++) {
+                        const entry = entries[i];
+                        const trimmedEntry = entry.trim();
+                        if (!trimmedEntry) continue;
+                        
+                        // Get first line for title, or first 100 chars
+                        const firstLine = trimmedEntry.split('\n')[0].trim();
+                        const title = firstLine.substring(0, 100);
+                        const content_text = trimmedEntry;
+                        
+                        // Add delay between saves to prevent database locks (except for first entry)
+                        if (i > 0) {
+                            await new Promise(resolve => setTimeout(resolve, 100)); // 100ms delay
+                        }
+                        
+                        // Retry logic for database lock errors
+                        let retries = 3;
+                        let saved = false;
+                        
+                        while (retries > 0 && !saved) {
+                            try {
+                                const response = await fetch('/api/intelligence', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json'
+                                    },
+                                    body: JSON.stringify({
+                                        type: type,
+                                        title: title,
+                                        content: content_text,
+                                        tags: ''
+                                    })
+                                });
+                                
+                                const data = await response.json();
+                                if (data.success) {
+                                    successCount++;
+                                    saved = true;
+                                } else {
+                                    // Check if it's a database lock error
+                                    if (data.error && data.error.toLowerCase().includes('locked')) {
+                                        retries--;
+                                        if (retries > 0) {
+                                            // Wait longer before retry
+                                            await new Promise(resolve => setTimeout(resolve, 200 * (4 - retries)));
+                                            continue;
+                                        }
+                                    }
+                                    errorCount++;
+                                    console.error('Error saving entry:', data.error);
+                                    saved = true; // Stop retrying for non-lock errors
+                                }
+                            } catch (error) {
+                                retries--;
+                                if (retries > 0 && error.message && error.message.toLowerCase().includes('locked')) {
+                                    // Wait longer before retry
+                                    await new Promise(resolve => setTimeout(resolve, 200 * (4 - retries)));
+                                    continue;
+                                }
+                                errorCount++;
+                                console.error('Error saving entry:', error);
+                                saved = true; // Stop retrying
+                            }
+                        }
+                    }
+                    
+                    // Show results
+                    if (errorCount === 0) {
+                        alert(`✅ Successfully created ${successCount} ${TYPE_CONFIG[type].title.toLowerCase()}!`);
+                    } else {
+                        alert(`⚠️ Created ${successCount} entries, ${errorCount} failed. Check console for details.`);
+                    }
+                    
+                    // Close modal and reload
+                    closeAddEntryModal();
+                    loadDashboard();
+                    
+                    // If we're in a type view, reload that too
+                    const currentType = document.getElementById('typeViewTitle').textContent.toLowerCase();
+                    const typeKey = Object.keys(TYPE_CONFIG).find(t => TYPE_CONFIG[t].title === currentType);
+                    if (typeKey) {
+                        loadTypeEntries(typeKey);
+                    }
+                }
+            } catch (error) {
+                console.error('Error saving entries:', error);
+                alert('Error saving entries: ' + error.message);
+            } finally {
+                saveButton.textContent = originalText;
+                saveButton.disabled = false;
+            }
+        }
+
+        // ─── Sparks / Ideas ─────────────────────────────────────
+
+        let showingArchived = false;
+
+        async function loadSparks() {
+            try {
+                const status = showingArchived ? 'acted_on' : 'active';
+                const resp = await fetch(`/api/sparks?status=${status}`);
+                const data = await resp.json();
+                if (!data.success) return;
+                const sparks = data.sparks || [];
+
+                // Update count (always show active count)
+                if (!showingArchived) {
+                    const countEl = document.getElementById('sparksCount');
+                    if (countEl) countEl.textContent = sparks.length > 0 ? `(${sparks.length})` : '';
+                }
+
+                const list = document.getElementById('sparksList');
+                if (!list) return;
+
+                if (sparks.length === 0) {
+                    list.innerHTML = `<div class="sparks-empty">${showingArchived ? 'No archived sparks yet.' : 'No sparks yet. Capture an idea above.'}</div>`;
+                    return;
+                }
+
+                list.innerHTML = sparks.map(s => {
+                    const age = sparkRelativeTime(s.created_at);
+                    return `
+                        <div class="spark-card">
+                            <div style="flex: 1;">
+                                <div class="spark-content">${escapeHtml(s.content)}</div>
+                                <div class="spark-meta">${age}${s.tags ? ' · ' + escapeHtml(s.tags) : ''}</div>
+                            </div>
+                            <div class="spark-actions">
+                                ${showingArchived ? `
+                                    <button class="spark-action-btn" onclick="restoreSpark(${s.id})" title="Restore">↩</button>
+                                ` : `
+                                    <button class="spark-action-btn archive" onclick="archiveSpark(${s.id})" title="Mark as acted on">✓</button>
+                                `}
+                                <button class="spark-action-btn delete" onclick="deleteSpark(${s.id})" title="Delete">✕</button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } catch (e) {
+                console.error('Error loading sparks:', e);
+            }
+        }
+
+        function sparkRelativeTime(dateStr) {
+            if (!dateStr) return '';
+            const d = new Date(dateStr + 'Z');
+            if (isNaN(d.getTime())) return '';
+            const diffMs = Date.now() - d;
+            const mins = Math.floor(diffMs / 60000);
+            const hours = Math.floor(diffMs / 3600000);
+            const days = Math.floor(diffMs / 86400000);
+            if (mins < 1) return 'just now';
+            if (mins < 60) return `${mins}m ago`;
+            if (hours < 24) return `${hours}h ago`;
+            if (days < 7) return `${days}d ago`;
+            return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        }
+
+        async function addSpark() {
+            const input = document.getElementById('sparkInput');
+            const content = (input.value || '').trim();
+            if (!content) return;
+            try {
+                const resp = await fetch('/api/sparks', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ content })
+                });
+                const data = await resp.json();
+                if (data.success) {
+                    input.value = '';
+                    if (showingArchived) {
+                        showingArchived = false;
+                        document.getElementById('sparksArchiveToggle').textContent = 'Show archived';
+                    }
+                    loadSparks();
+                }
+            } catch (e) {
+                console.error('Error adding spark:', e);
+            }
+        }
+
+        async function archiveSpark(id) {
+            try {
+                await fetch(`/api/sparks/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: 'acted_on' })
+                });
+                loadSparks();
+            } catch (e) {
+                console.error('Error archiving spark:', e);
+            }
+        }
+
+        async function restoreSpark(id) {
+            try {
+                await fetch(`/api/sparks/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: 'active' })
+                });
+                loadSparks();
+            } catch (e) {
+                console.error('Error restoring spark:', e);
+            }
+        }
+
+        async function deleteSpark(id) {
+            try {
+                await fetch(`/api/sparks/${id}`, { method: 'DELETE' });
+                loadSparks();
+            } catch (e) {
+                console.error('Error deleting spark:', e);
+            }
+        }
+
+        function toggleArchivedSparks() {
+            showingArchived = !showingArchived;
+            document.getElementById('sparksArchiveToggle').textContent = showingArchived ? 'Show active' : 'Show archived';
+            loadSparks();
+        }
+
+        // Check URL hash for type view
+        window.addEventListener('load', () => {
+            loadSparks();
+            const hash = window.location.hash.substring(1);
+            if (hash && TYPE_CONFIG[hash]) {
+                showTypeView(hash);
+            } else {
+                loadDashboard();
+            }
+        });
+    </script>
+</body>
+</html>
+
