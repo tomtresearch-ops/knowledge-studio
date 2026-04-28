@@ -90,3 +90,7 @@ youtube_processor_working*.py
 
 # Pre-.env-era prompt backups (had hardcoded keys)
 prompts/enhanced_prompts_backup*
+
+# Documents that drifted into the repo (not source)
+*.rtf
+*.broken
