@@ -1,0 +1,31 @@
+{
+  "headline": "GitHub's Crisis Exposes the Infrastructure Trap",
+  "subtitle": "Google locks in the Pentagon, Anthropic bets on creator tools, and Microsoft turns your build pipeline into a payment lever",
+  "editorial_intro": "Three things happened this week that look separate but tell the same story: AI companies are racing to own the infrastructure layer, not just the models. When that infrastructure breaks \u2014 or when it starts extracting rent \u2014 everyone building on top of it gets hurt. Watch these three moves closely.",
+  "signals": [
+    {
+      "headline": "GitHub's Real-Time Meltdown Reveals AI's Single Point of Failure",
+      "body": "GitHub just suffered multiple critical security vulnerabilities including a remote code execution flaw, availability outages, and exposed Actions infrastructure. This matters enormously because GitHub is where AI training, model deployment, and collaboration happen. When it breaks, every AI company stops. There's no credible backup at comparable scale.",
+      "whycare": "Start evaluating fallback infrastructure now. If GitHub has another major outage, expect a migration wave away from the platform. For vendors: this is a credibility window to build competing developer infrastructure."
+    },
+    {
+      "headline": "Google Locks the Pentagon into Proprietary AI \u2014 OpenAI Loses the Bet",
+      "body": "Google signed a deal with the Department of Defense allowing 'any lawful' use of its AI models on classified work. This isn't narrow; it's a blank check that essentially makes Google the default AI vendor for government contracts. OpenAI has been chasing this deal for two years and came up empty.",
+      "whycare": "Understand that enterprise AI adoption now flows through government and regulatory approval. Vertical integration with key institutions (military, enterprise, creator tools) matters more than raw model performance. If you're building on top of another company's model, check whether they own your customer base too."
+    },
+    {
+      "headline": "Microsoft Turns Your Build Pipeline Into a Paid Feature",
+      "body": "GitHub announced that Copilot code review now consumes GitHub Actions minutes \u2014 your CI/CD execution budget \u2014 starting June 1st. This is a hidden pricing mechanism that makes the free tier progressively more painful without explicit cost increases. It's a tax on your workflow collected automatically.",
+      "whycare": "Audit your GitHub Actions spending and usage patterns immediately. Plan for either upgrade costs or workflow migration. This is Microsoft's playbook: embed AI everywhere, then make the free option untenable."
+    }
+  ],
+  "bigger_picture": "The pattern is consolidation at the infrastructure layer. Microsoft owns your developer workflow. Google just locked in government. Anthropic is moving into creator tools via Blender. Everyone is betting that owning the pipes matters more than owning the models \u2014 because model performance is converging while ecosystem lock-in isn't. The risk: a single outage, a regulatory decision, or a pricing move cascades across every company building AI products. GitHub's credibility crisis is real, and it's already driving migration signals (Ghostty, BookStack, others leaving for alternatives). One more major failure could fragment the developer ecosystem faster than anyone expects.",
+  "_meta": {
+    "vertical": "ai_tech",
+    "brief_id": 161,
+    "brief_date": "2026-04-29 01:31:02",
+    "signal_count": 299,
+    "source_count": 5,
+    "generated_at": "2026-04-28T22:00:13.155434"
+  }
+}

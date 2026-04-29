@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Agents Brief — April 29, 2026</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Georgia', 'Times New Roman', serif;
+    background: #0a0a0a;
+    color: #e8e4df;
+    line-height: 1.75;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 40px 24px;
+  }
+
+  .header {
+    padding-bottom: 28px;
+    margin-bottom: 32px;
+    border-bottom: 1px solid #2a2520;
+  }
+
+  .masthead {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #7a6f63;
+    margin-bottom: 16px;
+  }
+
+  .issue-title {
+    font-size: 26px;
+    font-weight: 700;
+    color: #f0ebe4;
+    line-height: 1.35;
+    margin-bottom: 12px;
+  }
+
+  .issue-subtitle {
+    font-size: 16px;
+    color: #a89e93;
+    line-height: 1.6;
+    font-style: italic;
+  }
+
+  .issue-meta {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 12px;
+    color: #5a5049;
+    margin-top: 16px;
+  }
+
+  .editorial {
+    font-size: 16px;
+    color: #c4bdb3;
+    line-height: 1.85;
+    margin-bottom: 36px;
+  }
+
+  .signal {
+    margin-bottom: 32px;
+  }
+
+  .signal-number {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #4a9e8e;
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+
+  .signal-headline {
+    font-size: 19px;
+    font-weight: 700;
+    color: #f0ebe4;
+    line-height: 1.4;
+    margin-bottom: 12px;
+  }
+
+  .signal-body {
+    font-size: 15.5px;
+    color: #b5ada3;
+    line-height: 1.85;
+  }
+
+  .signal-whycare {
+    font-size: 15px;
+    color: #4a9e8e;
+    line-height: 1.75;
+    margin-top: 12px;
+    font-weight: 500;
+  }
+
+  .divider {
+    border: none;
+    border-top: 1px solid #1e1a16;
+    margin: 32px 0;
+  }
+
+  .bottomline {
+    background: #111;
+    border-left: 3px solid #4a9e8e;
+    padding: 20px 24px;
+    margin: 36px 0;
+    border-radius: 0 4px 4px 0;
+  }
+
+  .bottomline-label {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 10px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: #4a9e8e;
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+
+  .bottomline-text {
+    font-size: 15.5px;
+    color: #c4bdb3;
+    line-height: 1.8;
+  }
+
+  .cta-row {
+    text-align: center;
+    margin: 36px 0;
+  }
+
+  .cta-button {
+    display: inline-block;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    text-decoration: none;
+    padding: 12px 28px;
+    border-radius: 4px;
+    margin: 0 6px;
+  }
+
+  .cta-primary {
+    background: #4a9e8e;
+    color: #0a0a0a;
+  }
+
+  .cta-secondary {
+    background: #1e1a16;
+    color: #4a9e8e;
+  }
+
+  .footer {
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid #1e1a16;
+    text-align: center;
+  }
+
+  .footer-text {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 11px;
+    color: #4a443d;
+    line-height: 2;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <div class="header">
+    <div class="masthead">AI Agents Brief</div>
+    <div class="issue-title">The Agent Control Plane Is Moving Into the Cloud</div>
+    <div class="issue-subtitle">AWS and OpenAI bundle managed agents, production routing outperforms pure LLM reasoning, and MCP becomes the standard tool protocol.</div>
+    <div class="issue-meta">April 29, 2026 &middot; 3 min read</div>
+  </div>
+
+  <div class="editorial">
+    Agent infrastructure is splitting in two. Cloud vendors are moving orchestration and control into managed services, while production systems are ditching pure LLM decision-making for outcome-based routing that actually works. The gap between 48-hour demos and production-ready agents is now the defining tension in this space.
+  </div>
+
+  
+  <div class="signal">
+    <div class="signal-number">01</div>
+    <div class="signal-headline">AWS and OpenAI Are Making Agents a Cloud Service, Not a Framework</div>
+    <div class="signal-body">AWS and OpenAI announced bundled managed agents as core cloud infrastructure, signaling that agent orchestration—scheduling, logging, state management—is moving from open-source libraries into vendor control planes. This marks a fundamental shift: builders will increasingly rent agent infrastructure rather than own it. Open-source frameworks like LangChain will focus on local agentic logic while cloud vendors own the platform layer.</div>
+    <div class="signal-whycare">Start thinking about vendor lock-in and cost structures now. If you're building agents on open frameworks, map out which orchestration pieces you'd move to managed services—that decision will compound in the next 12 months.</div>
+  </div>
+  <hr class="divider">
+
+  <div class="signal">
+    <div class="signal-number">02</div>
+    <div class="signal-headline">Outcome-Based Routing Just Beat LLM-Driven Action Selection in Production</div>
+    <div class="signal-body">A production developer replaced pure ReAct-style decision-making (72% accuracy) with deterministic routing constrained to verifiable outcomes (94% accuracy). This isn't academic—it's the consensus emerging from real production failures. Agents are moving toward a two-tier system: LLM reasons about intent, deterministic logic selects from a constrained action set. Guardrailing and evaluation tools are trending in parallel, confirming this pattern is spreading.</div>
+    <div class="signal-whycare">If you're still letting your agents 'reason freely' through tool selection, your accuracy is probably bottoming out. Start experimenting with outcome-based routing frameworks and constraint-based action selection—this is where production wins are happening.</div>
+  </div>
+  <hr class="divider">
+
+  <div class="signal">
+    <div class="signal-number">03</div>
+    <div class="signal-headline">MCP Is Becoming the Standard Way Agents Talk to Tools</div>
+    <div class="signal-body">Developers are building MCP servers (PullMD, custom CLI layers, virtual filesystems) to replace ad-hoc SDK wrapping, reducing token overhead and standardizing tool integration. MCP adoption is accelerating with Claude-based agents and signaling convergence on a single agent-tool communication protocol. This mirrors how npm standardized JavaScript dependency management.</div>
+    <div class="signal-whycare">Start building or adopting MCP servers for your critical tool integrations. MCP is becoming the lingua franca for agent-tool communication—early standardization saves rework when the ecosystem consolidates.</div>
+  </div>
+  
+
+
+  <div class="bottomline">
+    <div class="bottomline-label">The Bigger Picture</div>
+    <div class="bottomline-text">
+      Three shifts are happening simultaneously: cloud vendors are claiming the control plane, production teams are adding constraints back to LLM decision-making (a quiet rejection of pure reasoning models), and a single protocol (MCP) is consolidating tool integration. The real signal isn't any single trend—it's that agent infrastructure is professionalizing fast. The gap between 48-hour prototypes and production systems is widening because debugging, security review, liability tracking, and outcome verification are still missing from 'get started' frameworks. Expect 'agent reliability engineering' to become a distinct category in the next six months.
+    </div>
+  </div>
+
+  <div class="cta-row">
+    <a href="#" class="cta-button cta-primary">Read the Full Brief</a>
+    
+  </div>
+
+  <div class="footer">
+    <div class="footer-text">
+      AI Agents Brief<br>
+      AI-curated intelligence on autonomous agents, agent frameworks, and the agent economy<br>
+      186 signals processed from 7 sources
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

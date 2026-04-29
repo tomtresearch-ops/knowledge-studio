@@ -1,0 +1,31 @@
+{
+  "headline": "The Agent Control Plane Is Moving Into the Cloud",
+  "subtitle": "AWS and OpenAI bundle managed agents, production routing outperforms pure LLM reasoning, and MCP becomes the standard tool protocol.",
+  "editorial_intro": "Agent infrastructure is splitting in two. Cloud vendors are moving orchestration and control into managed services, while production systems are ditching pure LLM decision-making for outcome-based routing that actually works. The gap between 48-hour demos and production-ready agents is now the defining tension in this space.",
+  "signals": [
+    {
+      "headline": "AWS and OpenAI Are Making Agents a Cloud Service, Not a Framework",
+      "body": "AWS and OpenAI announced bundled managed agents as core cloud infrastructure, signaling that agent orchestration\u2014scheduling, logging, state management\u2014is moving from open-source libraries into vendor control planes. This marks a fundamental shift: builders will increasingly rent agent infrastructure rather than own it. Open-source frameworks like LangChain will focus on local agentic logic while cloud vendors own the platform layer.",
+      "whycare": "Start thinking about vendor lock-in and cost structures now. If you're building agents on open frameworks, map out which orchestration pieces you'd move to managed services\u2014that decision will compound in the next 12 months."
+    },
+    {
+      "headline": "Outcome-Based Routing Just Beat LLM-Driven Action Selection in Production",
+      "body": "A production developer replaced pure ReAct-style decision-making (72% accuracy) with deterministic routing constrained to verifiable outcomes (94% accuracy). This isn't academic\u2014it's the consensus emerging from real production failures. Agents are moving toward a two-tier system: LLM reasons about intent, deterministic logic selects from a constrained action set. Guardrailing and evaluation tools are trending in parallel, confirming this pattern is spreading.",
+      "whycare": "If you're still letting your agents 'reason freely' through tool selection, your accuracy is probably bottoming out. Start experimenting with outcome-based routing frameworks and constraint-based action selection\u2014this is where production wins are happening."
+    },
+    {
+      "headline": "MCP Is Becoming the Standard Way Agents Talk to Tools",
+      "body": "Developers are building MCP servers (PullMD, custom CLI layers, virtual filesystems) to replace ad-hoc SDK wrapping, reducing token overhead and standardizing tool integration. MCP adoption is accelerating with Claude-based agents and signaling convergence on a single agent-tool communication protocol. This mirrors how npm standardized JavaScript dependency management.",
+      "whycare": "Start building or adopting MCP servers for your critical tool integrations. MCP is becoming the lingua franca for agent-tool communication\u2014early standardization saves rework when the ecosystem consolidates."
+    }
+  ],
+  "bigger_picture": "Three shifts are happening simultaneously: cloud vendors are claiming the control plane, production teams are adding constraints back to LLM decision-making (a quiet rejection of pure reasoning models), and a single protocol (MCP) is consolidating tool integration. The real signal isn't any single trend\u2014it's that agent infrastructure is professionalizing fast. The gap between 48-hour prototypes and production systems is widening because debugging, security review, liability tracking, and outcome verification are still missing from 'get started' frameworks. Expect 'agent reliability engineering' to become a distinct category in the next six months.",
+  "_meta": {
+    "vertical": "ai_agents",
+    "brief_id": 162,
+    "brief_date": "2026-04-29 01:31:51",
+    "signal_count": 186,
+    "source_count": 7,
+    "generated_at": "2026-04-28T22:00:23.661423"
+  }
+}
