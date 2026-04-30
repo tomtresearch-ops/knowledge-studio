@@ -185,6 +185,24 @@ Script opening:
     return response.content[0].text.strip().strip('"')
 
 
+def generate_episode_summary(title: str, script: str) -> str:
+    """Generate a 2-3 sentence show notes summary from the podcast script."""
+    client = anthropic.Anthropic()
+    response = client.messages.create(
+        model="claude-haiku-4-5-20251001",
+        max_tokens=200,
+        messages=[{"role": "user", "content": f"""The podcast episode is titled: "{title}"
+
+Write a 2-3 sentence summary for show notes. Declarative, content-rich, no greetings or "welcome back". Tell the listener exactly what they will learn and why it matters.
+
+Script:
+{script[:2000]}
+
+Respond with only the summary text."""}],
+    )
+    return response.content[0].text.strip()
+
+
 def brief_to_podcast_script(brief_id: int = None, vertical: str = None, db_path: str = None) -> dict:
     """
     Load a brief from the database and generate a podcast script.

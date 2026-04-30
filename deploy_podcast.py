@@ -23,7 +23,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(BASE_DIR, "youtube_intelligence.db")
 AUDIO_SRC_DIR = os.path.join(BASE_DIR, "podcast_audio")
 DEPLOY_DIR = os.path.join(BASE_DIR, "podcast_netlify")  # kept name for continuity
-BASE_URL = "https://tomtresearch-ops.github.io/ks-podcasts/"
+BASE_URL = "https://media-verticals.github.io/podcasts/"
 MAX_EPISODES_DEFAULT = 3
 
 # ── Feed metadata per vertical ───────────────────────────────────────────────
@@ -34,8 +34,8 @@ BRAND_OWNER_EMAIL = "placeholder@example.com"  # TODO: replace with real email
 
 FEED_CONFIG = {
     "ai_tech": {
-        "filename": "feed_ai_tech.xml",
-        "title": "AI & Tech Daily Brief",  # TODO: replace with "[Brand]: AI"
+        "filename": "feed_ai_landscape.xml",
+        "title": "AI Landscape",  # TODO: replace with "[Brand]: AI"
         "description": (
             "AI-synthesized daily intelligence brief covering AI, "
             "tech infrastructure, and the forces shaping the industry."
@@ -43,11 +43,11 @@ FEED_CONFIG = {
         "category": "Technology",
         "mp3_glob": "podcast_ai_tech_*.mp3",
         "max_episodes": 0,  # Keep all — GitHub Pages has room
-        "cover": "brief_podcast_cover.png",
+        "cover": "ai_landscape_cover.png",
     },
     "health_longevity": {
-        "filename": "feed_health_longevity.xml",
-        "title": "Health & Longevity Brief",  # TODO: replace with "[Brand]: Health"
+        "filename": "feed_longevity_edge.xml",
+        "title": "Longevity Edge",  # TODO: replace with "[Brand]: Health"
         "description": (
             "AI-synthesized intelligence brief on health, longevity, "
             "and life extension research."
@@ -55,7 +55,7 @@ FEED_CONFIG = {
         "category": "Health &amp; Fitness",
         "mp3_glob": "podcast_health_longevity_*.mp3",
         "max_episodes": 0,  # 2/week — keep all
-        "cover": "health_podcast_cover.png",
+        "cover": "longevity_edge_cover.png",
     },
     "ks_youtube": {
         "filename": "feed_ks_youtube.xml",
@@ -82,8 +82,8 @@ FEED_CONFIG = {
         "cover": "ai_agents_podcast_cover.png",
     },
     "future_medicine": {
-        "filename": "feed_future_medicine.xml",
-        "title": "Future of Medicine Brief",
+        "filename": "feed_breakthrough_medicine.xml",
+        "title": "Breakthrough Medicine",
         "description": (
             "Intelligence brief on the future of medicine, biotech, "
             "and health innovation."
@@ -91,7 +91,7 @@ FEED_CONFIG = {
         "category": "Health &amp; Fitness",
         "mp3_glob": "podcast_future_medicine_*.mp3",
         "max_episodes": 0,
-        "cover": "future_medicine_podcast_cover.png",
+        "cover": "breakthrough_medicine_cover.png",
     },
     "local_ai_intel": {
         "filename": "feed_local_ai_intel.xml",
@@ -148,11 +148,13 @@ def build_item_xml(episode: dict) -> str:
     """Build an RSS <item> element for a single episode."""
     title = xml_escape(episode["title"] or "Untitled")
 
-    # Description: first 300 chars of script_text
-    script = episode["script_text"] or ""
-    desc_text = script[:300]
-    if len(script) > 300:
-        desc_text += "..."
+    # Description: use curated description if available, else fall back to script truncation
+    desc_text = episode["description"] or ""
+    if not desc_text or desc_text.startswith("# ") or desc_text.startswith("Hey") or desc_text.startswith("Welcome"):
+        script = episode["script_text"] or ""
+        desc_text = script[:300]
+        if len(script) > 300:
+            desc_text += "..."
     description = xml_escape(desc_text)
 
     audio_url = BASE_URL + episode["audio_filename"]

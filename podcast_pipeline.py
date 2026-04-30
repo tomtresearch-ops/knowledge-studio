@@ -225,7 +225,7 @@ def generate_audio_tts(script, voice_ref_path, output_wav_path):
 def convert_to_mp3(wav_path, mp3_path):
     """Convert WAV to MP3 using ffmpeg."""
     result = subprocess.run(
-        ["ffmpeg", "-y", "-i", wav_path, "-b:a", "192k", mp3_path],
+        ["/opt/homebrew/bin/ffmpeg", "-y", "-i", wav_path, "-b:a", "192k", mp3_path],
         capture_output=True, text=True, timeout=120
     )
     if result.returncode != 0:
@@ -241,13 +241,9 @@ def register_episode(brief, script, mp3_filename, mp3_size, duration_seconds):
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
 
-    from podcast_scriptwriter import generate_episode_title
+    from podcast_scriptwriter import generate_episode_title, generate_episode_summary
     title = generate_episode_title(script)
-
-    # Use first ~200 chars of script as description
-    desc_text = script[:300].replace('\n', ' ').strip()
-    if len(script) > 300:
-        desc_text = desc_text[:desc_text.rfind(' ')] + '...'
+    desc_text = generate_episode_summary(title, script)
 
     cursor.execute('''
         INSERT INTO brief_podcast_episodes
