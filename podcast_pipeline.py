@@ -243,7 +243,7 @@ def register_episode(brief, script, mp3_filename, mp3_size, duration_seconds):
 
     from podcast_scriptwriter import generate_episode_title, generate_episode_summary
     title = generate_episode_title(script)
-    desc_text = generate_episode_summary(title, script)
+    desc_text = generate_episode_summary(title, script, vertical=brief["vertical"])
 
     cursor.execute('''
         INSERT INTO brief_podcast_episodes

@@ -185,20 +185,37 @@ Script opening:
     return response.content[0].text.strip().strip('"')
 
 
-def generate_episode_summary(title: str, script: str) -> str:
-    """Generate a 2-3 sentence show notes summary from the podcast script."""
+def generate_episode_summary(title: str, script: str, vertical: str = "") -> str:
+    """Generate show notes description from the podcast script.
+    
+    ks_youtube: comprehensive summary (broad audience, text-digest value)
+    all others: curiosity/hook framing (drives listens, teases without revealing)
+    """
     client = anthropic.Anthropic()
-    response = client.messages.create(
-        model="claude-haiku-4-5-20251001",
-        max_tokens=200,
-        messages=[{"role": "user", "content": f"""The podcast episode is titled: "{title}"
 
-Write a 2-3 sentence summary for show notes. Declarative, content-rich, no greetings or "welcome back". Tell the listener exactly what they will learn and why it matters.
+    if vertical == "ks_youtube":
+        prompt = f"""The podcast episode is titled: "{title}"
+
+Write 3-4 sentences of show notes for a YouTube intelligence brief. Cover the main signals and themes covered in the episode — specific enough that a reader gets real value from the summary alone. Declarative, no greetings.
 
 Script:
 {script[:2000]}
 
-Respond with only the summary text."""}],
+Respond with only the summary text."""
+    else:
+        prompt = f"""The podcast episode is titled: "{title}"
+
+Write 1-2 sentences of show notes that create curiosity and urgency to listen. Capture WHY it matters and what shifted — but don't reveal the specific findings. Make the reader feel they need to hear this. No greetings, no "in this episode", no bullet points.
+
+Script:
+{script[:2000]}
+
+Respond with only the description text."""
+
+    response = client.messages.create(
+        model="claude-haiku-4-5-20251001",
+        max_tokens=200,
+        messages=[{"role": "user", "content": prompt}],
     )
     return response.content[0].text.strip()
 

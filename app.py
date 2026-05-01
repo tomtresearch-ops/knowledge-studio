@@ -10311,6 +10311,25 @@ def _get_video_thumbnail(video_id):
     return None
 
 
+
+def _generate_yt_podcast_description(title: str, channel: str) -> str:
+    """Generate a curiosity-hook podcast description from a YouTube video title."""
+    try:
+        response = claude_client.messages.create(
+            model="claude-haiku-4-5-20251001",
+            max_tokens=150,
+            messages=[{
+                "role": "user",
+                "content": f"""Write a 1-2 sentence podcast episode description for this YouTube video: "{title}" by {channel}.
+
+Create curiosity and urgency to listen. Capture WHY this matters — but don't reveal the specific findings or conclusions. Don't start with "Discover" or "Explore". No emojis. Make it feel like insider intelligence. No more than 2 sentences."""
+            }]
+        )
+        return response.content[0].text.strip()
+    except Exception as e:
+        print(f"Warning: Could not generate episode description: {e}")
+        return ""
+
 def extract_podcast_audio(episode_id, video_url):
     """Background function to extract audio from a YouTube video for podcast feed."""
     import yt_dlp
@@ -10417,18 +10436,25 @@ def extract_podcast_audio(episode_id, video_url):
 
         audio_size = os.path.getsize(mp3_path)
 
-        # Get thumbnail
-        cursor.execute('SELECT video_id FROM yt_podcast_episodes WHERE id = ?', (episode_id,))
+        # Get thumbnail and episode metadata
+        cursor.execute('SELECT video_id, title, channel FROM yt_podcast_episodes WHERE id = ?', (episode_id,))
         ep_row = cursor.fetchone()
         thumbnail_url = _get_video_thumbnail(ep_row['video_id']) if ep_row else None
+
+        # Generate hook description from title
+        ep_title = ep_row['title'] if ep_row else ''
+        ep_channel = ep_row['channel'] if ep_row else ''
+        generated_desc = _generate_yt_podcast_description(ep_title, ep_channel) if ep_title else ''
 
         # Update episode as ready
         cursor.execute('''
             UPDATE yt_podcast_episodes
             SET status = 'ready', audio_filename = ?, audio_size = ?,
-                duration_seconds = ?, thumbnail_url = COALESCE(thumbnail_url, ?)
+                duration_seconds = ?, thumbnail_url = COALESCE(thumbnail_url, ?),
+                description = CASE WHEN ? != '' THEN ? ELSE description END
             WHERE id = ?
-        ''', (audio_filename, audio_size, duration_seconds, thumbnail_url, episode_id))
+        ''', (audio_filename, audio_size, duration_seconds, thumbnail_url,
+              generated_desc, generated_desc, episode_id))
         conn.commit()
 
         print(f"✅ Podcast audio ready: {audio_filename} ({audio_size / 1024 / 1024:.1f} MB, {duration_seconds}s)")
