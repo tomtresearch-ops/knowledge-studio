@@ -162,6 +162,20 @@ Remove: Exhaustive workflow steps, redundant explanations, generic context.
 
 Original Summary:
 {full_summary}"""
+    elif target_percentage == 50:
+        prompt = f"""Create a 250-350 word condensed version of this summary. This is the quick-scan version.
+
+MANDATORY - Preserve completely:
+- 🔮 SIGNAL bullets (predictions, trends, forward-looking statements — keep all)
+- Specific numbers, dates, timeframes
+- If the original describes a workflow or step-by-step process, include those steps in abbreviated form even if it pushes slightly past the word target
+- Creator's key personal discoveries
+
+Condense everything else — background, context, redundant examples. Write tight, scannable prose and bullets.
+Target: 250-350 words maximum.
+
+Original Summary:
+{full_summary}"""
     else:
         prompt = f"""Create a {target_length} version that preserves all signal while condensing details.
 
@@ -1389,7 +1403,7 @@ class YouTubeProcessor:
             raise ValueError("Could not determine RSS feed URL for channel.")
         
         try:
-            resp = requests.get(rss_url, timeout=20)
+            resp = requests.get(rss_url, headers={'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36'}, timeout=20)
             resp.raise_for_status()
         except Exception as e:
             raise ValueError(f"Failed to fetch channel feed: {e}")
@@ -2509,7 +2523,7 @@ class YouTubeProcessor:
                     transcript,
                     summary_text,
                     summary_50,
-                    '',  # summary_30 dropped to save API costs
+                    generate_shortened_summary(self.claude_client, summary_text, 50),
                     summary_15,
                     '',
                     '',
@@ -3561,7 +3575,7 @@ Return ONLY valid JSON with no markdown formatting."""
                 # Use longer timeout for large requests (default is 60s, increase to 300s for long transcripts)
                 response = self.claude_client.messages.create(
                     model=model,
-                    max_tokens=8192,  # Increased to allow comprehensive summaries without truncation
+                    max_tokens=1500,  # ~600-800 words output
                     messages=[{"role": "user", "content": prompt}],
                     timeout=300.0  # 5 minutes timeout for long requests
                 )
@@ -3941,7 +3955,7 @@ Article Content:
                 transcript,
                 summary_text,  # Store narrative text directly
                 summary_50,
-                '',  # summary_30 dropped to save API costs
+                generate_shortened_summary(self.claude_client, summary_text, 50),
                 summary_15,
                 '',  # No separate key_insights for narrative format
                 '',  # No separate topics for narrative format

@@ -1,4 +1,4 @@
-You're creating a focused summary of a tool demo, workflow tutorial, or step-by-step process. Target: 250-325 words. Be concise — extract signal and key specs with a futurist lens. Prioritize what's new and notable over exhaustive how-to steps.
+You're creating a focused summary of a tool demo, workflow tutorial, or step-by-step process. Target: 600-800 words. Capture the full workflow — extract signal and key specs with a futurist lens. Prioritize what's new and notable over exhaustive how-to steps.
 
 ---
 
@@ -68,7 +68,7 @@ Add perspective the video doesn't provide, drawing from world knowledge. Example
 - Creator's Experience & Key Steps: 60-80
 - Specs: 40-60
 - Context: 0-30 (only if genuinely additive, otherwise omit)
-- **TOTAL: 250-325 words**
+- **TOTAL: 600-800 words**
 
 **Signal Format Rules:**
 - Each signal point gets its own bullet (•)

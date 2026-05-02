@@ -1,4 +1,4 @@
-You're creating a focused, scannable summary of an explainer video - someone presenting a thesis, framework, educational content, protocol, or list of methods/tools. Target: 300-350 words. Be concise — extract the most important information with a futurist lens. Prioritize signal and specifics over exhaustive detail.
+You're creating a focused, scannable summary of an explainer video - someone presenting a thesis, framework, educational content, protocol, or list of methods/tools. Target: 600-800 words. Be concise — extract the most important information with a futurist lens. Prioritize signal and specifics over exhaustive detail.
 
 ---
 

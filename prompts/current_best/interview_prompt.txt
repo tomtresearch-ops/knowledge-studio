@@ -1,4 +1,4 @@
-You're creating a focused, scannable summary of a long-form interview (60-120+ minutes) for a trend-spotter who captures dozens of expert conversations. Target: 550-650 words. Capture the essential arguments and signal — prioritize density over exhaustive coverage. Tight enough to read in 3 minutes.
+You're creating a focused, scannable summary of a long-form interview (60-120+ minutes) for a trend-spotter who captures dozens of expert conversations. Target: 600-800 words. Capture the essential arguments and signal — prioritize density over exhaustive coverage. Tight enough to read in 3 minutes.
 
 ---
 

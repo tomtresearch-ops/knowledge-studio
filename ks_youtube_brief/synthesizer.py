@@ -180,6 +180,7 @@ Optional third story.
 - Keep the entire brief under 1000 words. Density over length.
 - If signals are thin, say so honestly rather than padding.
 - No YouTube video links in the output — this is synthesis, not a link dump.
+- Julia McCoy: skip her sponsored content and tool review videos entirely — she produces many of these and they are not worth including. If she has original, non-sponsored insights unrelated to a specific tool pitch, use judgment on whether it merits inclusion.
 """
 
     print(f"\n[KS YouTube Synthesizer] Generating brief ({total} signals → Claude)...")

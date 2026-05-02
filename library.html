@@ -6699,7 +6699,7 @@
                 } else {
                     viewCell.innerHTML = `
                         <button class="action-btn secondary" onclick="event.stopPropagation(); viewAsDocument(${item.id}, '${item.content_type || 'video'}', 100)" title="Full summary">Full</button>
-                        ${hasSummary30 ? `<button class="action-btn secondary" onclick="event.stopPropagation(); viewAsDocument(${item.id}, '${item.content_type || 'video'}', 30)" title="Signal scan">Signal Scan</button>` : ''}
+                        ${hasSummary30 ? `<button class="action-btn secondary" onclick="event.stopPropagation(); viewAsDocument(${item.id}, '${item.content_type || 'video'}', 30)" title="50% condensed">50%</button>` : ''}
                     `;
                 }
 
@@ -6876,7 +6876,7 @@
                 const summaryButtonsHtml = hasSummary30 ? `
                     <div style="display: flex; gap: 6px; margin-top: 8px; flex-wrap: nowrap; align-items: center;">
                         <button class="action-btn secondary" onclick="event.stopPropagation(); viewAsDocument(${item.id}, '${item.content_type || 'video'}', 100)" style="font-size: 11px; padding: 4px 8px;" title="Full summary">Full</button>
-                        <button class="action-btn secondary" onclick="event.stopPropagation(); viewAsDocument(${item.id}, '${item.content_type || 'video'}', 30)" style="font-size: 11px; padding: 4px 8px;" title="Signal scan">Signal Scan</button>
+                        <button class="action-btn secondary" onclick="event.stopPropagation(); viewAsDocument(${item.id}, '${item.content_type || 'video'}', 30)" style="font-size: 11px; padding: 4px 8px;" title="50% condensed">50%</button>
                     </div>
                 ` : '';
                 
@@ -6911,7 +6911,7 @@
                                 ${hasSummary30 ? `
                                     <div class="card-summary-buttons">
                                         <button class="action-btn secondary" onclick="event.stopPropagation(); viewAsDocument(${item.id}, '${item.content_type || 'video'}', 100)" style="font-size: 10px; padding: 3px 6px;">Full</button>
-                                        <button class="action-btn secondary" onclick="event.stopPropagation(); viewAsDocument(${item.id}, '${item.content_type || 'video'}', 30)" style="font-size: 10px; padding: 3px 6px;">Signal Scan</button>
+                                        <button class="action-btn secondary" onclick="event.stopPropagation(); viewAsDocument(${item.id}, '${item.content_type || 'video'}', 30)" style="font-size: 10px; padding: 3px 6px;">50%</button>
                                     </div>
                                 ` : ''}
                             </div>
@@ -8056,7 +8056,7 @@
                                 ${hasSummary30 ? `
                                     <div style="margin-bottom: 16px; display: flex; gap: 8px; align-items: center;">
                                         <button id="summary-btn-100-${video.id}" class="action-btn secondary summary-length-btn" onclick="switchSummaryLength(${video.id}, 100, event)" style="font-size: 12px; padding: 6px 12px; background: rgba(139, 92, 246, 0.3); border-color: rgba(139, 92, 246, 0.5);" title="Full summary">Full</button>
-                                        <button id="summary-btn-30-${video.id}" class="action-btn secondary summary-length-btn" onclick="switchSummaryLength(${video.id}, 30, event)" style="font-size: 12px; padding: 6px 12px;" title="Signal scan">Signal Scan</button>
+                                        <button id="summary-btn-30-${video.id}" class="action-btn secondary summary-length-btn" onclick="switchSummaryLength(${video.id}, 30, event)" style="font-size: 12px; padding: 6px 12px;" title="50% condensed">50%</button>
                                     </div>
                                 ` : ''}
                                 <!-- Quick Digest Section -->
@@ -8126,7 +8126,7 @@
                                 ${hasSummary30 ? `
                                     <div style="margin-bottom: 16px; display: flex; gap: 8px; align-items: center;">
                                         <button id="summary-btn-100-${video.id}" class="action-btn secondary summary-length-btn" onclick="switchSummaryLength(${video.id}, 100, event)" style="font-size: 12px; padding: 6px 12px; background: rgba(139, 92, 246, 0.3); border-color: rgba(139, 92, 246, 0.5);" title="Full summary">Full</button>
-                                        <button id="summary-btn-30-${video.id}" class="action-btn secondary summary-length-btn" onclick="switchSummaryLength(${video.id}, 30, event)" style="font-size: 12px; padding: 6px 12px;" title="Signal scan">Signal Scan</button>
+                                        <button id="summary-btn-30-${video.id}" class="action-btn secondary summary-length-btn" onclick="switchSummaryLength(${video.id}, 30, event)" style="font-size: 12px; padding: 6px 12px;" title="50% condensed">50%</button>
                                     </div>
                                 ` : ''}
                                 <div id="summary-content-${video.id}" class="content document-view-content" style="color: #e5e7eb; font-size: 16px; line-height: 1.8;">
@@ -8581,7 +8581,7 @@
                             ${hasSummary30 ? `
                                 <div style="margin-bottom: 16px; display: flex; gap: 8px; align-items: center;">
                                     <button id="summary-btn-100-${video.id}" class="action-btn secondary summary-length-btn" onclick="switchSummaryLength(${video.id}, 100, event)" style="font-size: 12px; padding: 6px 12px; background: rgba(139, 92, 246, 0.3); border-color: rgba(139, 92, 246, 0.5);" title="Full summary">Full</button>
-                                    <button id="summary-btn-30-${video.id}" class="action-btn secondary summary-length-btn" onclick="switchSummaryLength(${video.id}, 30, event)" style="font-size: 12px; padding: 6px 12px;" title="Signal scan">Signal Scan</button>
+                                    <button id="summary-btn-30-${video.id}" class="action-btn secondary summary-length-btn" onclick="switchSummaryLength(${video.id}, 30, event)" style="font-size: 12px; padding: 6px 12px;" title="50% condensed">50%</button>
                                 </div>
                             ` : ''}
                             <div id="summary-content-${video.id}" class="content document-view-content" style="color: #e5e7eb; font-size: 16px; line-height: 1.8;">
@@ -9061,7 +9061,7 @@
                                         return `
                                             <div style="display: flex; gap: 4px; align-items: center; margin-right: 8px;">
                                                 <button id="summary-btn-100-${article.id}" class="action-btn secondary summary-length-btn" onclick="switchSummaryLength(${article.id}, 100, event)" style="font-size: 12px; padding: 6px 12px; background: rgba(139, 92, 246, 0.3); border-color: rgba(139, 92, 246, 0.5);" title="Full summary">Full</button>
-                                                <button id="summary-btn-30-${article.id}" class="action-btn secondary summary-length-btn" onclick="switchSummaryLength(${article.id}, 30, event)" style="font-size: 12px; padding: 6px 12px;" title="Signal scan">Signal Scan</button>
+                                                <button id="summary-btn-30-${article.id}" class="action-btn secondary summary-length-btn" onclick="switchSummaryLength(${article.id}, 30, event)" style="font-size: 12px; padding: 6px 12px;" title="50% condensed">50%</button>
                                             </div>
                                         `;
                                     }
@@ -9854,7 +9854,7 @@
                             font-weight: 500;
                             cursor: pointer;
                             transition: all 0.2s;
-                        ">Signal Scan</button>
+                        ">50%</button>
                         ${(contentType === 'article' && item.full_transcript) ? `
                         <div style="margin-left: auto;">
                             <button id="docViewArticleBtn" class="doc-length-btn" data-length="article" style="
@@ -11923,9 +11923,9 @@
                         ${(hasSummary30 || hasTranscript) ? `
                         <div style="margin-bottom: 24px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; padding: 8px 12px; background: rgba(139, 92, 246, 0.1); border-radius: 8px; border: 1px solid rgba(139, 92, 246, 0.3);">
                             <span style="color: #a1a1aa; font-size: 12px; margin-right: 8px;">Viewing:</span>
-                            <span style="color: #8b5cf6; font-size: 14px; font-weight: 600;">${summaryLength === 30 ? 'Signal Scan' : 'Full Summary'}</span>
+                            <span style="color: #8b5cf6; font-size: 14px; font-weight: 600;">${summaryLength === 30 ? '50%' : 'Full Summary'}</span>
                             ${summaryLength !== 100 ? `<a href="#" onclick="event.preventDefault(); if(window.opener && window.opener.viewAsDocumentPopup) { window.opener.viewAsDocumentPopup(${itemId}, '${contentType}', 100); window.close(); }" style="color: #8b5cf6; text-decoration: none; margin-left: 12px; font-size: 12px;">View Full</a>` : ''}
-                            ${summaryLength !== 30 && hasSummary30 ? `<a href="#" onclick="event.preventDefault(); if(window.opener && window.opener.viewAsDocumentPopup) { window.opener.viewAsDocumentPopup(${itemId}, '${contentType}', 30); window.close(); }" style="color: #8b5cf6; text-decoration: none; margin-left: 8px; font-size: 12px;">Signal Scan</a>` : ''}
+                            ${summaryLength !== 30 && hasSummary30 ? `<a href="#" onclick="event.preventDefault(); if(window.opener && window.opener.viewAsDocumentPopup) { window.opener.viewAsDocumentPopup(${itemId}, '${contentType}', 30); window.close(); }" style="color: #8b5cf6; text-decoration: none; margin-left: 8px; font-size: 12px;">50%</a>` : ''}
                             ${hasTranscript ? `<a href="#" onclick="event.preventDefault(); if(window.opener && window.opener.viewTranscriptPopup) { window.opener.viewTranscriptPopup(${itemId}); window.close(); }" style="color: #a1a1aa; text-decoration: none; margin-left: 12px; font-size: 12px; border-left: 1px solid rgba(255,255,255,0.2); padding-left: 12px;">📜 Transcript</a>` : ''}
                         </div>
                         ` : ''}
