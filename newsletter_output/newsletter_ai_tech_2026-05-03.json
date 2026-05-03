@@ -1,0 +1,31 @@
+{
+  "headline": "The AI Moat Is Cracking\u2014Three Ways",
+  "subtitle": "Microsoft forces AI into your commits, the Pentagon picks winners, and local models just crossed the profitability line.",
+  "editorial_intro": "Today's three signals aren't about new AI capabilities\u2014they're about who owns access, who gets locked out, and whether the cloud vendor's stranglehold on AI is actually breaking. These moves are happening in parallel, and together they're reshaping the economics of building with AI.",
+  "signals": [
+    {
+      "headline": "Microsoft's Forced Copilot Attribution Is a Play for Developer Identity",
+      "body": "VS Code now auto-inserts \"Co-Authored-by: Copilot\" into every commit, whether you used it or not. This isn't transparency\u2014it's infrastructure-level behavior engineering. Microsoft is redefining what \"shipping code\" means by making AI assistance visible in version control. The real move: making human-alone coding feel like the outlier, not the default.",
+      "whycare": "Watch how many developers accept this versus push back. If it sticks, Microsoft has successfully shifted developer identity from \"I wrote this\" to \"we wrote this.\" That controls mindshare before local models make Copilot economically unnecessary."
+    },
+    {
+      "headline": "Pentagon Locks Anthropic Out of Classified AI Work",
+      "body": "The Department of Defense announced partnerships with seven tech companies for classified AI\u2014and Anthropic didn't make the cut. This is the second explicit regulatory gate in weeks (California ticketing AVs, now DoD gating AI). The pattern is clear: governments aren't banning AI, they're *choosing vendors* based on control, not capability. Anthropic's principled stance on transparency makes it a non-starter for classified work.",
+      "whycare": "Government contracts are the only AI revenue streams with inelastic pricing and decade-long lock-in. Being systematically excluded from them is a structural handicap no amount of better models fixes. OpenAI's inclusion versus Anthropic's exclusion is a real strategic win that pure capability cannot overcome."
+    },
+    {
+      "headline": "Local 27B Models Just Crossed the Practical Threshold",
+      "body": "Qwen 3.6-27B is now hitting 95.7% accuracy on reasoning benchmarks while running entirely on a single RTX 3090 with sub-15-second latency. This is the third signal in two weeks that local inference is no longer hobbyist territory\u2014it's viable for production use. The cost math is flipping: running models locally now beats paying for cloud APIs, and the gap widens monthly.",
+      "whycare": "Start thinking about which AI use cases still justify cloud API costs versus which ones are better run locally. For agents, internal tools, and code generation, local becomes the rational default in Q3 2026. Cloud vendors will respond with price wars or new tiers, but the moat is cracking."
+    }
+  ],
+  "bigger_picture": "These three moves are converging into a new AI economics model. Microsoft needs to own developer identity before developers realize they can run better models locally for less money. The Pentagon is betting on OpenAI, not because it's better, but because control matters more than capability for classified work. And local inference keeps improving at a pace that breaks cloud vendor pricing. The next inflection point: whether premium cloud models (Claude Opus, GPT-4) can justify their cost only in latency-critical or accuracy-critical workflows, or whether they become pure luxury. For everything else\u2014most agents, most internal tools, most code generation\u2014local becomes rational within six months. The regulatory stratification (Pentagon's vendor picks, California's AV ticketing framework) suggests governments are moving fast to lock in their preferred vendors before the economics shift too far.",
+  "_meta": {
+    "vertical": "ai_tech",
+    "brief_id": 182,
+    "brief_date": "2026-05-03 01:30:58",
+    "signal_count": 280,
+    "source_count": 5,
+    "generated_at": "2026-05-02T22:00:42.071419"
+  }
+}

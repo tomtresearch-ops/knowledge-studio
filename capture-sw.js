@@ -1,4 +1,4 @@
-const CACHE_NAME = 'capture-router-v1';
+const CACHE_NAME = 'capture-router-v3';
 const PRECACHE_URLS = ['/capture'];
 
 self.addEventListener('install', event => {
@@ -26,12 +26,14 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // Network-first for everything else
+  // Network-first for everything else — only cache successful responses
   event.respondWith(
     fetch(event.request)
       .then(response => {
-        const clone = response.clone();
-        caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+        if (response.ok) {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
+        }
         return response;
       })
       .catch(() => caches.match(event.request))
