@@ -1,0 +1,31 @@
+{
+  "headline": "The mRNA Playbook Is Being Rewritten\u2014And Three Breakthroughs Show Why",
+  "subtitle": "Organ location controls immunity, self-amplifying RNA cuts doses in half, and AI is collapsing RNA design timelines by months",
+  "editorial_intro": "For years, we've been building mRNA vaccines with a fundamental blindspot: where the shot lands matters as much as what's in it. This week, three converging advances\u2014one overturning a core assumption, two accelerating the path from lab to patients\u2014suggest the entire field is entering a new phase. The tools are becoming smarter, the doses smaller, and the applications broader. Here's what's changing.",
+  "signals": [
+    {
+      "headline": "Where mRNA Lands Determines If It Works\u2014And We've Been Wrong",
+      "body": "Mount Sinai researchers discovered that the organ where an mRNA-LNP vaccine lands directly controls whether immunity is amplified or suppressed. Muscle tissue amplifies immune response; liver suppresses it. This overturns decades of vaccine design assumptions and suggests we've been delivering therapies suboptimally. The finding applies immediately to cancer vaccines, rare disease treatments, and personalized medicine.",
+      "whycare": "Redesign your pipeline thinking around tissue targeting, not just payload. Multiple mRNA programs in Phase II could see efficacy gains by switching delivery targets\u2014and failed programs might be salvageable with this lens."
+    },
+    {
+      "headline": "Self-Amplifying RNA Maintains Efficacy at Half the Dose",
+      "body": "A new class of mRNA\u2014called self-amplifying RNA\u2014achieves the same immune punch at 50% lower doses in influenza models. This isn't just lab efficiency; it directly impacts manufacturing scale, global supply chains, and who gets access. The technology bridges preclinical validation and real-world pandemic preparedness.",
+      "whycare": "Watch for saRNA platforms entering clinical trials in 2026-2027. This could unlock dose-sparing strategies for RSV, COVID, and HPV vaccines in resource-limited settings. Manufacturing bottlenecks suddenly become less binding."
+    },
+    {
+      "headline": "AlphaFold3 Just Turned CRISPR Guide RNA Design Into Software",
+      "body": "AI structural prediction is collapsing RNA engineering timelines. Researchers used AlphaFold3 to optimize CRISPR guide RNAs in weeks instead of 2-3 years of wet-lab screening. The result: smaller, more stable RNPs that fit into AAV vectors\u2014removing a major barrier to in vivo delivery. This pattern is repeating across small-molecule and antibody design.",
+      "whycare": "Expect in vivo CRISPR programs to accelerate into clinic faster than anyone predicted. The CNS programs launching now (like TGX-007 for glioblastoma) became feasible precisely because AI compressed design cycles. Your timeline estimates for Phase II readouts should shift forward by 6-12 months."
+    }
+  ],
+  "bigger_picture": "Three separate breakthroughs are compounding into a single acceleration loop. Better understanding of where mRNA lands lets us optimize tropism. Lower doses from self-amplifying RNA reduce manufacturing burden. And AI-driven design shrinks the cycle from target to clinical candidate. None of these advances alone would be transformative; together, they're reshaping what's possible in 2026-2027. Expect mRNA oncology vaccines and in vivo CRISPR programs to dominate the Phase II pipeline by year-end. The real constraint now isn't science\u2014it's regulatory capacity to keep up with the pace.",
+  "_meta": {
+    "vertical": "future_medicine",
+    "brief_id": 192,
+    "brief_date": "2026-05-05 01:33:38",
+    "signal_count": 757,
+    "source_count": 9,
+    "generated_at": "2026-05-05T13:20:07.471171"
+  }
+}

@@ -477,6 +477,87 @@
             cursor: not-allowed;
         }
 
+        /* Newsletter reader */
+        .newsletter-view {
+            max-width: 680px;
+            margin: 0 auto;
+            font-family: Georgia, 'Times New Roman', serif;
+            color: #e4e4e7;
+            line-height: 1.7;
+        }
+
+        .newsletter-view .nl-headline {
+            font-size: 2rem;
+            font-weight: 700;
+            line-height: 1.2;
+            margin: 0 0 10px;
+            color: #f4f4f5;
+        }
+
+        .newsletter-view .nl-subtitle {
+            font-size: 1.1rem;
+            color: #a1a1aa;
+            font-style: italic;
+            margin: 0 0 28px;
+            line-height: 1.4;
+        }
+
+        .newsletter-view .nl-divider {
+            border: none;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            margin: 24px 0;
+        }
+
+        .newsletter-view .nl-intro {
+            font-size: 1rem;
+            margin-bottom: 32px;
+        }
+
+        .newsletter-view .nl-section-header {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: #a78bfa;
+            margin: 0 0 16px;
+        }
+
+        .newsletter-view .nl-signal {
+            margin-bottom: 28px;
+            padding-left: 16px;
+            border-left: 2px solid rgba(139,92,246,0.4);
+        }
+
+        .newsletter-view .nl-signal-headline {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            color: #f4f4f5;
+            margin: 0 0 8px;
+        }
+
+        .newsletter-view .nl-signal-body {
+            font-size: 0.95rem;
+            margin: 0 0 8px;
+            color: #d4d4d8;
+        }
+
+        .newsletter-view .nl-signal-why {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            font-size: 0.85rem;
+            color: #a78bfa;
+            font-style: italic;
+        }
+
+        .newsletter-view .nl-bigger-picture {
+            font-size: 1rem;
+            background: rgba(139,92,246,0.06);
+            border-radius: 8px;
+            padding: 20px 24px;
+            color: #d4d4d8;
+        }
+
         /* Empty State */
         .empty-state {
             display: flex;
@@ -750,8 +831,9 @@
             </div>
             <div class="header-actions">
                 <select id="verticalSelect" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: #e4e4e7; padding: 8px 12px; border-radius: 8px; font-size: 14px; cursor: pointer;">
-                    <option value="ai_tech">🤖 AI & Tech</option>
-                    <option value="health_longevity">🧬 Health & Longevity</option>
+                    <option value="ai_tech">🤖 AI Landscape</option>
+                    <option value="health_longevity">🧬 Longevity Edge</option>
+                    <option value="future_medicine">🏥 Breakthrough Medicine</option>
                     <option value="futures_trends">🔭 Futures & Trends</option>
                 </select>
                 <button class="generate-btn" id="generateBtn" onclick="generateBrief()">
@@ -811,9 +893,10 @@
 
     <script>
         const VERTICAL_META = {
-            ai_tech: { label: 'AI & Tech', icon: '🤖', color: '#8b5cf6' },
+            ai_tech: { label: 'AI Landscape', icon: '🤖', color: '#8b5cf6' },
             crypto_macro: { label: 'Crypto & Macro', icon: '₿', color: '#f59e0b' },
-            health_longevity: { label: 'Health & Longevity', icon: '🧬', color: '#10b981' },
+            health_longevity: { label: 'Longevity Edge', icon: '🧬', color: '#10b981' },
+            future_medicine: { label: 'Breakthrough Medicine', icon: '🏥', color: '#e05c5c' },
             futures_trends: { label: 'Futures & Trends', icon: '🔭', color: '#3b82f6' },
         };
 
@@ -932,6 +1015,7 @@
                 <div class="content-tabs">
                     <button class="content-tab active" onclick="showContent('brief', this, ${brief.id})">Brief</button>
                     <button class="content-tab" onclick="showContent('script', this, ${brief.id})" ${hasPodcast ? '' : 'disabled title="No podcast script"'}>Podcast Script${durationStr ? ' (' + durationStr + ')' : ''}</button>
+                    <button class="content-tab" onclick="showContent('newsletter', this, ${brief.id})" ${brief.has_newsletter ? '' : 'disabled title="No newsletter for this episode"'}>Newsletter</button>
                 </div>
                 <div class="brief-body" id="briefContent">${renderMarkdown(brief.content)}</div>`;
 
@@ -939,7 +1023,7 @@
             enrichYouTubeLinks();
         }
 
-        function showContent(type, btn, briefId) {
+        async function showContent(type, btn, briefId) {
             const brief = allBriefs.find(b => b.id === briefId);
             if (!brief) return;
 
@@ -952,9 +1036,61 @@
                 enrichYouTubeLinks();
             } else if (type === 'script' && brief.podcast_script) {
                 container.innerHTML = renderMarkdown(brief.podcast_script);
+            } else if (type === 'newsletter') {
+                container.innerHTML = '<p style="color:#71717a">Loading newsletter…</p>';
+                try {
+                    const resp = await fetch(`/api/briefs/${briefId}/newsletter`);
+                    const data = await resp.json();
+                    if (data.success) {
+                        container.innerHTML = renderNewsletter(data.newsletter);
+                    } else {
+                        container.innerHTML = `<p style="color:#71717a;font-style:italic">No newsletter generated for this episode.</p>`;
+                    }
+                } catch (e) {
+                    container.innerHTML = `<p style="color:#ef4444">Failed to load newsletter.</p>`;
+                }
             }
 
             container.scrollTop = 0;
+        }
+
+        function renderNewsletter(nl) {
+            const esc = str => {
+                const d = document.createElement('div');
+                d.textContent = str || '';
+                return d.innerHTML;
+            };
+
+            let signalsHtml = '';
+            if (Array.isArray(nl.signals) && nl.signals.length > 0) {
+                signalsHtml = `
+                    <p class="nl-section-header">Signals</p>
+                    ${nl.signals.map(s => `
+                        <div class="nl-signal">
+                            <div class="nl-signal-headline">${esc(s.headline)}</div>
+                            <div class="nl-signal-body">${esc(s.body)}</div>
+                            ${s.whycare ? `<div class="nl-signal-why">Why this matters: ${esc(s.whycare)}</div>` : ''}
+                        </div>
+                    `).join('')}
+                `;
+            }
+
+            const biggerPicture = nl.bigger_picture ? `
+                <hr class="nl-divider">
+                <p class="nl-section-header">The Bigger Picture</p>
+                <div class="nl-bigger-picture">${esc(nl.bigger_picture)}</div>
+            ` : '';
+
+            return `
+                <div class="newsletter-view">
+                    <h1 class="nl-headline">${esc(nl.headline)}</h1>
+                    ${nl.subtitle ? `<p class="nl-subtitle">${esc(nl.subtitle)}</p>` : ''}
+                    <hr class="nl-divider">
+                    ${nl.editorial_intro ? `<p class="nl-intro">${esc(nl.editorial_intro)}</p>` : ''}
+                    ${signalsHtml}
+                    ${biggerPicture}
+                </div>
+            `;
         }
 
         function formatDuration(seconds) {

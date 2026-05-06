@@ -1,0 +1,31 @@
+{
+  "headline": "Your Brain's Garbage Disposal Is Aging \u2014 And We May Be Able to Fix It",
+  "subtitle": "How senescent cells are clogging your brain's waste system, a rapamycin alternative sidesteps immunosuppression, and metformin's longevity case gets stronger",
+  "editorial_intro": "This week's research crystallizes a major shift in how we understand cognitive aging. It's not just about plaques and tangles accumulating in your brain\u2014it's about the infrastructure that clears them breaking down. Three converging signals show the mechanisms are tractable, and some interventions are closer to clinical use than you might think.",
+  "signals": [
+    {
+      "headline": "Brain's Waste Clearance System Fails as Cells Age",
+      "body": "Three new papers identify how aging triggers senescent macrophages to recruit immune cells that clog the meningeal lymphatic system\u2014essentially your brain's garbage disposal. Rather than amyloid buildup being the primary problem, the real issue is that your brain can't clear it efficiently anymore. This shifts the target from treating late-stage damage to preserving the brain's cleanup machinery early.",
+      "whycare": "Watch for senescent cell-clearing therapies entering cognitive decline trials. If timing matters (and it likely does), intervening before lymphatic failure progresses could reframe Alzheimer's prevention from waiting-until-too-late to acting before symptoms start."
+    },
+    {
+      "headline": "Rapamycin Without the Immune Damage",
+      "body": "Researchers developed a rapamycin variant that extends lifespan in animal models while avoiding the immunosuppression that makes the original drug risky for healthy aging populations. The new compound retains longevity benefits while ditching problematic side effects\u2014a rare win in anti-aging pharmacology. Human trials remain years away, but this removes a major barrier to rapamycin use in normal aging.",
+      "whycare": "If human trials confirm this holds in people, it opens a genuinely useful tool for aging populations without the infection risk. This is the kind of friction-reducing advance that could move longevity science from experimental to practical."
+    },
+    {
+      "headline": "Metformin's Case for Healthy Aging Strengthens",
+      "body": "Multiple new analyses confirm metformin reduces cancer incidence, improves cardiovascular outcomes, and may protect cognition\u2014all beyond its diabetes use. Real-world adoption already outpaces formal clinical guidance, with millions taking it off-label for longevity. Large randomized trials are underway, but the evidence base continues to grow faster than regulatory consensus.",
+      "whycare": "If you're considering metformin for aging, understand that the evidence exists but isn't yet official. The gap between clinical data and regulatory guidance means informed doctors can reasonably support its use, but don't expect mainstream medicine to formally endorse it until TAME II concludes."
+    }
+  ],
+  "bigger_picture": "A coherent model of aging is emerging: senescent cells accumulate, trigger immune dysfunction, and clog your brain's waste clearance system\u2014all of which are mechanistically addressable. The field has moved beyond identifying the problem to testing interventions. We're seeing parallel progress on multiple pathways (senescence clearance, rapamycin analogues, metformin validation), which suggests combination approaches may be the real next frontier. None of these are magic pills yet, but the convergence of mechanism, animal evidence, and growing real-world use signals that cognitive aging may be slowing down within the next 3\u20135 years, at least in early intervention windows.",
+  "_meta": {
+    "vertical": "health_longevity",
+    "brief_id": 178,
+    "brief_date": "2026-05-02 01:32:40",
+    "signal_count": 322,
+    "source_count": 7,
+    "generated_at": "2026-05-05T13:19:37.264546"
+  }
+}

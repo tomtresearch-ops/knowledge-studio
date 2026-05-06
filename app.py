@@ -2055,9 +2055,14 @@ class DatabaseService:
                 output_tokens INTEGER DEFAULT 0,
                 estimated_cost REAL DEFAULT 0.0,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                review_status TEXT DEFAULT 'complete'
+                review_status TEXT DEFAULT 'complete',
+                summary_50 TEXT
             )
         ''')
+        try:
+            cursor.execute("ALTER TABLE visual_captures ADD COLUMN summary_50 TEXT")
+        except sqlite3.OperationalError:
+            pass
         conn.commit()
         conn.close()
 
@@ -4534,6 +4539,20 @@ def upload_files():
                         result = visual_processor.process_visual_capture(
                             file_path, source_context=source_ctx, db_path=DATABASE_PATH
                         )
+                        # Generate 50% summary for completed captures
+                        if result.get('review_status') == 'complete' and result.get('structured_data'):
+                            try:
+                                full_text = json.dumps(result['structured_data'], indent=2)
+                                summary_50 = generate_shortened_summary(full_text, 50)
+                                if summary_50:
+                                    conn_s = sqlite3.connect(DATABASE_PATH)
+                                    conn_s.execute('UPDATE visual_captures SET summary_50=? WHERE id=?',
+                                                   (summary_50, result['id']))
+                                    conn_s.commit()
+                                    conn_s.close()
+                                    print(f"  summary_50 generated for capture #{result['id']}")
+                            except Exception as sum_err:
+                                print(f"  Warning: summary_50 generation failed: {sum_err}")
                         processing_results.append({
                             'filename': filename,
                             'status': 'processed',
@@ -4582,7 +4601,7 @@ def get_visual_captures():
         if search:
             query = '''
                 SELECT id, filename, content_type, structured_data, tags, source_context,
-                       estimated_cost, created_at, review_status
+                       estimated_cost, created_at, review_status, summary_50
                 FROM visual_captures
                 WHERE tags LIKE ? OR structured_data LIKE ? OR filename LIKE ?
                 ORDER BY created_at DESC
@@ -4592,7 +4611,7 @@ def get_visual_captures():
         elif content_type_filter:
             cursor.execute('''
                 SELECT id, filename, content_type, structured_data, tags, source_context,
-                       estimated_cost, created_at, review_status
+                       estimated_cost, created_at, review_status, summary_50
                 FROM visual_captures
                 WHERE content_type = ?
                 ORDER BY created_at DESC
@@ -4600,7 +4619,7 @@ def get_visual_captures():
         else:
             cursor.execute('''
                 SELECT id, filename, content_type, structured_data, tags, source_context,
-                       estimated_cost, created_at, review_status
+                       estimated_cost, created_at, review_status, summary_50
                 FROM visual_captures
                 ORDER BY created_at DESC
             ''')
@@ -4628,6 +4647,7 @@ def get_visual_captures():
                 title = f"{row[2].replace('_', ' ').title()} — {row[1]}"
 
             review_status = row[8] if len(row) > 8 and row[8] else 'complete'
+            summary_50 = row[9] if len(row) > 9 else None
 
             captures.append({
                 'id': row[0],
@@ -4640,6 +4660,7 @@ def get_visual_captures():
                 'estimated_cost': row[6],
                 'created_at': row[7],
                 'review_status': review_status,
+                'summary_50': summary_50,
             })
 
         return jsonify({'success': True, 'captures': captures, 'count': len(captures)})
@@ -4656,7 +4677,7 @@ def get_visual_capture(capture_id):
         cursor.execute('''
             SELECT id, filename, content_type, raw_ocr_text, structured_data, tags,
                    source_context, api_calls_count, input_tokens, output_tokens,
-                   estimated_cost, created_at
+                   estimated_cost, created_at, summary_50
             FROM visual_captures WHERE id = ?
         ''', (capture_id,))
         row = cursor.fetchone()
@@ -4697,6 +4718,7 @@ def get_visual_capture(capture_id):
                 'output_tokens': row[9],
                 'estimated_cost': row[10],
                 'created_at': row[11],
+                'summary_50': row[12] if len(row) > 12 else None,
             }
         })
     except Exception as e:
@@ -4912,6 +4934,25 @@ def toggle_article_favorite(article_id):
         return jsonify({'success': True, 'favorited': favorited})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/share', methods=['GET'])
+def share_url():
+    """GET endpoint for iOS Shortcut share sheet. Accepts ?url= and queues article for processing."""
+    url = request.args.get('url', '').strip()
+    if not url:
+        return "<html><body><h2>Error: no URL provided</h2></body></html>", 400
+    try:
+        import threading
+        def _process():
+            import requests as _req
+            _req.post(f"http://localhost:{request.host.split(':')[1] if ':' in request.host else '5001'}/api/process-article",
+                      json={'url': url}, timeout=120)
+        threading.Thread(target=_process, daemon=True).start()
+    except Exception:
+        pass
+    short = url[:80] + '…' if len(url) > 80 else url
+    return f"<html><head><meta name='viewport' content='width=device-width'></head><body style='font-family:sans-serif;padding:20px'><h2>✓ Queued</h2><p style='color:#666'>{short}</p><p>Processing in background. Check your library in ~30 seconds.</p></body></html>"
+
 
 @app.route('/api/process-article', methods=['POST'])
 def process_article():
@@ -10311,25 +10352,6 @@ def _get_video_thumbnail(video_id):
     return None
 
 
-
-def _generate_yt_podcast_description(title: str, channel: str) -> str:
-    """Generate a curiosity-hook podcast description from a YouTube video title."""
-    try:
-        response = claude_client.messages.create(
-            model="claude-haiku-4-5-20251001",
-            max_tokens=150,
-            messages=[{
-                "role": "user",
-                "content": f"""Write a 1-2 sentence podcast episode description for this YouTube video: "{title}" by {channel}.
-
-Create curiosity and urgency to listen. Capture WHY this matters — but don't reveal the specific findings or conclusions. Don't start with "Discover" or "Explore". No emojis. Make it feel like insider intelligence. No more than 2 sentences."""
-            }]
-        )
-        return response.content[0].text.strip()
-    except Exception as e:
-        print(f"Warning: Could not generate episode description: {e}")
-        return ""
-
 def extract_podcast_audio(episode_id, video_url):
     """Background function to extract audio from a YouTube video for podcast feed."""
     import yt_dlp
@@ -10436,25 +10458,18 @@ def extract_podcast_audio(episode_id, video_url):
 
         audio_size = os.path.getsize(mp3_path)
 
-        # Get thumbnail and episode metadata
-        cursor.execute('SELECT video_id, title, channel FROM yt_podcast_episodes WHERE id = ?', (episode_id,))
+        # Get thumbnail
+        cursor.execute('SELECT video_id FROM yt_podcast_episodes WHERE id = ?', (episode_id,))
         ep_row = cursor.fetchone()
         thumbnail_url = _get_video_thumbnail(ep_row['video_id']) if ep_row else None
-
-        # Generate hook description from title
-        ep_title = ep_row['title'] if ep_row else ''
-        ep_channel = ep_row['channel'] if ep_row else ''
-        generated_desc = _generate_yt_podcast_description(ep_title, ep_channel) if ep_title else ''
 
         # Update episode as ready
         cursor.execute('''
             UPDATE yt_podcast_episodes
             SET status = 'ready', audio_filename = ?, audio_size = ?,
-                duration_seconds = ?, thumbnail_url = COALESCE(thumbnail_url, ?),
-                description = CASE WHEN ? != '' THEN ? ELSE description END
+                duration_seconds = ?, thumbnail_url = COALESCE(thumbnail_url, ?)
             WHERE id = ?
-        ''', (audio_filename, audio_size, duration_seconds, thumbnail_url,
-              generated_desc, generated_desc, episode_id))
+        ''', (audio_filename, audio_size, duration_seconds, thumbnail_url, episode_id))
         conn.commit()
 
         print(f"✅ Podcast audio ready: {audio_filename} ({audio_size / 1024 / 1024:.1f} MB, {duration_seconds}s)")
@@ -11226,6 +11241,16 @@ def yt_podcast_retry(episode_id):
 
 # ========== BRIEFING ROOM API ==========
 
+def _newsletter_path(vertical, created_at):
+    """Return filesystem path for the newsletter JSON matching a brief, or None if not found."""
+    try:
+        date_str = created_at[:10]  # 'YYYY-MM-DD'
+        path = os.path.join('newsletter_output', f'newsletter_{vertical}_{date_str}.json')
+        return path if os.path.exists(path) else None
+    except Exception:
+        return None
+
+
 @app.route('/api/briefs', methods=['GET'])
 def get_briefs():
     """Get all daily briefs with podcast scripts, newest first"""
@@ -11253,8 +11278,30 @@ def get_briefs():
                 'created_at': row[6],
                 'podcast_script': row[7],
                 'podcast_duration': row[8],
+                'has_newsletter': _newsletter_path(row[1], row[6]) is not None,
             })
         return jsonify({'success': True, 'briefs': briefs})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/briefs/<int:brief_id>/newsletter', methods=['GET'])
+def get_brief_newsletter(brief_id):
+    """Return the newsletter JSON for a given brief, if it exists."""
+    try:
+        conn = sqlite3.connect(DATABASE_PATH)
+        cursor = conn.cursor()
+        cursor.execute('SELECT vertical, created_at FROM daily_briefs WHERE id = ?', (brief_id,))
+        row = cursor.fetchone()
+        conn.close()
+        if not row:
+            return jsonify({'success': False, 'error': 'Brief not found'}), 404
+        path = _newsletter_path(row[0], row[1])
+        if not path:
+            return jsonify({'success': False, 'error': 'No newsletter for this episode'}), 404
+        with open(path, 'r') as f:
+            data = json.load(f)
+        return jsonify({'success': True, 'newsletter': data})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 

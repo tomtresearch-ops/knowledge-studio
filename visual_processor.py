@@ -580,9 +580,14 @@ def ensure_table(db_path=None):
             output_tokens INTEGER DEFAULT 0,
             estimated_cost REAL DEFAULT 0.0,
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            review_status TEXT DEFAULT 'complete'
+            review_status TEXT DEFAULT 'complete',
+            summary_50 TEXT
         )
     ''')
+    try:
+        cursor.execute("ALTER TABLE visual_captures ADD COLUMN summary_50 TEXT")
+    except sqlite3.OperationalError:
+        pass
     conn.commit()
     conn.close()
 

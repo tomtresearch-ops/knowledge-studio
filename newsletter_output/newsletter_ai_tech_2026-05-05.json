@@ -1,0 +1,31 @@
+{
+  "headline": "The Agent Wars Are Already Over\u2014And You Missed It",
+  "subtitle": "OpenAI locks in voice, Anthropic controls the reasoning layer, and the real competition shifts to infrastructure.",
+  "editorial_intro": "Today's three biggest moves aren't about smarter models or flashier demos. They're about who owns the actual operating system that billions of people will use to talk to AI agents. The model wars are over. The infrastructure wars are just beginning\u2014and the winners are already pulling ahead.",
+  "signals": [
+    {
+      "headline": "OpenAI Solves Low-Latency Voice at Scale",
+      "body": "OpenAI has cracked the last real technical barrier to voice: sub-100ms response latency at production scale. This isn't a feature announcement\u2014it's infrastructure dominance. The company that controls how voice agents respond *feels* human controls how billions of people experience AI. Expect this to cascade into every OpenAI product within 90 days.",
+      "whycare": "Understand that the next interface layer isn't a website or app\u2014it's a voice conversation. The company that makes voice agents feel natural gets the defensible moat, not whoever has the smartest model. Start testing voice-first interfaces now if you're building anything customer-facing."
+    },
+    {
+      "headline": "Anthropic Wins the Agent Backbone Layer",
+      "body": "Anthropic's decision to keep Claude Code free but control the integration layer reveals their real strategy: own how agents think and reason, not the raw models themselves. Developers are already swapping in cheaper models (DeepSeek for cost savings) while keeping Anthropic's SDK as the spine. This is how operating systems actually win\u2014by being indispensable in the middle.",
+      "whycare": "Start thinking about your infrastructure choices as separate from your model choices. The company that makes agents easiest to build, test, and reason about wins\u2014not the company with the best single model. Evaluate your tech stack accordingly."
+    },
+    {
+      "headline": "Customer Service AI Has Moved Beyond Augmentation to Replacement",
+      "body": "Sierra AI just raised $950M at a $15B valuation in its Series C, signaling that vertical customer AI has consolidated. The subtext is brutal: investors are pricing in total human replacement, not human augmentation. This suggests the labor arbitrage wave is accelerating faster than most people realize.",
+      "whycare": "If you work in customer service, support operations, or manage those teams, expect accelerating automation. If you're building AI infrastructure, recognize that the compliance and liability costs for labor displacement are about to spike\u2014factor that into your roadmap now."
+    }
+  ],
+  "bigger_picture": "The pattern across all three signals is identical: the competition has shifted from model capability to infrastructure control and integration speed. OpenAI, Anthropic, and DeepSeek aren't competing on smartness anymore\u2014they're competing on who makes it easiest to build, deploy, and reason about agents at scale. Meanwhile, the real costs of AI adoption\u2014privacy, security, labor transition\u2014are starting to show up in regulatory pressure and data breaches. The companies winning the next 18 months won't be the ones with the flashiest models; they'll be the ones who solve for deployment friction and compliance risk before it becomes a crisis. The honeymoon period is ending. What comes next is infrastructure, not innovation theater.",
+  "_meta": {
+    "vertical": "ai_tech",
+    "brief_id": 190,
+    "brief_date": "2026-05-05 01:30:58",
+    "signal_count": 286,
+    "source_count": 5,
+    "generated_at": "2026-05-05T13:09:10.585924"
+  }
+}

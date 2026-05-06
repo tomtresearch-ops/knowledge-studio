@@ -45,6 +45,13 @@ VERTICAL_CONFIG = {
         "podcast_feed": "",
         "accent_color": "#4a9e8e",
     },
+    "future_medicine": {
+        "name": "Breakthrough Medicine",
+        "masthead": "Breakthrough Medicine Brief",
+        "tagline": "AI-curated intelligence on longevity science, biotech, and the future of medicine",
+        "podcast_feed": "",
+        "accent_color": "#e05c5c",
+    },
     "futures_trends": {
         "name": "Futures & Trends",
         "masthead": "Futures & Trends Brief",
