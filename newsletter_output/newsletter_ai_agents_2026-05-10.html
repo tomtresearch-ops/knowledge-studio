@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Agents Brief — May 10, 2026</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Georgia', 'Times New Roman', serif;
+    background: #0a0a0a;
+    color: #e8e4df;
+    line-height: 1.75;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 40px 24px;
+  }
+
+  .header {
+    padding-bottom: 28px;
+    margin-bottom: 32px;
+    border-bottom: 1px solid #2a2520;
+  }
+
+  .masthead {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #7a6f63;
+    margin-bottom: 16px;
+  }
+
+  .issue-title {
+    font-size: 26px;
+    font-weight: 700;
+    color: #f0ebe4;
+    line-height: 1.35;
+    margin-bottom: 12px;
+  }
+
+  .issue-subtitle {
+    font-size: 16px;
+    color: #a89e93;
+    line-height: 1.6;
+    font-style: italic;
+  }
+
+  .issue-meta {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 12px;
+    color: #5a5049;
+    margin-top: 16px;
+  }
+
+  .editorial {
+    font-size: 16px;
+    color: #c4bdb3;
+    line-height: 1.85;
+    margin-bottom: 36px;
+  }
+
+  .signal {
+    margin-bottom: 32px;
+  }
+
+  .signal-number {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #4a9e8e;
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+
+  .signal-headline {
+    font-size: 19px;
+    font-weight: 700;
+    color: #f0ebe4;
+    line-height: 1.4;
+    margin-bottom: 12px;
+  }
+
+  .signal-body {
+    font-size: 15.5px;
+    color: #b5ada3;
+    line-height: 1.85;
+  }
+
+  .signal-whycare {
+    font-size: 15px;
+    color: #4a9e8e;
+    line-height: 1.75;
+    margin-top: 12px;
+    font-weight: 500;
+  }
+
+  .divider {
+    border: none;
+    border-top: 1px solid #1e1a16;
+    margin: 32px 0;
+  }
+
+  .bottomline {
+    background: #111;
+    border-left: 3px solid #4a9e8e;
+    padding: 20px 24px;
+    margin: 36px 0;
+    border-radius: 0 4px 4px 0;
+  }
+
+  .bottomline-label {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 10px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: #4a9e8e;
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+
+  .bottomline-text {
+    font-size: 15.5px;
+    color: #c4bdb3;
+    line-height: 1.8;
+  }
+
+  .cta-row {
+    text-align: center;
+    margin: 36px 0;
+  }
+
+  .cta-button {
+    display: inline-block;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    text-decoration: none;
+    padding: 12px 28px;
+    border-radius: 4px;
+    margin: 0 6px;
+  }
+
+  .cta-primary {
+    background: #4a9e8e;
+    color: #0a0a0a;
+  }
+
+  .cta-secondary {
+    background: #1e1a16;
+    color: #4a9e8e;
+  }
+
+  .footer {
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid #1e1a16;
+    text-align: center;
+  }
+
+  .footer-text {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 11px;
+    color: #4a443d;
+    line-height: 2;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <div class="header">
+    <div class="masthead">AI Agents Brief</div>
+    <div class="issue-title">The Agent Infrastructure Wars Have Begun</div>
+    <div class="issue-subtitle">Claude's sandbox is forcing a competitive sprint, LangChain is becoming boring (in a good way), and web automation just went native.</div>
+    <div class="issue-meta">May 10, 2026 &middot; 3 min read</div>
+  </div>
+
+  <div class="editorial">
+    The agent conversation has shifted. We're past the question of whether models can call tools—they can. Now the real work is infrastructure: can you observe a 10-step agent workflow when it breaks? Can you persist memory without it collapsing? Can you automate the web as a first-class primitive? Three signals show the stack is hardening fast, and the competitive edge is moving from model quality to execution reliability.
+  </div>
+
+  
+  <div class="signal">
+    <div class="signal-number">01</div>
+    <div class="signal-headline">Claude Code's Sandbox Is Setting the Infrastructure Baseline</div>
+    <div class="signal-body">Anthropic's documented code execution environment—now integrated across SpaceX, Google Cloud, and Amazon partnerships—has raised the bar for what stateful agent execution should look like. Competitors aren't arguing about whether they need sandboxing anymore; they're racing to match Claude's feature set and infrastructure depth. This is a meaningful shift: the moat is no longer model capability, it's operational reliability and platform integration.</div>
+    <div class="signal-whycare">Start auditing your agent execution environment now. If you're still calling APIs without sandbox isolation or execution observability, you're building on yesterday's assumptions. The production baseline is moving toward formal execution contracts and transparent failure modes.</div>
+  </div>
+  <hr class="divider">
+
+  <div class="signal">
+    <div class="signal-number">02</div>
+    <div class="signal-headline">LangChain v1 Signals the End of Abstraction Theater</div>
+    <div class="signal-body">The community has collectively resolved what LangChain actually is: not a replacement for agent reasoning, but a reliability layer for multi-step workflows. The v1 stability commitment validates a specific pattern—modular tool composition over monolithic frameworks—and signals the framework has matured past the "everything abstraction" phase into boring infrastructure. This also reveals a deeper truth: agent memory persistence (Caliby's new vector database) is now table stakes, not a nice-to-have.</div>
+    <div class="signal-whycare">Choose explicit over implicit. If your agent framework is hiding tool failures or inferring contracts automatically, you're deferring debugging costs until production. Builders moving to scale are opting for stated tool boundaries and observable orchestration.</div>
+  </div>
+  <hr class="divider">
+
+  <div class="signal">
+    <div class="signal-number">03</div>
+    <div class="signal-headline">Browser Automation Just Became a First-Class Agent Primitive</div>
+    <div class="signal-body">Mochi.js—a native browser automation library built into the Bun runtime—is eliminating the janky Selenium/Playwright bridges that have plagued web-interaction agents. Combined with Claude Code's sandbox and terminal automation trends, this signals a major expansion of agent design space: agents are no longer confined to API calls. Web scraping, form-filling, and UI navigation are now expected baseline capabilities.</div>
+    <div class="signal-whycare">Stop treating web automation as a second-class citizen in your agent design. If your system needs to interact with the web, native browser APIs in modern runtimes mean you can build this cleanly from day one, not bolt it on later as a hack.</div>
+  </div>
+  
+
+
+  <div class="bottomline">
+    <div class="bottomline-label">The Bigger Picture</div>
+    <div class="bottomline-text">
+      Three patterns are converging. First: the agent infrastructure stack is hardening around stateful execution, persistent memory, and observable orchestration—this is no longer a model problem, it's an infrastructure problem. Second: browser and terminal automation are graduating from edge cases to first-class primitives, expanding what agents can actually do. Third: enterprise agent patterns (multi-agent swarms, orchestration templates, guardrail enforcement) are leaking into open source faster than ever, which means the abstraction gap between toy agents and production agents is narrowing. In 2025, enterprise agents were black boxes. In 2026, they're becoming curriculum. The competitive pressure isn't on who has the best model anymore—it's on who has the most reliable execution layer.
+    </div>
+  </div>
+
+  <div class="cta-row">
+    <a href="#" class="cta-button cta-primary">Read the Full Brief</a>
+    
+  </div>
+
+  <div class="footer">
+    <div class="footer-text">
+      AI Agents Brief<br>
+      AI-curated intelligence on autonomous agents, agent frameworks, and the agent economy<br>
+      170 signals processed from 7 sources
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>
