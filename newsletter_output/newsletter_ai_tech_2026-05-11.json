@@ -1,0 +1,31 @@
+{
+  "headline": "The AI Economy Is Hitting Real Constraints\u2014And It's Not About Compute",
+  "subtitle": "Maryland's $2B grid complaint exposes infrastructure costs shifting to the public, agentic systems are breaking enterprise security models, and local AI is becoming economically viable.",
+  "editorial_intro": "For years, AI's growth story was simple: more compute, better models, faster scaling. That narrative is colliding with physical reality. This week's signals reveal something sharper than typical growing pains\u2014they show the industry moving from a scaling problem to a systems problem. Energy, security, and economics are now the real bottlenecks.",
+  "signals": [
+    {
+      "headline": "Public Utilities Are Funding Private AI Infrastructure\u2014And Regulators Are Noticing",
+      "body": "Maryland filed a $2 billion complaint with federal energy regulators, arguing that AI data centers are forcing grid upgrades that burden state ratepayers while benefiting out-of-state companies. This isn't a one-off complaint\u2014it's the first formal regulatory challenge to the model where AI infrastructure costs get externalized onto public systems. Expect similar filings from California, Texas, and Virginia within months.",
+      "whycare": "Start mapping energy constraint zones in your infrastructure planning. If your model depends on cheap cloud compute in high-demand regions, those costs are about to spike as utilities push back on subsidy models. The policy battle over who pays for grid upgrades will reshape where AI companies can afford to build."
+    },
+    {
+      "headline": "AI Agents Are Exposing Gaps in Enterprise Security Designed for Humans",
+      "body": "The Lily breach ($20 SQL injection vulnerability) wasn't actually a security failure\u2014it was a procurement mismatch. AI agents navigate permission boundaries differently than humans, crossing security perimeters that traditional audits never anticipated. Anthropic and OpenAI's recent statements that \"the model isn't enough\" aren't about capability gaps; they're admissions that existing enterprise security stacks weren't built for agentic workflows.",
+      "whycare": "If you're deploying agents into existing systems, audit your permission model now. AI agents will find and exploit pathways humans never would. The organizations that rebuild their security and governance layers first will lock in a multi-year advantage."
+    },
+    {
+      "headline": "Local AI Models Are Becoming Economically Viable\u2014Not Just Ideologically Popular",
+      "body": "Qwen and DeepSeek models running on consumer hardware (35B parameters on 8GB VRAM) are moving from hobbyist projects to production deployments. Hacker News threads on local-first architecture are hitting 500+ points. This bifurcation isn't about open-source philosophy\u2014it's about unit economics. As cloud inference costs and grid constraints bite, the math for local models keeps improving.",
+      "whycare": "Evaluate where local models can replace cloud calls in your pipeline. The margin math is shifting in their favor. This doesn't replace frontier models for everything, but it does create a new tier of production viability for 70% of use cases that don't need cutting-edge reasoning."
+    }
+  ],
+  "bigger_picture": "The AI industry's economic model is bifurcating along three lines that will reshape the next 18 months. Energy and infrastructure are now the scarce resource, not compute or parameters\u2014which means frontier model providers can't compete on raw capability alone anymore. They're already shifting to ecosystem lock-in (integrated stacks, agent frameworks, infrastructure deals), which explains the sudden \"model isn't enough\" messaging. Meanwhile, local models gaining production viability creates real competition for cloud inference, which compresses margins further. Finally, agentic systems breaking traditional security means enterprises face a multi-year forced upgrade cycle. The companies that win aren't the ones with the smartest models\u2014they're the ones that solve the infrastructure, security, and local-edge problems first. Watch energy policy, not just AI benchmarks.",
+  "_meta": {
+    "vertical": "ai_tech",
+    "brief_id": 221,
+    "brief_date": "2026-05-11 01:30:54",
+    "signal_count": 246,
+    "source_count": 5,
+    "generated_at": "2026-05-10T22:01:12.908764"
+  }
+}

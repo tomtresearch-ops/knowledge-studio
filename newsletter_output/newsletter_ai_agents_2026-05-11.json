@@ -1,0 +1,31 @@
+{
+  "headline": "The Agent Moat Just Shifted\u2014And It's Not About Models Anymore",
+  "subtitle": "Runtime systems beat model weights, production agents need guardrails, and cheap models are catching up fast.",
+  "editorial_intro": "For months, the agent race looked like a model arms race. Better LLM, better agent. But signals from production builders reveal a quiet pivot: the real competitive advantage isn't which model you use\u2014it's how you orchestrate, observe, and control it. Three patterns are converging that reshape where builders should place their bets.",
+  "signals": [
+    {
+      "headline": "The Runtime Is Now More Valuable Than the Model",
+      "body": "Hermes Agent is showing that self-improving runtime systems\u2014frameworks that automatically refine reusable skills and persist memory across sessions\u2014create compounding agent capability without waiting for better LLMs. Simultaneously, builder conversations have shifted decisively from \"which LLM should we use?\" to \"what execution environment and memory architecture should we build?\" This mirrors how databases commoditized compute: everyone uses similar hardware, but specialized runtimes dominate the market.",
+      "whycare": "Stop optimizing for model capability alone. Invest in orchestration layers, memory systems, and control planes\u2014these are becoming the durable competitive advantages in agent infrastructure."
+    },
+    {
+      "headline": "Production Agent Failures Are Control Failures, Not Capability Failures",
+      "body": "Agents can write code. They solve problems. But production deployments are failing spectacularly\u2014rogue agents consuming budgets unchecked, hallucinations corrupting workflows, unmonitored autonomous operations causing real damage. The pattern is consistent: builders aren't hitting a capability wall; they're hitting a *control and observability wall*. Governance middleware (budget checks, policy enforcement, cost tracking) is now non-negotiable for production deployment.",
+      "whycare": "If you're deploying agents, audit your observability and rollback mechanisms immediately. Control planes aren't nice-to-haves\u2014they're mandatory for production safety within the next 12 months."
+    },
+    {
+      "headline": "Cheap Models Plus Smart Context Engineering Now Beats Expensive Models",
+      "body": "Reddit signals show developers optimizing context (via tools like MCP and Xanther-style engines) are getting cheaper models to outperform Claude Opus on coding benchmarks. The model-scaling race is plateauing. What's emerging: two distinct agent economy tracks\u2014model-rich (enterprise, unlimited spend) and model-efficient (local-first, cost-conscious). The floor for autonomous code generation is now in the 50-100B range, unlocking on-device, privacy-preserving workflows.",
+      "whycare": "Evaluate your current agent stack for context optimization before scaling model costs. Regulated industries and cost-sensitive builders now have a viable path to autonomous agents without cloud dependencies."
+    }
+  ],
+  "bigger_picture": "Agents are maturing out of the raw-capability phase and into the operations phase. The model you pick matters less than the runtime you build around it, the controls you enforce within it, and the efficiency you optimize for. Expect the next 18 months to be dominated by infrastructure\u2014governance, observability, memory persistence, and cost optimization\u2014not by model breakthroughs. The builders winning will be those who treat agents like production systems, not demos. The frameworks winning will be those that bundle control planes as table stakes, not afterthoughts.",
+  "_meta": {
+    "vertical": "ai_agents",
+    "brief_id": 222,
+    "brief_date": "2026-05-11 01:31:39",
+    "signal_count": 182,
+    "source_count": 7,
+    "generated_at": "2026-05-10T22:01:23.257477"
+  }
+}

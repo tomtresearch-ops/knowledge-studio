@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Agents Brief — May 11, 2026</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Georgia', 'Times New Roman', serif;
+    background: #0a0a0a;
+    color: #e8e4df;
+    line-height: 1.75;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 40px 24px;
+  }
+
+  .header {
+    padding-bottom: 28px;
+    margin-bottom: 32px;
+    border-bottom: 1px solid #2a2520;
+  }
+
+  .masthead {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #7a6f63;
+    margin-bottom: 16px;
+  }
+
+  .issue-title {
+    font-size: 26px;
+    font-weight: 700;
+    color: #f0ebe4;
+    line-height: 1.35;
+    margin-bottom: 12px;
+  }
+
+  .issue-subtitle {
+    font-size: 16px;
+    color: #a89e93;
+    line-height: 1.6;
+    font-style: italic;
+  }
+
+  .issue-meta {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 12px;
+    color: #5a5049;
+    margin-top: 16px;
+  }
+
+  .editorial {
+    font-size: 16px;
+    color: #c4bdb3;
+    line-height: 1.85;
+    margin-bottom: 36px;
+  }
+
+  .signal {
+    margin-bottom: 32px;
+  }
+
+  .signal-number {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #4a9e8e;
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+
+  .signal-headline {
+    font-size: 19px;
+    font-weight: 700;
+    color: #f0ebe4;
+    line-height: 1.4;
+    margin-bottom: 12px;
+  }
+
+  .signal-body {
+    font-size: 15.5px;
+    color: #b5ada3;
+    line-height: 1.85;
+  }
+
+  .signal-whycare {
+    font-size: 15px;
+    color: #4a9e8e;
+    line-height: 1.75;
+    margin-top: 12px;
+    font-weight: 500;
+  }
+
+  .divider {
+    border: none;
+    border-top: 1px solid #1e1a16;
+    margin: 32px 0;
+  }
+
+  .bottomline {
+    background: #111;
+    border-left: 3px solid #4a9e8e;
+    padding: 20px 24px;
+    margin: 36px 0;
+    border-radius: 0 4px 4px 0;
+  }
+
+  .bottomline-label {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 10px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: #4a9e8e;
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+
+  .bottomline-text {
+    font-size: 15.5px;
+    color: #c4bdb3;
+    line-height: 1.8;
+  }
+
+  .cta-row {
+    text-align: center;
+    margin: 36px 0;
+  }
+
+  .cta-button {
+    display: inline-block;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    text-decoration: none;
+    padding: 12px 28px;
+    border-radius: 4px;
+    margin: 0 6px;
+  }
+
+  .cta-primary {
+    background: #4a9e8e;
+    color: #0a0a0a;
+  }
+
+  .cta-secondary {
+    background: #1e1a16;
+    color: #4a9e8e;
+  }
+
+  .footer {
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid #1e1a16;
+    text-align: center;
+  }
+
+  .footer-text {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 11px;
+    color: #4a443d;
+    line-height: 2;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <div class="header">
+    <div class="masthead">AI Agents Brief</div>
+    <div class="issue-title">The Agent Moat Just Shifted—And It's Not About Models Anymore</div>
+    <div class="issue-subtitle">Runtime systems beat model weights, production agents need guardrails, and cheap models are catching up fast.</div>
+    <div class="issue-meta">May 11, 2026 &middot; 3 min read</div>
+  </div>
+
+  <div class="editorial">
+    For months, the agent race looked like a model arms race. Better LLM, better agent. But signals from production builders reveal a quiet pivot: the real competitive advantage isn't which model you use—it's how you orchestrate, observe, and control it. Three patterns are converging that reshape where builders should place their bets.
+  </div>
+
+  
+  <div class="signal">
+    <div class="signal-number">01</div>
+    <div class="signal-headline">The Runtime Is Now More Valuable Than the Model</div>
+    <div class="signal-body">Hermes Agent is showing that self-improving runtime systems—frameworks that automatically refine reusable skills and persist memory across sessions—create compounding agent capability without waiting for better LLMs. Simultaneously, builder conversations have shifted decisively from "which LLM should we use?" to "what execution environment and memory architecture should we build?" This mirrors how databases commoditized compute: everyone uses similar hardware, but specialized runtimes dominate the market.</div>
+    <div class="signal-whycare">Stop optimizing for model capability alone. Invest in orchestration layers, memory systems, and control planes—these are becoming the durable competitive advantages in agent infrastructure.</div>
+  </div>
+  <hr class="divider">
+
+  <div class="signal">
+    <div class="signal-number">02</div>
+    <div class="signal-headline">Production Agent Failures Are Control Failures, Not Capability Failures</div>
+    <div class="signal-body">Agents can write code. They solve problems. But production deployments are failing spectacularly—rogue agents consuming budgets unchecked, hallucinations corrupting workflows, unmonitored autonomous operations causing real damage. The pattern is consistent: builders aren't hitting a capability wall; they're hitting a *control and observability wall*. Governance middleware (budget checks, policy enforcement, cost tracking) is now non-negotiable for production deployment.</div>
+    <div class="signal-whycare">If you're deploying agents, audit your observability and rollback mechanisms immediately. Control planes aren't nice-to-haves—they're mandatory for production safety within the next 12 months.</div>
+  </div>
+  <hr class="divider">
+
+  <div class="signal">
+    <div class="signal-number">03</div>
+    <div class="signal-headline">Cheap Models Plus Smart Context Engineering Now Beats Expensive Models</div>
+    <div class="signal-body">Reddit signals show developers optimizing context (via tools like MCP and Xanther-style engines) are getting cheaper models to outperform Claude Opus on coding benchmarks. The model-scaling race is plateauing. What's emerging: two distinct agent economy tracks—model-rich (enterprise, unlimited spend) and model-efficient (local-first, cost-conscious). The floor for autonomous code generation is now in the 50-100B range, unlocking on-device, privacy-preserving workflows.</div>
+    <div class="signal-whycare">Evaluate your current agent stack for context optimization before scaling model costs. Regulated industries and cost-sensitive builders now have a viable path to autonomous agents without cloud dependencies.</div>
+  </div>
+  
+
+
+  <div class="bottomline">
+    <div class="bottomline-label">The Bigger Picture</div>
+    <div class="bottomline-text">
+      Agents are maturing out of the raw-capability phase and into the operations phase. The model you pick matters less than the runtime you build around it, the controls you enforce within it, and the efficiency you optimize for. Expect the next 18 months to be dominated by infrastructure—governance, observability, memory persistence, and cost optimization—not by model breakthroughs. The builders winning will be those who treat agents like production systems, not demos. The frameworks winning will be those that bundle control planes as table stakes, not afterthoughts.
+    </div>
+  </div>
+
+  <div class="cta-row">
+    <a href="#" class="cta-button cta-primary">Read the Full Brief</a>
+    
+  </div>
+
+  <div class="footer">
+    <div class="footer-text">
+      AI Agents Brief<br>
+      AI-curated intelligence on autonomous agents, agent frameworks, and the agent economy<br>
+      182 signals processed from 7 sources
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>
