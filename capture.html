@@ -27,7 +27,16 @@
   #capture-btn:active { transform: scale(0.93); }
   #capture-btn svg { width: 48px; height: 48px; fill: #00d4aa; }
   #capture-label { margin-top: 16px; font-size: 15px; color: #888; }
+  #library-btn {
+    margin-top: 24px; padding: 12px 28px; border-radius: 24px;
+    border: 2px solid #333; background: transparent; color: #888;
+    font-size: 14px; font-weight: 600; cursor: pointer;
+    display: flex; align-items: center; gap: 8px;
+  }
+  #library-btn:active { border-color: #00d4aa; color: #00d4aa; }
+  #library-btn svg { width: 18px; height: 18px; fill: currentColor; }
   #file-input { display: none; }
+  #library-input { display: none; }
 
   /* --- Bottom bar --- */
   #bottom-bar {
@@ -116,6 +125,10 @@
       <svg viewBox="0 0 24 24"><path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4z"/><path d="M9 2 7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/></svg>
     </button>
     <div id="capture-label">Tap to capture content</div>
+    <button id="library-btn" onclick="openLibrary()">
+      <svg viewBox="0 0 24 24"><path d="M22 16V4c0-1.1-.9-2-2-2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2zm-11-4l2.03 2.71L16 11l4 5H8l3-4zM2 6v14c0 1.1.9 2 2 2h14v-2H4V6H2z"/></svg>
+      From Photo Library
+    </button>
   </div>
   <div id="bottom-bar">
     <div id="history-btn" onclick="toggleHistory()">
@@ -127,6 +140,7 @@
 </div>
 
 <input type="file" id="file-input" accept="image/*" capture="environment" onchange="handleCapture(event)">
+<input type="file" id="library-input" accept="image/*" multiple onchange="handleLibraryCapture(event)">
 
 <!-- Preview Screen -->
 <div id="preview-screen">
@@ -245,7 +259,7 @@ async function retryOfflineQueue() {
         const resp = await fetch('/api/upload', { method: 'POST', body: formData });
         const data = await resp.json();
 
-        if (data.success || (data.results && data.results[0])) {
+        if (data.success || (data.processing && data.processing[0])) {
           // Successfully sent — remove from offline queue
           const delDb = await openOfflineDB();
           const delTx = delDb.transaction(OFFLINE_STORE, 'readwrite');
@@ -296,6 +310,10 @@ function openCamera() {
   document.getElementById('file-input').click();
 }
 
+function openLibrary() {
+  document.getElementById('library-input').click();
+}
+
 function handleCapture(event) {
   const file = event.target.files[0];
   if (!file) return;
@@ -307,6 +325,47 @@ function handleCapture(event) {
   document.getElementById('upload-status').className = '';
   document.getElementById('send-btn').disabled = false;
   event.target.value = '';
+}
+
+async function handleLibraryCapture(event) {
+  const files = Array.from(event.target.files);
+  event.target.value = '';
+  if (!files.length) return;
+
+  // Single photo — go through normal preview flow
+  if (files.length === 1) {
+    currentFile = files[0];
+    const url = URL.createObjectURL(files[0]);
+    document.getElementById('preview-image').src = url;
+    document.getElementById('preview-screen').style.display = 'flex';
+    document.getElementById('upload-status').textContent = '';
+    document.getElementById('upload-status').className = '';
+    document.getElementById('send-btn').disabled = false;
+    return;
+  }
+
+  // Multiple photos — batch send directly without preview
+  document.getElementById('status-text').textContent = `Sending ${files.length} photos...`;
+  let sent = 0;
+  for (const file of files) {
+    const formData = new FormData();
+    const filename = `library_${Date.now()}_${file.name}`;
+    formData.append('files', file, filename);
+    formData.append('source_context', 'photo_library');
+    try {
+      const resp = await fetch('/api/upload', { method: 'POST', body: formData });
+      const data = await resp.json();
+      if (data.success) {
+        const result = data.processing && data.processing[0];
+        const thumbUrl = URL.createObjectURL(file);
+        const contentType = result ? (result.content_type || result.status) : 'sent';
+        captures.push({ url: thumbUrl, type: contentType, filename, captureId: result ? result.capture_id : null, resultData: null, simpleResult: result });
+        sent++;
+      }
+    } catch (e) { /* network error on individual photo — skip */ }
+    updateHistoryUI();
+  }
+  document.getElementById('status-text').textContent = `Sent ${sent} of ${files.length} photos`;
 }
 
 function retake() {
@@ -334,11 +393,11 @@ async function sendCapture() {
     const data = await resp.json();
 
     if (data.success) {
-      const result = data.results && data.results[0];
+      const result = data.processing && data.processing[0];
       const contentType = result ? (result.content_type || result.status) : 'sent';
       const captureId = result ? result.capture_id : null;
 
-      // Add to session history and go straight back to main screen
+      // Add to session history
       const thumbUrl = URL.createObjectURL(currentFile);
       const captureEntry = { url: thumbUrl, type: contentType, filename, captureId, resultData: null };
 
@@ -351,12 +410,26 @@ async function sendCapture() {
       document.getElementById('preview-screen').style.display = 'none';
       currentFile = null;
 
-      // Fetch full result in background (for history tap-to-review)
-      if (captureId) {
+      // Show result immediately after send
+      if (result && result.status === 'received') {
+        // Background processing — confirm instantly, no waiting
+        showSimpleResult(result);
+      } else if (captureId) {
+        // Visual capture with sync result — fetch full data and show
         fetch(`/api/visual-captures/${captureId}`)
           .then(r => r.json())
-          .then(detail => { if (detail.success) captureEntry.resultData = detail.capture; })
-          .catch(() => {});
+          .then(detail => {
+            if (detail.success) {
+              captureEntry.resultData = detail.capture;
+              showResult(detail.capture, contentType);
+            } else {
+              showSimpleResult(result);
+            }
+          })
+          .catch(() => { showSimpleResult(result); });
+      } else if (result) {
+        // YouTube queued / duplicate / other — show immediately
+        showSimpleResult(result);
       }
 
     } else {
@@ -469,7 +542,14 @@ function showSimpleResult(result) {
   const bodyEl = document.getElementById('result-body');
   const tagsEl = document.getElementById('result-tags');
 
-  if (result && result.status === 'queued') {
+  if (result && result.status === 'received') {
+    typeEl.textContent = 'saved';
+    titleEl.textContent = 'Saved to Knowledge Studio';
+    bodyEl.innerHTML = `<div class="result-section"><div class="result-section-content">Photo received and processing in the background. It will appear in your library shortly.</div></div>`;
+    tagsEl.innerHTML = '';
+    document.getElementById('result-screen').style.display = 'flex';
+    return;
+  } else if (result && result.status === 'queued') {
     typeEl.textContent = 'youtube';
     titleEl.textContent = 'Added to Video Queue';
     bodyEl.innerHTML = `<div class="result-section"><div class="result-section-content">This looks like a YouTube screenshot. It's been queued for full video processing — transcript, summary, and categorization.</div></div>`;

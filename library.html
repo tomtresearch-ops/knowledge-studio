@@ -217,9 +217,12 @@
             border-right: 1px solid rgba(255, 255, 255, 0.1);
             padding: 32px 24px;
             transition: width 0.3s ease, padding 0.3s ease;
-            overflow: hidden;
+            overflow: visible;
             position: relative;
             flex-shrink: 0;
+        }
+        .sidebar > *:not(.sidebar-edge-toggle) {
+            overflow: hidden;
         }
 
         .sidebar.collapsed {
@@ -1316,6 +1319,12 @@
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
             gap: 24px;
+            transition: gap 0.3s ease;
+        }
+
+        .main-layout.sidebar-collapsed .knowledge-grid {
+            grid-template-columns: repeat(auto-fill, minmax(440px, 1fr));
+            gap: 28px;
         }
 
         .knowledge-card {

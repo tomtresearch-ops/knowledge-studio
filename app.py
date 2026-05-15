@@ -4416,12 +4416,63 @@ Be thorough — this is the full analysis that shorter summaries will be derived
     }
 
 
+def _process_upload_background(file_path, filename, source_ctx):
+    """Run the slow Vision API processing in a background thread so uploads return immediately."""
+    try:
+        metadata = processor.extract_video_metadata(file_path)
+        if metadata and metadata.get('is_youtube', False):
+            video_url = processor.find_youtube_video(metadata)
+            if video_url:
+                conn = sqlite3.connect(DATABASE_PATH)
+                cursor = conn.cursor()
+                cursor.execute('SELECT id FROM videos WHERE video_url = ?', (video_url,))
+                existing = cursor.fetchone()
+                cursor.execute(
+                    "SELECT id FROM processing_queue WHERE video_url = ? AND status IN ('queued', 'processing')",
+                    (video_url,)
+                )
+                existing_in_queue = cursor.fetchone()
+                conn.close()
+                if existing:
+                    conn2 = sqlite3.connect(DATABASE_PATH)
+                    conn2.execute('UPDATE videos SET last_duplicate_attempt = ? WHERE id = ?',
+                                  (datetime.now().isoformat(), existing[0]))
+                    conn2.commit()
+                    conn2.close()
+                    print(f"⏭️ Duplicate (bg): {filename} → video #{existing[0]}")
+                elif existing_in_queue:
+                    print(f"⏭️ Already queued (bg): {filename}")
+                else:
+                    title = metadata.get('title', '')
+                    channel = metadata.get('channel', '')
+                    processor.add_video_to_queue(video_url=video_url, title=title, channel_name=channel, force=True)
+                    print(f"✅ Queued (bg): {filename} → {video_url}")
+            else:
+                print(f"⚠️ No video URL found (bg): {filename}")
+        else:
+            result = visual_processor.process_visual_capture(file_path, source_context=source_ctx, db_path=DATABASE_PATH)
+            if result.get('review_status') == 'complete' and result.get('structured_data'):
+                try:
+                    full_text = json.dumps(result['structured_data'], indent=2)
+                    summary_50 = generate_shortened_summary(full_text, 50)
+                    if summary_50:
+                        conn_s = sqlite3.connect(DATABASE_PATH)
+                        conn_s.execute('UPDATE visual_captures SET summary_50=? WHERE id=?', (summary_50, result['id']))
+                        conn_s.commit()
+                        conn_s.close()
+                except Exception as sum_err:
+                    print(f"  Warning: summary_50 failed (bg): {sum_err}")
+            print(f"✅ Visual capture (bg) #{result.get('id')}: {result.get('content_type')}")
+    except Exception as e:
+        print(f"❌ Background processing failed for {filename}: {e}")
+
+
 @app.route('/api/upload', methods=['POST'])
 def upload_files():
     try:
         if 'files' not in request.files:
             return jsonify({'success': False, 'error': 'No files provided'}), 400
-        
+
         files = request.files.getlist('files')
         uploaded_files = []
         processing_results = []
@@ -4454,127 +4505,20 @@ def upload_files():
                     })
                 continue
 
-            # Process the screenshot immediately
-            try:
-                # Extract metadata first
-                metadata = processor.extract_video_metadata(file_path)
-
-                if metadata and metadata.get('is_youtube', False):
-                    # Find video URL
-                    video_url = processor.find_youtube_video(metadata)
-                    
-                    if video_url:
-                        # Check if already processed (unless force flag is set)
-                        force_reprocess = request.form.get('force', 'false').lower() == 'true'
-
-                        conn = sqlite3.connect(DATABASE_PATH)
-                        cursor = conn.cursor()
-                        cursor.execute('SELECT id FROM videos WHERE video_url = ?', (video_url,))
-                        existing = cursor.fetchone()
-                        # Also check processing_queue for in-flight items
-                        cursor.execute(
-                            "SELECT id FROM processing_queue WHERE video_url = ? AND status IN ('queued', 'processing')",
-                            (video_url,)
-                        )
-                        existing_in_queue = cursor.fetchone()
-                        conn.close()
-
-                        if (existing or existing_in_queue) and not force_reprocess:
-                            if existing:
-                                # Update last_duplicate_attempt timestamp on existing videos record
-                                conn2 = sqlite3.connect(DATABASE_PATH)
-                                cursor2 = conn2.cursor()
-                                cursor2.execute(
-                                    'UPDATE videos SET last_duplicate_attempt = ? WHERE id = ?',
-                                    (datetime.now().isoformat(), existing[0])
-                                )
-                                conn2.commit()
-                                conn2.close()
-
-                                processing_results.append({
-                                    'filename': filename,
-                                    'status': 'duplicate',
-                                    'video_id': existing[0],
-                                    'message': 'Video already processed'
-                                })
-                            else:
-                                # Duplicate found in processing_queue (still in-flight)
-                                processing_results.append({
-                                    'filename': filename,
-                                    'status': 'duplicate',
-                                    'queue_id': existing_in_queue[0],
-                                    'message': 'Video already in processing queue'
-                                })
-                        else:
-                            # Add to processing queue
-                            title = metadata.get('title', '')
-                            channel = metadata.get('channel', '')
-                            
-                            queue_item = processor.add_video_to_queue(
-                                video_url=video_url,
-                                title=title,
-                                channel_name=channel,
-                                force=True
-                            )
-                            
-                            processing_results.append({
-                                'filename': filename,
-                                'status': 'queued',
-                                'queue_id': queue_item['id'],
-                                'video_url': video_url,
-                                'message': 'Added to processing queue'
-                            })
-                            print(f"✅ Added {filename} to processing queue (queue ID: {queue_item['id']})")
-                    else:
-                        processing_results.append({
-                            'filename': filename,
-                            'status': 'error',
-                            'message': 'Could not find video URL'
-                        })
-                else:
-                    # Not a YouTube screenshot - process as visual capture (OCR classification + extraction)
-                    print(f"🔍 Not YouTube, processing as visual capture: {filename}")
-                    try:
-                        source_ctx = request.form.get('source_context', 'upload')
-                        result = visual_processor.process_visual_capture(
-                            file_path, source_context=source_ctx, db_path=DATABASE_PATH
-                        )
-                        # Generate 50% summary for completed captures
-                        if result.get('review_status') == 'complete' and result.get('structured_data'):
-                            try:
-                                full_text = json.dumps(result['structured_data'], indent=2)
-                                summary_50 = generate_shortened_summary(full_text, 50)
-                                if summary_50:
-                                    conn_s = sqlite3.connect(DATABASE_PATH)
-                                    conn_s.execute('UPDATE visual_captures SET summary_50=? WHERE id=?',
-                                                   (summary_50, result['id']))
-                                    conn_s.commit()
-                                    conn_s.close()
-                                    print(f"  summary_50 generated for capture #{result['id']}")
-                            except Exception as sum_err:
-                                print(f"  Warning: summary_50 generation failed: {sum_err}")
-                        processing_results.append({
-                            'filename': filename,
-                            'status': 'processed',
-                            'content_type': result['content_type'],
-                            'capture_id': result['id'],
-                            'message': f"Visual capture: {result['content_type']} (${result['estimated_cost']:.4f})"
-                        })
-                        print(f"✅ Visual capture #{result['id']}: {result['content_type']}")
-                    except Exception as visual_err:
-                        print(f"❌ Visual processing failed: {visual_err}")
-                        processing_results.append({
-                            'filename': filename,
-                            'status': 'error',
-                            'message': f'Visual processing failed: {str(visual_err)}'
-                        })
-            except Exception as e:
-                print(f"❌ Error processing {filename}: {e}")
-                processing_results.append({
-                    'filename': filename,
-                    'status': 'error',
-                    'message': str(e)
-                })
+            # Dispatch processing to background thread — return immediately
+            source_ctx = request.form.get('source_context', 'upload')
+            t = threading.Thread(
+                target=_process_upload_background,
+                args=(file_path, filename, source_ctx),
+                daemon=True
+            )
+            t.start()
+            processing_results.append({
+                'filename': filename,
+                'status': 'received',
+                'message': 'Saved — processing in background'
+            })
+            print(f"📥 Received {filename} — processing in background")
         
         return jsonify({
             'success': True,
