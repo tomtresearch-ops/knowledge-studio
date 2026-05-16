@@ -8017,6 +8017,48 @@ def add_subscription():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
+@app.route('/api/identify-channel', methods=['POST'])
+def identify_channel():
+    """Extract YouTube channel name from a photo using Vision. Lightweight — channel name only."""
+    if 'file' not in request.files:
+        return jsonify({'success': False, 'error': 'No file provided'}), 400
+    file = request.files['file']
+    try:
+        import base64
+        from pathlib import Path
+        image_data = base64.b64encode(file.read()).decode('utf-8')
+        ext = Path(file.filename).suffix.lower() if file.filename else '.jpg'
+        media_type = {'jpg': 'image/jpeg', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg',
+                      '.png': 'image/png', '.heic': 'image/heic', '.webp': 'image/webp'}.get(ext, 'image/jpeg')
+        response = processor.claude_client.messages.create(
+            model="claude-haiku-4-5-20251001",
+            max_tokens=100,
+            messages=[{
+                "role": "user",
+                "content": [
+                    {"type": "image", "source": {"type": "base64", "media_type": media_type, "data": image_data}},
+                    {"type": "text", "text": (
+                        "This is a photo of a TV or monitor showing YouTube. "
+                        "Extract the YouTube channel name and handle (@...) if visible. "
+                        "Reply with JSON only: {\"channel_name\": \"...\", \"channel_handle\": \"@...\"} "
+                        "If you cannot find a channel, reply: {\"channel_name\": null, \"channel_handle\": null}"
+                    )}
+                ]
+            }]
+        )
+        raw = response.content[0].text.strip()
+        # Parse JSON from response
+        import re as _re
+        match = _re.search(r'\{.*\}', raw, _re.DOTALL)
+        if match:
+            result = json.loads(match.group())
+            if result.get('channel_name'):
+                return jsonify({'success': True, 'channel_name': result['channel_name'], 'channel_handle': result.get('channel_handle')})
+        return jsonify({'success': False, 'error': 'No channel found in image'})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
 @app.route('/api/subscriptions/<int:subscription_id>', methods=['DELETE'])
 def delete_subscription(subscription_id):
     """Delete a channel subscription."""

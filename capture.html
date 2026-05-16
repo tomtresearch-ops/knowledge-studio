@@ -114,6 +114,95 @@
   /* Spinner */
   .spinner { display: inline-block; width: 18px; height: 18px; border: 2px solid rgba(0,212,170,0.3); border-top-color: #00d4aa; border-radius: 50%; animation: spin 0.8s linear infinite; vertical-align: middle; margin-right: 8px; }
   @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* --- Subscribe button in bottom bar --- */
+  #subscribe-btn {
+    width: 50px; height: 50px; border-radius: 10px;
+    border: 2px solid #333; background: #1a2235;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; color: #888;
+  }
+  #subscribe-btn:active { border-color: #00d4aa; color: #00d4aa; }
+  #subscribe-btn svg { width: 22px; height: 22px; fill: currentColor; }
+
+  /* --- Subscribe sheet --- */
+  #subscribe-sheet {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: #0f1520; border-top: 1px solid rgba(255,255,255,0.1);
+    border-radius: 20px 20px 0 0;
+    padding: 24px 24px 48px;
+    transform: translateY(100%);
+    transition: transform 0.3s ease;
+    z-index: 50;
+  }
+  #subscribe-sheet.open { transform: translateY(0); }
+  #subscribe-sheet h3 { font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 6px; }
+  #subscribe-sheet p { font-size: 13px; color: #666; margin-bottom: 20px; }
+  #channel-input {
+    width: 100%; padding: 14px 16px; border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.05);
+    color: #fff; font-size: 15px; outline: none; box-sizing: border-box;
+    margin-bottom: 12px;
+  }
+  #channel-input:focus { border-color: #00d4aa; }
+  #channel-input::placeholder { color: #444; }
+  #subscribe-submit {
+    width: 100%; padding: 16px; border-radius: 12px;
+    background: #00d4aa; color: #0a0f1a;
+    font-size: 16px; font-weight: 700; border: none; cursor: pointer;
+  }
+  #subscribe-submit:disabled { opacity: 0.5; }
+  #subscribe-status { margin-top: 12px; font-size: 13px; text-align: center; min-height: 20px; color: #888; }
+  #subscribe-status.success { color: #00d4aa; }
+  #subscribe-status.error { color: #ff5555; }
+  #sheet-close {
+    position: absolute; top: 16px; right: 20px;
+    background: none; border: none; color: #555; font-size: 22px; cursor: pointer; padding: 4px;
+  }
+
+  /* --- Article button + sheet --- */
+  #article-btn {
+    width: 50px; height: 50px; border-radius: 10px;
+    border: 2px solid #333; background: #1a2235;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; color: #888;
+  }
+  #article-btn:active { border-color: #00d4aa; color: #00d4aa; }
+  #article-btn svg { width: 22px; height: 22px; fill: currentColor; }
+
+  #article-sheet {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    background: #0f1520; border-top: 1px solid rgba(255,255,255,0.1);
+    border-radius: 20px 20px 0 0;
+    padding: 24px 24px 48px;
+    transform: translateY(100%);
+    transition: transform 0.3s ease;
+    z-index: 50;
+  }
+  #article-sheet.open { transform: translateY(0); }
+  #article-sheet h3 { font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 6px; }
+  #article-sheet p { font-size: 13px; color: #666; margin-bottom: 16px; }
+  #article-url-input {
+    width: 100%; padding: 14px 16px; border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.15); background: rgba(255,255,255,0.05);
+    color: #fff; font-size: 15px; outline: none; box-sizing: border-box;
+    margin-bottom: 12px;
+  }
+  #article-url-input:focus { border-color: #00d4aa; }
+  #article-url-input::placeholder { color: #444; }
+  #article-submit {
+    width: 100%; padding: 16px; border-radius: 12px;
+    background: #00d4aa; color: #0a0f1a;
+    font-size: 16px; font-weight: 700; border: none; cursor: pointer;
+  }
+  #article-submit:disabled { opacity: 0.5; }
+  #article-status { margin-top: 12px; font-size: 13px; text-align: center; min-height: 20px; color: #888; }
+  #article-status.success { color: #00d4aa; }
+  #article-status.error { color: #ff5555; }
+  #article-sheet-close {
+    position: absolute; top: 16px; right: 20px;
+    background: none; border: none; color: #555; font-size: 22px; cursor: pointer; padding: 4px;
+  }
 </style>
 </head>
 <body>
@@ -135,8 +224,37 @@
       <span id="history-badge">0</span>
     </div>
     <div id="status-text">Ready</div>
-    <div style="width:50px"></div>
+    <button id="article-btn" onclick="openArticleSheet()" title="Add article by URL">
+      <svg viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zm-1 7V3.5L18.5 9H13zM8 16h8v2H8zm0-4h8v2H8zm0-4h5v2H8z"/></svg>
+    </button>
+    <button id="subscribe-btn" onclick="openSubscribeSheet()" title="Subscribe to channel">
+      <svg viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V8l8 5 8-5v10zm-8-7L4 6h16l-8 5z"/></svg>
+    </button>
   </div>
+</div>
+
+<!-- Subscribe Sheet -->
+<div id="subscribe-sheet">
+  <button id="sheet-close" onclick="closeSubscribeSheet()">×</button>
+  <h3>Subscribe to Channel</h3>
+  <p>Enter a YouTube channel handle or URL to add it to your KS subscriptions.</p>
+  <div style="display:flex;gap:10px;margin-bottom:12px;">
+    <input id="channel-input" type="text" placeholder="@channelname or youtube.com/..." autocorrect="off" autocapitalize="none" spellcheck="false" style="flex:1;margin-bottom:0;">
+    <button id="scan-channel-btn" onclick="scanChannelFromPhoto()" title="Scan photo for channel" style="width:50px;flex-shrink:0;padding:14px 12px;border-radius:12px;border:1px solid rgba(255,255,255,0.15);background:rgba(255,255,255,0.05);color:#888;cursor:pointer;font-size:18px;">📷</button>
+  </div>
+  <button id="subscribe-submit" onclick="submitSubscription()">Subscribe</button>
+  <div id="subscribe-status"></div>
+</div>
+<input type="file" id="scan-input" accept="image/*" style="display:none" onchange="handleChannelScan(event)">
+
+<!-- Article Sheet -->
+<div id="article-sheet">
+  <button id="article-sheet-close" onclick="closeArticleSheet()">×</button>
+  <h3>Add Article</h3>
+  <p>Paste a URL — clipboard checked automatically.</p>
+  <input id="article-url-input" type="url" placeholder="https://..." autocorrect="off" autocapitalize="none" spellcheck="false">
+  <button id="article-submit" onclick="submitArticle()">Send to KS</button>
+  <div id="article-status"></div>
 </div>
 
 <input type="file" id="file-input" accept="image/*" capture="environment" onchange="handleCapture(event)">
@@ -167,7 +285,7 @@
 </div>
 
 <!-- History Panel -->
-<div id="overlay" onclick="toggleHistory()"></div>
+<div id="overlay"></div>
 <div id="history-panel">
   <div id="history-handle" onclick="toggleHistory()"></div>
   <div id="history-header">
@@ -621,6 +739,169 @@ function toggleHistory() {
   document.getElementById('history-panel').classList.toggle('open');
   document.getElementById('overlay').classList.toggle('visible');
 }
+
+// --- Article Sheet ---
+async function openArticleSheet() {
+  const sheet = document.getElementById('article-sheet');
+  const input = document.getElementById('article-url-input');
+  const statusEl = document.getElementById('article-status');
+  input.value = '';
+  statusEl.textContent = '';
+  statusEl.className = '';
+  document.getElementById('article-submit').disabled = false;
+  sheet.classList.add('open');
+  document.getElementById('overlay').classList.add('visible');
+
+  // Auto-fill from clipboard if it looks like a URL
+  try {
+    const text = await navigator.clipboard.readText();
+    if (text && /^https?:\/\//i.test(text.trim())) {
+      input.value = text.trim();
+      statusEl.textContent = 'URL pasted from clipboard';
+    }
+  } catch (e) { /* clipboard permission denied — no problem */ }
+
+  setTimeout(() => input.focus(), 350);
+}
+
+function closeArticleSheet() {
+  document.getElementById('article-sheet').classList.remove('open');
+  document.getElementById('overlay').classList.remove('visible');
+}
+
+async function submitArticle() {
+  const url = document.getElementById('article-url-input').value.trim();
+  if (!url) return;
+  const statusEl = document.getElementById('article-status');
+  const btn = document.getElementById('article-submit');
+  btn.disabled = true;
+  statusEl.textContent = 'Sending...';
+  statusEl.className = '';
+  try {
+    const resp = await fetch('/api/process-article', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url })
+    });
+    const data = await resp.json();
+    if (data.success) {
+      statusEl.textContent = data.duplicate ? 'Already in library' : '✓ Article queued for processing';
+      statusEl.className = 'success';
+      setTimeout(closeArticleSheet, 1800);
+    } else {
+      statusEl.textContent = data.error || 'Failed to process article';
+      statusEl.className = 'error';
+      btn.disabled = false;
+    }
+  } catch (e) {
+    statusEl.textContent = 'Network error — check connection';
+    statusEl.className = 'error';
+    btn.disabled = false;
+  }
+}
+
+// --- Channel Scan ---
+function scanChannelFromPhoto() {
+  document.getElementById('scan-input').click();
+}
+
+async function handleChannelScan(event) {
+  const file = event.target.files[0];
+  event.target.value = '';
+  if (!file) return;
+  const statusEl = document.getElementById('subscribe-status');
+  const btn = document.getElementById('scan-channel-btn');
+  const submitBtn = document.getElementById('subscribe-submit');
+  btn.textContent = '⏳';
+  btn.disabled = true;
+  statusEl.textContent = 'Scanning photo for channel...';
+  statusEl.className = '';
+  submitBtn.disabled = true;
+
+  const formData = new FormData();
+  formData.append('file', file, file.name || 'scan.jpg');
+  try {
+    const resp = await fetch('/api/identify-channel', { method: 'POST', body: formData });
+    const data = await resp.json();
+    if (data.success) {
+      const fill = data.channel_handle || data.channel_name;
+      document.getElementById('channel-input').value = fill;
+      statusEl.textContent = `Found: ${data.channel_name}${data.channel_handle ? ' (' + data.channel_handle + ')' : ''}`;
+      statusEl.className = 'success';
+      submitBtn.disabled = false;
+    } else {
+      statusEl.textContent = data.error || 'No channel found — try a clearer photo';
+      statusEl.className = 'error';
+      submitBtn.disabled = false;
+    }
+  } catch (e) {
+    statusEl.textContent = 'Network error';
+    statusEl.className = 'error';
+    submitBtn.disabled = false;
+  }
+  btn.textContent = '📷';
+  btn.disabled = false;
+}
+
+// --- Channel Subscribe ---
+function openSubscribeSheet() {
+  document.getElementById('subscribe-sheet').classList.add('open');
+  document.getElementById('overlay').classList.add('visible');
+  document.getElementById('channel-input').value = '';
+  document.getElementById('subscribe-status').textContent = '';
+  document.getElementById('subscribe-status').className = '';
+  document.getElementById('subscribe-submit').disabled = false;
+  setTimeout(() => document.getElementById('channel-input').focus(), 350);
+}
+
+function closeSubscribeSheet() {
+  document.getElementById('subscribe-sheet').classList.remove('open');
+  document.getElementById('overlay').classList.remove('visible');
+}
+
+async function submitSubscription() {
+  const input = document.getElementById('channel-input').value.trim();
+  if (!input) return;
+  const statusEl = document.getElementById('subscribe-status');
+  const btn = document.getElementById('subscribe-submit');
+  btn.disabled = true;
+  statusEl.textContent = 'Subscribing...';
+  statusEl.className = '';
+  try {
+    const resp = await fetch('/api/subscriptions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ channel: input })
+    });
+    const data = await resp.json();
+    if (data.success) {
+      const name = data.subscription && data.subscription.channel_name ? data.subscription.channel_name : input;
+      statusEl.textContent = `✓ Subscribed to ${name}`;
+      statusEl.className = 'success';
+      document.getElementById('channel-input').value = '';
+      setTimeout(closeSubscribeSheet, 1800);
+    } else {
+      statusEl.textContent = data.error || 'Subscription failed';
+      statusEl.className = 'error';
+      btn.disabled = false;
+    }
+  } catch (e) {
+    statusEl.textContent = 'Network error — check connection';
+    statusEl.className = 'error';
+    btn.disabled = false;
+  }
+}
+
+// Close any open sheet on overlay tap
+document.getElementById('overlay').addEventListener('click', () => {
+  if (document.getElementById('subscribe-sheet').classList.contains('open')) {
+    closeSubscribeSheet();
+  } else if (document.getElementById('article-sheet').classList.contains('open')) {
+    closeArticleSheet();
+  } else {
+    toggleHistory();
+  }
+});
 
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/capture/sw.js').catch(() => {});
