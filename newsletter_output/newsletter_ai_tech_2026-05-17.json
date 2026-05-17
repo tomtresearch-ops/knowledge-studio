@@ -1,0 +1,31 @@
+{
+  "headline": "The Frontier is Narrowing\u2014And Infrastructure is Cracking",
+  "subtitle": "Anthropic's outages reveal compute strain while open models close the gap, frontier AI breaks CTF competitions, and token-burning startups signal a shift to application-layer wins.",
+  "editorial_intro": "Three things happened this week that tell the same story: the era of dominant frontier models is ending, not because they're getting worse, but because the economics and capability gaps are converging. Anthropic is buckling under load. Open-source models just crossed a threshold where they're architecturally interesting again. And the winners moving forward won't be the labs with the biggest models\u2014they'll be the ones who can actually run them.",
+  "signals": [
+    {
+      "headline": "Anthropic's Outages + Quiet Safety Paper = Running on Fumes",
+      "body": "Claude Opus 4.7 started failing under load this week while Anthropic released an alignment paper about \"survival mode\" behaviors\u2014ostensibly a safety disclosure, actually damage control. The timing is not accidental. The company's $1.5B from Blackstone and Goldman Sachs was earmarked for financial deployments, not core infrastructure. Anthropic is compute-bound and serving Fortune 500 clients simultaneously. That's a squeeze.",
+      "whycare": "Watch for infrastructure announcements in the next 30 days. If Anthropic brings new capacity online quietly, the narrative was spin. If they don't, expect service degradation to become a competitive vector\u2014companies will migrate to more reliable alternatives just to reduce operational risk."
+    },
+    {
+      "headline": "Frontier AI Just Collapsed an Entire Recruitment Funnel",
+      "body": "Modern frontier models are systematically outperforming humans in Capture The Flag hacking competitions\u2014the historical training ground for elite security researchers. This isn't a benchmark; it's the elimination of a signal mechanism for identifying top talent. When the ladder disappears, who gets hired next? Companies will stop funding CTF teams because the value proposition evaporates. You're watching a profession narrow in real time.",
+      "whycare": "If you're early-career in security, reverse engineering, or penetration testing, your advantage window is closing. Pivot toward domains that require domain expertise + system design, not raw problem-solving speed. The roles that survive are the ones AI can't commoditize yet."
+    },
+    {
+      "headline": "A Developer Spent $1.3M on AI Tokens in 30 Days\u2014And Kept the System Running",
+      "body": "Someone publicly disclosed burning $1.3M on OpenAI API calls in a month without killing the application. This signals a tectonic shift: if token costs aren't a constraint anymore, the bottleneck moved. Differentiation isn't in the model anymore\u2014it's in orchestration, integration, and domain expertise. The infrastructure layer is becoming commodity. Application layer is where the margin lives now.",
+      "whycare": "Start thinking about your AI product differently: the frontier model is the raw material, not the moat. Build around data integration, workflow automation, and domain-specific logic. The winners in 2026 aren't the ones with access to GPT\u2014they're the ones who can architect a complete system faster than competitors."
+    }
+  ],
+  "bigger_picture": "The pattern is clear: frontier model scarcity meets business adoption, open-source models approach parity in enough domains to matter, and the market is pricing in a shift from \"best model wins\" to \"best infrastructure and orchestration wins.\" Anthropic's strain isn't temporary\u2014it's structural. The jobs disappearing aren't random\u2014they're in categories where raw AI capability now exceeds human speed. And the capital is flowing toward whoever can build and sustain systems at scale, not whoever trained the latest model. The frontier lab that wins 2026 is the one that can keep the lights on while open models chip away at their margins in non-core domains. Everything else is noise.",
+  "_meta": {
+    "vertical": "ai_tech",
+    "brief_id": 252,
+    "brief_date": "2026-05-17 01:30:56",
+    "signal_count": 275,
+    "source_count": 5,
+    "generated_at": "2026-05-16T22:02:54.511834"
+  }
+}

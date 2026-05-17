@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI & Tech Brief — May 17, 2026</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Georgia', 'Times New Roman', serif;
+    background: #0a0a0a;
+    color: #e8e4df;
+    line-height: 1.75;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 40px 24px;
+  }
+
+  .header {
+    padding-bottom: 28px;
+    margin-bottom: 32px;
+    border-bottom: 1px solid #2a2520;
+  }
+
+  .masthead {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #7a6f63;
+    margin-bottom: 16px;
+  }
+
+  .issue-title {
+    font-size: 26px;
+    font-weight: 700;
+    color: #f0ebe4;
+    line-height: 1.35;
+    margin-bottom: 12px;
+  }
+
+  .issue-subtitle {
+    font-size: 16px;
+    color: #a89e93;
+    line-height: 1.6;
+    font-style: italic;
+  }
+
+  .issue-meta {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 12px;
+    color: #5a5049;
+    margin-top: 16px;
+  }
+
+  .editorial {
+    font-size: 16px;
+    color: #c4bdb3;
+    line-height: 1.85;
+    margin-bottom: 36px;
+  }
+
+  .signal {
+    margin-bottom: 32px;
+  }
+
+  .signal-number {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #6a9ec4;
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+
+  .signal-headline {
+    font-size: 19px;
+    font-weight: 700;
+    color: #f0ebe4;
+    line-height: 1.4;
+    margin-bottom: 12px;
+  }
+
+  .signal-body {
+    font-size: 15.5px;
+    color: #b5ada3;
+    line-height: 1.85;
+  }
+
+  .signal-whycare {
+    font-size: 15px;
+    color: #6a9ec4;
+    line-height: 1.75;
+    margin-top: 12px;
+    font-weight: 500;
+  }
+
+  .divider {
+    border: none;
+    border-top: 1px solid #1e1a16;
+    margin: 32px 0;
+  }
+
+  .bottomline {
+    background: #111;
+    border-left: 3px solid #6a9ec4;
+    padding: 20px 24px;
+    margin: 36px 0;
+    border-radius: 0 4px 4px 0;
+  }
+
+  .bottomline-label {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 10px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: #6a9ec4;
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+
+  .bottomline-text {
+    font-size: 15.5px;
+    color: #c4bdb3;
+    line-height: 1.8;
+  }
+
+  .cta-row {
+    text-align: center;
+    margin: 36px 0;
+  }
+
+  .cta-button {
+    display: inline-block;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    text-decoration: none;
+    padding: 12px 28px;
+    border-radius: 4px;
+    margin: 0 6px;
+  }
+
+  .cta-primary {
+    background: #6a9ec4;
+    color: #0a0a0a;
+  }
+
+  .cta-secondary {
+    background: #1e1a16;
+    color: #6a9ec4;
+  }
+
+  .footer {
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid #1e1a16;
+    text-align: center;
+  }
+
+  .footer-text {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 11px;
+    color: #4a443d;
+    line-height: 2;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <div class="header">
+    <div class="masthead">AI & Tech Brief</div>
+    <div class="issue-title">The Frontier is Narrowing—And Infrastructure is Cracking</div>
+    <div class="issue-subtitle">Anthropic's outages reveal compute strain while open models close the gap, frontier AI breaks CTF competitions, and token-burning startups signal a shift to application-layer wins.</div>
+    <div class="issue-meta">May 17, 2026 &middot; 3 min read</div>
+  </div>
+
+  <div class="editorial">
+    Three things happened this week that tell the same story: the era of dominant frontier models is ending, not because they're getting worse, but because the economics and capability gaps are converging. Anthropic is buckling under load. Open-source models just crossed a threshold where they're architecturally interesting again. And the winners moving forward won't be the labs with the biggest models—they'll be the ones who can actually run them.
+  </div>
+
+  
+  <div class="signal">
+    <div class="signal-number">01</div>
+    <div class="signal-headline">Anthropic's Outages + Quiet Safety Paper = Running on Fumes</div>
+    <div class="signal-body">Claude Opus 4.7 started failing under load this week while Anthropic released an alignment paper about "survival mode" behaviors—ostensibly a safety disclosure, actually damage control. The timing is not accidental. The company's $1.5B from Blackstone and Goldman Sachs was earmarked for financial deployments, not core infrastructure. Anthropic is compute-bound and serving Fortune 500 clients simultaneously. That's a squeeze.</div>
+    <div class="signal-whycare">Watch for infrastructure announcements in the next 30 days. If Anthropic brings new capacity online quietly, the narrative was spin. If they don't, expect service degradation to become a competitive vector—companies will migrate to more reliable alternatives just to reduce operational risk.</div>
+  </div>
+  <hr class="divider">
+
+  <div class="signal">
+    <div class="signal-number">02</div>
+    <div class="signal-headline">Frontier AI Just Collapsed an Entire Recruitment Funnel</div>
+    <div class="signal-body">Modern frontier models are systematically outperforming humans in Capture The Flag hacking competitions—the historical training ground for elite security researchers. This isn't a benchmark; it's the elimination of a signal mechanism for identifying top talent. When the ladder disappears, who gets hired next? Companies will stop funding CTF teams because the value proposition evaporates. You're watching a profession narrow in real time.</div>
+    <div class="signal-whycare">If you're early-career in security, reverse engineering, or penetration testing, your advantage window is closing. Pivot toward domains that require domain expertise + system design, not raw problem-solving speed. The roles that survive are the ones AI can't commoditize yet.</div>
+  </div>
+  <hr class="divider">
+
+  <div class="signal">
+    <div class="signal-number">03</div>
+    <div class="signal-headline">A Developer Spent $1.3M on AI Tokens in 30 Days—And Kept the System Running</div>
+    <div class="signal-body">Someone publicly disclosed burning $1.3M on OpenAI API calls in a month without killing the application. This signals a tectonic shift: if token costs aren't a constraint anymore, the bottleneck moved. Differentiation isn't in the model anymore—it's in orchestration, integration, and domain expertise. The infrastructure layer is becoming commodity. Application layer is where the margin lives now.</div>
+    <div class="signal-whycare">Start thinking about your AI product differently: the frontier model is the raw material, not the moat. Build around data integration, workflow automation, and domain-specific logic. The winners in 2026 aren't the ones with access to GPT—they're the ones who can architect a complete system faster than competitors.</div>
+  </div>
+  
+
+
+  <div class="bottomline">
+    <div class="bottomline-label">The Bigger Picture</div>
+    <div class="bottomline-text">
+      The pattern is clear: frontier model scarcity meets business adoption, open-source models approach parity in enough domains to matter, and the market is pricing in a shift from "best model wins" to "best infrastructure and orchestration wins." Anthropic's strain isn't temporary—it's structural. The jobs disappearing aren't random—they're in categories where raw AI capability now exceeds human speed. And the capital is flowing toward whoever can build and sustain systems at scale, not whoever trained the latest model. The frontier lab that wins 2026 is the one that can keep the lights on while open models chip away at their margins in non-core domains. Everything else is noise.
+    </div>
+  </div>
+
+  <div class="cta-row">
+    <a href="#" class="cta-button cta-primary">Read the Full Brief</a>
+    <a href="https://tomtresearch-ops.github.io/ks-podcasts/feed_ai_tech.xml" class="cta-button cta-secondary">&#9658; Listen</a>
+  </div>
+
+  <div class="footer">
+    <div class="footer-text">
+      AI & Tech Brief<br>
+      AI-curated intelligence on artificial intelligence, machine learning, and technology<br>
+      275 signals processed from 5 sources
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>
