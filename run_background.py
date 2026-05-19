@@ -332,7 +332,11 @@ def main():
             # Generate all podcast episodes sequentially at 9:45 PM
             # HARD RULE: zero concurrent TTS runs. Single loop, sequential, no staggered triggers.
             now = datetime.now()
-            if now.hour == 21 and 45 <= now.minute < 50 and last_podcast_generation_date != today:
+            podcast_already_running = bool(subprocess.run(
+                ["pgrep", "-f", "podcast_pipeline.py"],
+                capture_output=True
+            ).stdout.strip())
+            if now.hour == 21 and 45 <= now.minute < 50 and last_podcast_generation_date != today and not podcast_already_running:
                 try:
                     print("Podcast generation: sequential run")
                     tts_python = os.path.expanduser("~/tts-env/bin/python3")
@@ -469,7 +473,8 @@ def main():
 
             # Generate KS podcasts at 11:15 PM (staggered 15 min after briefs)
             # Only ks_youtube gets a podcast — ks_examiner is read-only operational report
-            if now.hour == 23 and 15 <= now.minute < 20 and last_ks_podcast_date != today:
+            ks_podcast_already_running = bool(subprocess.run(["pgrep", "-f", "podcast_pipeline.py"], capture_output=True).stdout.strip())
+            if now.hour == 23 and 15 <= now.minute < 20 and last_ks_podcast_date != today and not ks_podcast_already_running:
                 try:
                     print(f"\n🎙️  KS podcast generation ({now.strftime('%I:%M %p')})")
                     tts_python = os.path.expanduser("~/tts-env/bin/python3")
