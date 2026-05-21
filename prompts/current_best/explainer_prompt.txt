@@ -88,7 +88,7 @@ Add perspective the video doesn't provide, drawing from world knowledge. Example
 
 ## RULES
 
-- **Target 300-350 words total** - concise and consumable in 1-2 minutes
+- **Target 600-800 words total** - concise and consumable in 1-2 minutes
 - **Signal extraction is mandatory** - predictions, projections, and forward-looking statements are high-value; never bury them
 - **Use brief exposition (2-3 sentences) only for strategic context** - mechanism, timing, differentiation
 - **Default to complete extraction for everything else** - lists, protocols, studies, frameworks must be fully spelled out

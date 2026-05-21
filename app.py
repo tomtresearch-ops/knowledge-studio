@@ -4772,6 +4772,28 @@ def capture_icon_512():
     return send_from_directory('.', 'capture-icon-512.png', mimetype='image/png')
 
 
+
+
+@app.route('/mobile')
+def mobile_page():
+    """Serve the mobile consumer PWA."""
+    return send_from_directory('.', 'mobile.html')
+
+@app.route('/mobile/manifest.json')
+def mobile_manifest():
+    return send_from_directory('.', 'mobile-manifest.json', mimetype='application/manifest+json')
+
+@app.route('/mobile/sw.js')
+def mobile_sw():
+    return send_from_directory('.', 'mobile-sw.js', mimetype='application/javascript')
+
+@app.route('/mobile/icon-192.png')
+def mobile_icon_192():
+    return send_from_directory('.', 'mobile-icon-192.png', mimetype='image/png')
+
+@app.route('/mobile/icon-512.png')
+def mobile_icon_512():
+    return send_from_directory('.', 'mobile-icon-512.png', mimetype='image/png')
 @app.route('/screenshots/<path:filename>')
 def serve_screenshot(filename):
     """Serve screenshot images for visual capture display."""
@@ -8089,6 +8111,87 @@ def toggle_auto_process(subscription_id):
         return jsonify({'success': True, 'subscription': subscription})
     except ValueError as ve:
         return jsonify({'success': False, 'error': str(ve)}), 404
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+
+@app.route('/api/subscriptions/<int:subscription_id>/feature', methods=['POST'])
+def toggle_feature_subscription(subscription_id):
+    """Toggle featured status for a channel subscription."""
+    try:
+        conn = sqlite3.connect(DATABASE_PATH)
+        cursor = conn.cursor()
+        try:
+            cursor.execute('ALTER TABLE channel_subscriptions ADD COLUMN featured INTEGER DEFAULT 0')
+            conn.commit()
+        except sqlite3.OperationalError:
+            pass
+        cursor.execute('SELECT featured, auto_process FROM channel_subscriptions WHERE id = ?', (subscription_id,))
+        row = cursor.fetchone()
+        if not row:
+            conn.close()
+            return jsonify({'success': False, 'error': 'Subscription not found'}), 404
+        new_featured = 0 if row[0] else 1
+        if new_featured:
+            cursor.execute('UPDATE channel_subscriptions SET featured = 1, auto_process = 1 WHERE id = ?', (subscription_id,))
+        else:
+            cursor.execute('UPDATE channel_subscriptions SET featured = 0 WHERE id = ?', (subscription_id,))
+        conn.commit()
+        conn.close()
+        return jsonify({'success': True, 'featured': bool(new_featured)})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/api/feed', methods=['GET'])
+def get_feed():
+    """Mobile feed: latest video per featured channel, last 7 days."""
+    try:
+        conn = sqlite3.connect(DATABASE_PATH)
+        conn.row_factory = sqlite3.Row
+        cursor = conn.cursor()
+        try:
+            cursor.execute('ALTER TABLE channel_subscriptions ADD COLUMN featured INTEGER DEFAULT 0')
+            conn.commit()
+        except sqlite3.OperationalError:
+            pass
+        days = int(request.args.get('days', 7))
+        max_per_channel = int(request.args.get('max_per_channel', 1))
+        cursor.execute('''
+            SELECT cs.id as sub_id, cs.channel_name, cs.featured,
+                   v.id, v.title, v.video_url, v.channel, v.processing_date,
+                   v.ai_summary, v.summary_50, v.summary_15,
+                   COALESCE(v.original_publish_date, v.published_at, v.processing_date) as release_date,
+                   ROW_NUMBER() OVER (PARTITION BY cs.id ORDER BY COALESCE(v.original_publish_date, v.published_at, v.processing_date) DESC) as rn
+            FROM channel_subscriptions cs
+            JOIN channel_videos cv ON cv.channel_id = cs.channel_id
+            JOIN videos v ON v.video_url = cv.video_url
+            WHERE cs.featured = 1
+              AND cs.enabled = 1
+              AND v.status = 'completed'
+              AND COALESCE(v.original_publish_date, v.published_at, v.processing_date) >= datetime('now', ? || ' days')
+            ORDER BY release_date DESC
+        ''', (f'-{days}',))
+        rows = cursor.fetchall()
+        conn.close()
+        seen = {}
+        items = []
+        for row in rows:
+            sub_id = row['sub_id']
+            if seen.get(sub_id, 0) >= max_per_channel:
+                continue
+            seen[sub_id] = seen.get(sub_id, 0) + 1
+            items.append({
+                'id': row['id'],
+                'title': row['title'],
+                'channel': row['channel'] or row['channel_name'],
+                'video_url': row['video_url'],
+                'processing_date': row['processing_date'],
+                'published_at': row['release_date'],
+                'ai_summary': row['ai_summary'],
+                'summary_50': row['summary_50'],
+                'summary_15': row['summary_15'],
+            })
+        return jsonify({'success': True, 'items': items, 'count': len(items)})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
@@ -12039,6 +12142,128 @@ def get_alert_count():
         return jsonify({'success': True, 'count': count})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
+
+
+
+
+# ── Video Pipeline Image Library ──────────────────────────────────────────────
+
+import glob as _glob
+
+LIBRARY_FILES_DIR = os.path.expanduser('~/video-pipeline/library/files')
+
+@app.route('/library/images')
+def library_images():
+    import glob, sqlite3 as _sq
+    files = sorted(
+        glob.glob(os.path.join(LIBRARY_FILES_DIR, '*.png')) +
+        glob.glob(os.path.join(LIBRARY_FILES_DIR, '*.jpg')),
+        key=os.path.getmtime, reverse=True
+    )
+    meta = {}
+    db_path = os.path.expanduser('~/video-pipeline/library/library.db')
+    if os.path.exists(db_path):
+        try:
+            conn = _sq.connect(db_path)
+            conn.row_factory = _sq.Row
+            rows = conn.execute(
+                'SELECT file_path, prompt, score, vertical, type FROM assets ORDER BY created_at DESC LIMIT 1000'
+            ).fetchall()
+            conn.close()
+            for r in rows:
+                meta[os.path.basename(r['file_path'])] = dict(r)
+        except Exception:
+            pass
+    cards = []
+    for f in files[:300]:
+        name = os.path.basename(f)
+        m = meta.get(name, {})
+        cards.append({
+            'url': '/library/files/' + name,
+            'name': name,
+            'prompt': m.get('prompt', ''),
+            'score': m.get('score', ''),
+            'vertical': m.get('vertical', ''),
+            'type': m.get('type', 'flux'),
+        })
+    total = len(files)
+    card_html = ''
+    for c in cards:
+        prompt_display = (c['prompt'][:90] if c['prompt'] else c['name'][:60]).replace("'", "&#39;")
+        score_tag = '<span class="tag score">score ' + str(c['score']) + '</span>' if c['score'] else ''
+        vert_tag = '<span class="tag score">' + str(c['vertical']) + '</span>' if c['vertical'] else ''
+        tag_class = c['type'] if c['type'] in ('flux', 'pexels') else 'flux'
+        lb_prompt = c['prompt'].replace("'", "\\'").replace('"', '\\"')[:120] if c['prompt'] else c['name']
+        card_html += (
+            '<div class="card" onclick="lb(\'' + c['url'] + '\',\'' + lb_prompt + '\',' +
+            repr(str(c['score'])) + ',\'' + str(c['vertical']) + '\')">'
+            '<img src="' + c['url'] + '" loading="lazy" alt="">'
+            '<div class="info">'
+            '<div class="prompt">' + prompt_display + '</div>'
+            '<div class="meta">'
+            '<span class="tag ' + tag_class + '">' + c['type'] + '</span>'
+            + score_tag + vert_tag +
+            '</div></div></div>\n'
+        )
+    html = '''<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Studio Image Library</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: #0d0d0f; color: #e2e8f0; font-family: -apple-system, sans-serif; padding: 20px; }
+h1 { font-size: 15px; font-weight: 600; color: #a5b4fc; margin-bottom: 4px; }
+.sub { font-size: 11px; color: #475569; margin-bottom: 20px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
+.card { background: #161820; border: 1px solid #1e2030; border-radius: 8px; overflow: hidden; cursor: pointer; transition: border-color .15s; }
+.card:hover { border-color: #4f46e5; }
+.card img { width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; background: #0d0f1a; }
+.card .info { padding: 8px 10px; }
+.card .prompt { font-size: 10px; color: #94a3b8; line-height: 1.4; max-height: 40px; overflow: hidden; }
+.card .meta { display: flex; gap: 6px; margin-top: 5px; flex-wrap: wrap; }
+.tag { font-size: 9px; padding: 2px 6px; border-radius: 3px; font-weight: 500; }
+.tag.flux { background: #312e81; color: #a5b4fc; }
+.tag.pexels { background: #052e16; color: #4ade80; }
+.tag.score { background: #1c1917; color: #a8a29e; }
+.lightbox { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.92); z-index: 100; align-items: center; justify-content: center; flex-direction: column; gap: 12px; }
+.lightbox.open { display: flex; }
+.lightbox img { max-width: 90vw; max-height: 80vh; border-radius: 6px; }
+.lightbox .lb-meta { font-size: 11px; color: #64748b; text-align: center; max-width: 600px; }
+.lightbox .close { position: absolute; top: 16px; right: 20px; font-size: 22px; cursor: pointer; color: #475569; }
+</style>
+</head>
+<body>
+<h1>Studio Image Library</h1>
+<div class="sub">''' + str(total) + ''' images total &middot; showing ''' + str(len(cards)) + ''' most recent &middot; FLUX generated + scored</div>
+<div class="grid">
+''' + card_html + '''</div>
+<div class="lightbox" id="lb" onclick="if(event.target===this)this.classList.remove('open')">
+  <span class="close" onclick="document.getElementById('lb').classList.remove('open')">&#x2715;</span>
+  <img id="lb-img" src="">
+  <div class="lb-meta" id="lb-meta"></div>
+</div>
+<script>
+function lb(url, prompt, score, vert) {
+  document.getElementById('lb-img').src = url;
+  var meta = prompt || url;
+  if (score) meta += ' · score ' + score;
+  if (vert) meta += ' · ' + vert;
+  document.getElementById('lb-meta').textContent = meta;
+  document.getElementById('lb').classList.add('open');
+}
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') document.getElementById('lb').classList.remove('open');
+});
+</script>
+</body>
+</html>'''
+    return html
+
+
+@app.route('/library/files/<path:filename>')
+def library_file(filename):
+    return send_from_directory(LIBRARY_FILES_DIR, filename)
 
 
 if __name__ == '__main__':

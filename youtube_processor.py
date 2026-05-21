@@ -108,6 +108,16 @@ def _parse_view_count(view_str: str) -> Optional[int]:
     except (ValueError, AttributeError):
         return None
 
+def _is_gpu_busy() -> bool:
+    """Return True if mflux or other heavy GPU processes are running."""
+    import subprocess as _sp
+    for proc in ['mflux', 'stable-diffusion', 'sdxl']:
+        r = _sp.run(['pgrep', '-f', proc], capture_output=True)
+        if r.returncode == 0 and r.stdout.strip():
+            return True
+    return False
+
+
 def generate_shortened_summary(claude_client, full_summary: str, target_percentage: int) -> str:
     """
     Generate a shortened version of a summary using Claude Haiku 4.5.
@@ -192,23 +202,45 @@ Condense:
 Original Summary:
 {full_summary}"""
 
+    # Try Qwen via Ollama first (local, free) — skip if GPU is busy
+    if not _is_gpu_busy():
+        try:
+            import requests as _req
+            _resp = _req.post('http://localhost:11434/api/generate', json={
+                'model': 'qwen2.5:14b',
+                'prompt': prompt,
+                'stream': False,
+                'options': {'num_predict': 2000}
+            }, timeout=90)
+            if _resp.status_code == 200:
+                result = _resp.json().get('response', '').strip()
+                if result:
+                    return result
+        except Exception:
+            pass
+
+    # Fallback to Haiku
     try:
-        model = "claude-haiku-4-5-20251001"
         response = claude_client.messages.create(
-            model=model,
-            max_tokens=4000,  # Enough for shortened summaries
+            model="claude-haiku-4-5-20251001",
+            max_tokens=4000,
             messages=[{"role": "user", "content": prompt}]
         )
         return response.content[0].text
     except Exception as e:
         print(f"⚠️ Error generating shortened summary ({target_percentage}%): {e}")
-        return full_summary  # Return original on error
+        return full_summary
 
 class YouTubeProcessor:
     def __init__(self):
         self.db_path = DATABASE_PATH
         self.claude_client = anthropic.Anthropic(api_key=CLAUDE_API_KEY)
         self.init_database()
+
+    def _is_gpu_busy(self) -> bool:
+        """Return True if mflux or other heavy GPU processes are running."""
+        return _is_gpu_busy()
+
         self.pending_files = set()
         self.batch_timer = None
         self._queue_worker_stop_event = threading.Event()
@@ -2523,7 +2555,7 @@ class YouTubeProcessor:
                     transcript,
                     summary_text,
                     summary_50,
-                    generate_shortened_summary(self.claude_client, summary_text, 50),
+                    '',  # summary_30 not generated (redundant)
                     summary_15,
                     '',
                     '',
@@ -2808,25 +2840,7 @@ class YouTubeProcessor:
             }
             media_type = media_type_map.get(ext, 'image/jpeg')
             
-            # Claude Vision API call using new library
-            response = self.claude_client.messages.create(
-                model="claude-haiku-4-5-20251001",
-                max_tokens=1000,
-                messages=[
-                    {
-                        "role": "user",
-                        "content": [
-                            {
-                                "type": "image",
-                                "source": {
-                                    "type": "base64",
-                                    "media_type": media_type,
-                                    "data": image_data
-                                }
-                            },
-                            {
-                                "type": "text",
-                                "text": """Analyze this image for YouTube video information. This may be a direct screenshot OR a phone photo of a TV/monitor showing YouTube.
+            _vision_prompt = """Analyze this image for YouTube video information. This may be a direct screenshot OR a phone photo of a TV/monitor showing YouTube.
 
 Look for YouTube UI elements:
 - Video title text (usually below or overlaid on the thumbnail)
@@ -2848,14 +2862,44 @@ Respond ONLY with a JSON object:
 }
 
 Set "is_youtube": true if you can see ANY YouTube UI elements (title bar, channel, view count, player controls, thumbnail grid). Set false only if there are no YouTube elements at all."""
-                            }
-                        ]
-                    }
-                ]
-            )
-            
-            # Extract content from new response format
-            content = response.content[0].text
+
+            # Try Gemini Flash vision first (free tier)
+            import os as _vos
+            _gemini_key = _vos.environ.get('GEMINI_API_KEY', '')
+            content = None
+            if _gemini_key:
+                try:
+                    import requests as _vreq
+                    _gresp = _vreq.post(
+                        f'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={_gemini_key}',
+                        json={"contents": [{"parts": [
+                            {"inline_data": {"mime_type": media_type, "data": image_data}},
+                            {"text": _vision_prompt}
+                        ]}]},
+                        timeout=30
+                    )
+                    if _gresp.status_code == 200:
+                        _gparts = _gresp.json()['candidates'][0]['content']['parts']
+                        content = _gparts[0]['text']
+                        print("✅ Vision via Gemini Flash")
+                    else:
+                        print(f"⚠️ Gemini vision HTTP {_gresp.status_code}, falling back to Haiku")
+                except Exception as _ge:
+                    print(f"⚠️ Gemini vision error: {_ge}, falling back to Haiku")
+
+            if content is None:
+                # Fallback: Haiku vision
+                _hr = self.claude_client.messages.create(
+                    model="claude-haiku-4-5-20251001",
+                    max_tokens=1000,
+                    messages=[{"role": "user", "content": [
+                        {"type": "image", "source": {"type": "base64",
+                            "media_type": media_type, "data": image_data}},
+                        {"type": "text", "text": _vision_prompt}
+                    ]}]
+                )
+                content = _hr.content[0].text
+                print("✅ Vision via Haiku (fallback)")
             
             # Clean response and parse JSON — handle extra text after JSON
             content = content.replace('```json', '').replace('```', '').strip()
@@ -3571,6 +3615,27 @@ Return ONLY valid JSON with no markdown formatting."""
         base_delay = 60  # Start with 60 seconds
         
         for attempt in range(max_retries):
+            # Try Qwen via Ollama first (local, free) — skip if GPU is busy
+            if not self._is_gpu_busy():
+                try:
+                    import requests as _req
+                    _resp = _req.post('http://localhost:11434/api/generate', json={
+                        'model': 'qwen2.5:14b',
+                        'prompt': prompt,
+                        'stream': False,
+                        'options': {'num_predict': 2000}
+                    }, timeout=180)
+                    if _resp.status_code == 200:
+                        result = _resp.json().get('response', '').strip()
+                        if result:
+                            import re as _re
+                            result = result.replace('```', '').strip()
+                            result = _re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f\x7f-\x9f]', '', result)
+                            print(f"✅ Summary via Qwen: {len(result)} chars")
+                            return result
+                except Exception:
+                    pass
+
             try:
                 # Use longer timeout for large requests (default is 60s, increase to 300s for long transcripts)
                 response = self.claude_client.messages.create(
@@ -3955,7 +4020,7 @@ Article Content:
                 transcript,
                 summary_text,  # Store narrative text directly
                 summary_50,
-                generate_shortened_summary(self.claude_client, summary_text, 50),
+                '',  # summary_30 not generated (redundant)
                 summary_15,
                 '',  # No separate key_insights for narrative format
                 '',  # No separate topics for narrative format
