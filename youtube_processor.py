@@ -202,20 +202,21 @@ Condense:
 Original Summary:
 {full_summary}"""
 
-    # Try Qwen via Ollama first (local, free) — skip if GPU is busy
-    if not _is_gpu_busy():
+    # Try Gemini Flash first (free tier, no GPU pressure)
+    import os as _gos
+    _gemini_key = _gos.environ.get('GEMINI_API_KEY', '')
+    if _gemini_key:
         try:
-            import requests as _req
-            _resp = _req.post('http://localhost:11434/api/generate', json={
-                'model': 'qwen2.5:14b',
-                'prompt': prompt,
-                'stream': False,
-                'options': {'num_predict': 2000}
-            }, timeout=90)
-            if _resp.status_code == 200:
-                result = _resp.json().get('response', '').strip()
-                if result:
-                    return result
+            import requests as _greq
+            _gr = _greq.post(
+            f'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={_gemini_key}',
+                json={'contents': [{'parts': [{'text': prompt}]}]},
+                timeout=60
+            )
+            if _gr.status_code == 200:
+                _gtext = _gr.json()['candidates'][0]['content']['parts'][0]['text'].strip()
+                if _gtext:
+                    return _gtext
         except Exception:
             pass
 
@@ -3615,8 +3616,28 @@ Return ONLY valid JSON with no markdown formatting."""
         base_delay = 60  # Start with 60 seconds
         
         for attempt in range(max_retries):
-            # Try Qwen via Ollama first (local, free) — skip if GPU is busy
-            if not self._is_gpu_busy():
+            # Try Gemini Flash first (free tier, no GPU pressure)
+            import os as _gos2
+            _gemini_key2 = _gos2.environ.get('GEMINI_API_KEY', '')
+            if _gemini_key2:
+                try:
+                    import requests as _greq2
+                    _gr2 = _greq2.post(
+                        f'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={_gemini_key2}',
+                        json={'contents': [{'parts': [{'text': prompt}]}]},
+                        timeout=120
+                    )
+                    if _gr2.status_code == 200:
+                        _gtext2 = _gr2.json()['candidates'][0]['content']['parts'][0]['text'].strip()
+                        if _gtext2:
+                            import re as _re2
+                            _gtext2 = _gtext2.replace('```', '').strip()
+                            _gtext2 = _re2.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f\x7f-\x9f]', '', _gtext2)
+                            print(f"✅ Summary via Gemini Flash: {len(_gtext2)} chars")
+                            return _gtext2
+                except Exception:
+                    pass
+
                 try:
                     import requests as _req
                     _resp = _req.post('http://localhost:11434/api/generate', json={

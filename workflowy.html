@@ -360,6 +360,7 @@
         <nav class="nav">
             <a href="/">Capture</a>
             <a href="/library">Library</a>
+            <a href="http://mac-studio.local:8888">Images</a>
             <a href="/channels">Channels</a>
             <a href="/intelligence">Intelligence</a>
             <a href="/stats">Stats</a>
@@ -1117,6 +1118,89 @@
             }
         }
     </script>
+
+<script id="ks-nav-drag">
+(function() {
+  const nav = document.querySelector('nav.nav');
+  if (!nav) return;
+  const ORDER_KEY = 'ks_nav_order';
+
+  function links() { return [...nav.querySelectorAll('a[href]')]; }
+
+  function saveOrder() {
+    localStorage.setItem(ORDER_KEY, JSON.stringify(links().map(a => a.getAttribute('href'))));
+  }
+
+  function applyOrder() {
+    const saved = JSON.parse(localStorage.getItem(ORDER_KEY) || 'null');
+    if (!saved || !saved.length) return;
+    const map = Object.fromEntries(links().map(a => [a.getAttribute('href'), a]));
+    const ordered = saved.filter(h => map[h]).map(h => map[h]);
+    const extras  = links().filter(a => !saved.includes(a.getAttribute('href')));
+    const anchor  = nav.querySelector(':not(a)');
+    [...ordered, ...extras].forEach(a => anchor ? nav.insertBefore(a, anchor) : nav.appendChild(a));
+  }
+
+  let dragging = null, didDrag = false;
+
+  function init() {
+    links().forEach(a => {
+      a.style.cursor = 'grab';
+
+      a.addEventListener('mousedown', e => {
+        if (e.button !== 0) return;
+        const startX = e.clientX;
+        didDrag = false;
+
+        const onMove = ev => {
+          if (!didDrag && Math.abs(ev.clientX - startX) < 6) return;
+          if (!didDrag) {
+            didDrag = true;
+            dragging = a;
+            a.classList.add('ks-dragging');
+            a.style.cursor = 'grabbing';
+          }
+          // find insertion point
+          for (const t of links()) {
+            if (t === dragging) continue;
+            const r = t.getBoundingClientRect();
+            if (ev.clientX >= r.left && ev.clientX <= r.right) {
+              const before = ev.clientX < r.left + r.width / 2;
+              nav.insertBefore(dragging, before ? t : (t.nextElementSibling || nav.querySelector(':not(a)')));
+              break;
+            }
+          }
+        };
+
+        const onUp = () => {
+          document.removeEventListener('mousemove', onMove);
+          document.removeEventListener('mouseup', onUp);
+          if (dragging) {
+            dragging.classList.remove('ks-dragging');
+            dragging.style.cursor = 'grab';
+            dragging = null;
+            saveOrder();
+          }
+        };
+
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup', onUp);
+      });
+
+      // block navigation if we dragged
+      a.addEventListener('click', e => { if (didDrag) { e.preventDefault(); didDrag = false; } });
+    });
+  }
+
+  applyOrder();
+  init();
+})();
+</script>
+<style>
+nav.nav a { cursor: grab; user-select: none; }
+nav.nav a.ks-dragging { opacity: 0.4; outline: 1px dashed #8b5cf6; border-radius: 4px; }
+</style>
+
 </body>
 </html>
 

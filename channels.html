@@ -602,11 +602,13 @@
         <nav class="nav">
             <a href="/">Capture</a>
             <a href="/library">Library</a>
+            <a href="http://mac-studio.local:8888">Images</a>
             <a href="/channels" class="active">Channels</a>
             <a href="/briefing">Briefing Room</a>
             <a href="/intelligence">Intelligence</a>
             <a href="/stats">Stats</a>
             <a href="/studio">Studio</a>
+            <a href="/library/captures">Captures</a>
         </nav>
     </header>
 
@@ -958,7 +960,90 @@
                         <h2>Loading document...</h2>
                         <p>Please wait</p>
                     </div>
-                </body>
+                
+<script id="ks-nav-drag">
+(function() {
+  const nav = document.querySelector('nav.nav');
+  if (!nav) return;
+  const ORDER_KEY = 'ks_nav_order';
+
+  function links() { return [...nav.querySelectorAll('a[href]')]; }
+
+  function saveOrder() {
+    localStorage.setItem(ORDER_KEY, JSON.stringify(links().map(a => a.getAttribute('href'))));
+  }
+
+  function applyOrder() {
+    const saved = JSON.parse(localStorage.getItem(ORDER_KEY) || 'null');
+    if (!saved || !saved.length) return;
+    const map = Object.fromEntries(links().map(a => [a.getAttribute('href'), a]));
+    const ordered = saved.filter(h => map[h]).map(h => map[h]);
+    const extras  = links().filter(a => !saved.includes(a.getAttribute('href')));
+    const anchor  = nav.querySelector(':not(a)');
+    [...ordered, ...extras].forEach(a => anchor ? nav.insertBefore(a, anchor) : nav.appendChild(a));
+  }
+
+  let dragging = null, didDrag = false;
+
+  function init() {
+    links().forEach(a => {
+      a.style.cursor = 'grab';
+
+      a.addEventListener('mousedown', e => {
+        if (e.button !== 0) return;
+        const startX = e.clientX;
+        didDrag = false;
+
+        const onMove = ev => {
+          if (!didDrag && Math.abs(ev.clientX - startX) < 6) return;
+          if (!didDrag) {
+            didDrag = true;
+            dragging = a;
+            a.classList.add('ks-dragging');
+            a.style.cursor = 'grabbing';
+          }
+          // find insertion point
+          for (const t of links()) {
+            if (t === dragging) continue;
+            const r = t.getBoundingClientRect();
+            if (ev.clientX >= r.left && ev.clientX <= r.right) {
+              const before = ev.clientX < r.left + r.width / 2;
+              nav.insertBefore(dragging, before ? t : (t.nextElementSibling || nav.querySelector(':not(a)')));
+              break;
+            }
+          }
+        };
+
+        const onUp = () => {
+          document.removeEventListener('mousemove', onMove);
+          document.removeEventListener('mouseup', onUp);
+          if (dragging) {
+            dragging.classList.remove('ks-dragging');
+            dragging.style.cursor = 'grab';
+            dragging = null;
+            saveOrder();
+          }
+        };
+
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup', onUp);
+      });
+
+      // block navigation if we dragged
+      a.addEventListener('click', e => { if (didDrag) { e.preventDefault(); didDrag = false; } });
+    });
+  }
+
+  applyOrder();
+  init();
+})();
+</script>
+<style>
+nav.nav a { cursor: grab; user-select: none; }
+nav.nav a.ks-dragging { opacity: 0.4; outline: 1px dashed #8b5cf6; border-radius: 4px; }
+</style>
+
+</body>
                 </html>
             `);
             docWindow.document.close();
@@ -1609,6 +1694,7 @@
                             ${item.full_transcript ? '<button class="action-btn" id="copyTranscriptBtn">📄 Copy Transcript</button>' : ''}
                             <button class="action-btn" id="quickNoteBtn">📝 Quick Note</button>
                             ${item.video_url ? `<a href="${item.video_url}" target="_blank" class="action-btn">📺 View Video</a>` : ''}
+                            <button class="action-btn" id="extractPredictionsBtn" style="color: #6ee7b7; border-color: rgba(16, 185, 129, 0.4); background: rgba(16, 185, 129, 0.15);">🔮 Extract Predictions</button>
                         </div>
 
                         <!-- Summary Length bar -->
@@ -1671,21 +1757,7 @@
                             };
                             
                             const baseUrl = getBaseUrl();
-                            const docItem = {
-                                id: ${item.id},
-                                title: ${JSON.stringify(item.title || '')},
-                                channel: ${JSON.stringify(item.channel || '')},
-                                url: ${JSON.stringify(item.url || '')},
-                                videoUrl: ${JSON.stringify(item.video_url || '')},
-                                contentType: ${JSON.stringify(item.content_type || 'video')},
-                                favorited: ${item.favorited ? 'true' : 'false'},
-                                ai_summary: ${JSON.stringify(item.ai_summary || '')},
-                                summary: ${JSON.stringify(item.summary || '')},
-                                summary_15: ${JSON.stringify(item.summary_15 || '')},
-                                summary_30: ${JSON.stringify(item.summary_30 || '')},
-                                summary_50: ${JSON.stringify(item.summary_50 || '')},
-                                full_transcript: ${JSON.stringify(item.full_transcript || '')}
-                            };
+                            const docItem = ${JSON.stringify({id: item.id, title: item.title || '', channel: item.channel || '', url: item.url || '', videoUrl: item.video_url || '', contentType: item.content_type || 'video', favorited: !!item.favorited, ai_summary: item.ai_summary || '', summary: item.summary || '', summary_15: item.summary_15 || '', summary_30: item.summary_30 || '', summary_50: item.summary_50 || '', full_transcript: item.full_transcript || ''})};
 
                             let docFavorited = docItem.favorited;
                             let docNoteDraft = '';
@@ -1741,6 +1813,7 @@
                             const copySummaryBtn = document.getElementById('copySummaryBtn');
                             const copyTranscriptBtn = document.getElementById('copyTranscriptBtn');
                             const quickNoteBtn = document.getElementById('quickNoteBtn');
+                            const extractPredictionsBtn = document.getElementById('extractPredictionsBtn');
                             const overlay = document.getElementById('doc-note-overlay');
                             const noteTextarea = document.getElementById('doc-note-textarea');
                             const statusEl = document.getElementById('doc-note-status');
@@ -2384,6 +2457,81 @@
                             }
                             if (quickNoteBtn) {
                                 quickNoteBtn.addEventListener('click', openDocNoteModal);
+                            }
+                            if (extractPredictionsBtn) {
+                                extractPredictionsBtn.addEventListener('click', async () => {
+                                    const origText = extractPredictionsBtn.textContent;
+                                    extractPredictionsBtn.textContent = '⏳ Extracting...';
+                                    extractPredictionsBtn.disabled = true;
+                                    extractPredictionsBtn.style.opacity = '0.6';
+                                    try {
+                                        const response = await fetch(\`\${baseUrl}/api/items/\${docItem.id}/extract-predictions\`, {
+                                            method: 'POST',
+                                            headers: { 'Content-Type': 'application/json' },
+                                            body: JSON.stringify({ content_type: 'video' })
+                                        });
+                                        const data = await response.json();
+                                        const predictions = data.predictions || [];
+                                        extractPredictionsBtn.textContent = origText;
+                                        extractPredictionsBtn.disabled = false;
+                                        extractPredictionsBtn.style.opacity = '1';
+                                        if (predictions.length === 0) {
+                                            extractPredictionsBtn.textContent = 'No predictions found';
+                                            setTimeout(() => { extractPredictionsBtn.textContent = origText; }, 2000);
+                                            return;
+                                        }
+                                        // Show predictions overlay
+                                        const overlay = document.createElement('div');
+                                        overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;';
+                                        const panel = document.createElement('div');
+                                        panel.style.cssText = 'background:#1f1f2e;border:1px solid rgba(16,185,129,0.4);border-radius:12px;padding:24px;max-width:700px;width:100%;max-height:80vh;overflow-y:auto;';
+                                        panel.innerHTML = \`
+                                            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+                                                <h3 style="margin:0;color:#10b981;">🔮 \${predictions.length} Prediction\${predictions.length !== 1 ? 's' : ''} Found</h3>
+                                                <button id="predCloseBtn" style="background:none;border:none;color:#a1a1aa;font-size:22px;cursor:pointer;">×</button>
+                                            </div>
+                                            <p style="color:#a1a1aa;font-size:13px;margin-bottom:16px;">Select predictions to save to Intelligence</p>
+                                            \${predictions.map((p, i) => \`
+                                                <div style="background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);border-radius:8px;padding:12px;margin-bottom:10px;display:flex;gap:10px;align-items:flex-start;">
+                                                    <input type="checkbox" id="pred-\${i}" style="margin-top:4px;cursor:pointer;" checked>
+                                                    <div>
+                                                        <div style="color:#e5e7eb;font-size:14px;line-height:1.5;">\${(p.prediction||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>
+                                                        <div style="color:#6ee7b7;font-size:12px;margin-top:4px;">\${p.timeframe || 'unspecified'} · \${p.confidence || ''} · \${p.topic || ''}</div>
+                                                    </div>
+                                                </div>\`).join('')}
+                                            <div style="display:flex;gap:10px;margin-top:16px;align-items:center;">
+                                                <button id="predSaveBtn" style="background:#10b981;color:#fff;border:none;padding:10px 20px;border-radius:8px;cursor:pointer;font-weight:600;">Save Selected</button>
+                                                <span id="predSaveStatus" style="color:#a1a1aa;font-size:12px;"></span>
+                                            </div>\`;
+                                        overlay.appendChild(panel);
+                                        document.body.appendChild(overlay);
+                                        document.getElementById('predCloseBtn').onclick = () => overlay.remove();
+                                        overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
+                                        document.getElementById('predSaveBtn').onclick = async () => {
+                                            const checked = predictions.filter((_, i) => document.getElementById(\`pred-\${i}\`)?.checked);
+                                            if (!checked.length) { document.getElementById('predSaveStatus').textContent = 'None selected'; return; }
+                                            document.getElementById('predSaveStatus').textContent = \`Saving \${checked.length}...\`;
+                                            let saved = 0;
+                                            for (const p of checked) {
+                                                try {
+                                                    await fetch(\`\${baseUrl}/api/intelligence\`, {
+                                                        method: 'POST',
+                                                        headers: { 'Content-Type': 'application/json' },
+                                                        body: JSON.stringify({ type: 'prediction', content: p.prediction, tags: p.topic || '', source_id: docItem.id, source_type: 'video', metadata: { timeframe: p.timeframe, confidence: p.confidence } })
+                                                    });
+                                                    saved++;
+                                                } catch(e) {}
+                                            }
+                                            document.getElementById('predSaveStatus').textContent = \`\${saved} saved\`;
+                                        };
+                                    } catch(err) {
+                                        extractPredictionsBtn.textContent = '✗ Error';
+                                        extractPredictionsBtn.style.color = '#ef4444';
+                                        extractPredictionsBtn.disabled = false;
+                                        extractPredictionsBtn.style.opacity = '1';
+                                        setTimeout(() => { extractPredictionsBtn.textContent = origText; extractPredictionsBtn.style.color = '#6ee7b7'; }, 2500);
+                                    }
+                                });
                             }
                             if (noteTextarea) {
                                 noteTextarea.addEventListener('input', function() {

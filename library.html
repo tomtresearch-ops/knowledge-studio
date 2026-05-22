@@ -7,6 +7,9 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>Knowledge Library - Knowledge Studio</title>
+    <link rel="apple-touch-icon" sizes="180x180" href="/library/icon-180.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/library/favicon.png">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%231a1a50'/><text y='55' x='50' font-size='58' text-anchor='middle' font-family='system-ui' fill='white' font-weight='bold'>KS</text></svg>">
     <style>
         * {
             margin: 0;
@@ -217,12 +220,9 @@
             border-right: 1px solid rgba(255, 255, 255, 0.1);
             padding: 32px 24px;
             transition: width 0.3s ease, padding 0.3s ease;
-            overflow: visible;
+            overflow: hidden;
             position: relative;
             flex-shrink: 0;
-        }
-        .sidebar > *:not(.sidebar-edge-toggle) {
-            overflow: hidden;
         }
 
         .sidebar.collapsed {
@@ -1319,12 +1319,6 @@
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
             gap: 24px;
-            transition: gap 0.3s ease;
-        }
-
-        .main-layout.sidebar-collapsed .knowledge-grid {
-            grid-template-columns: repeat(auto-fill, minmax(440px, 1fr));
-            gap: 28px;
         }
 
         .knowledge-card {
@@ -3049,11 +3043,13 @@
         <nav class="nav">
             <a href="/">Capture</a>
             <a href="/library" class="active">Library</a>
+            <a href="http://mac-studio.local:8888">Images</a>
             <a href="/channels">Channels</a>
             <a href="/briefing">Briefing Room</a>
             <a href="/intelligence">Intelligence</a>
             <a href="/stats">Stats</a>
             <a href="/studio">Studio</a>
+            <a href="/library/captures">Captures</a>
             <div style="display: flex; gap: 8px; align-items: center; margin-left: 20px;">
                 <button id="refreshLibrary" class="view-toggle-btn" onclick="refreshLibrary()" title="Refresh library">
                     🔄
@@ -6671,7 +6667,9 @@
                 const wordCount = fullBrief ? fullBrief.split(/\s+/).filter(w => w.length > 0).length : 0;
 
                 // Check for summary versions
-                const hasSummary30 = (item.summary_30 || item.ai_summary_30) && (item.summary_30 || item.ai_summary_30).trim().length > 0;
+                const shortenedSummaryCard = (item.summary_15 && item.summary_15.trim().length > 0) ? item.summary_15 :
+                                             (item.summary_50 && item.summary_50.trim().length > 0) ? item.summary_50 : null;
+                const hasSummary30 = !!shortenedSummaryCard;
 
                 // Title cell
                 const titleCell = document.createElement('td');
@@ -6708,7 +6706,7 @@
                 } else {
                     viewCell.innerHTML = `
                         <button class="action-btn secondary" onclick="event.stopPropagation(); viewAsDocument(${item.id}, '${item.content_type || 'video'}', 100)" title="Full summary">Full</button>
-                        ${hasSummary30 ? `<button class="action-btn secondary" onclick="event.stopPropagation(); viewAsDocument(${item.id}, '${item.content_type || 'video'}', 30)" title="Signal scan">Signal Scan</button>` : ''}
+                        ${hasSummary30 ? `<button class="action-btn secondary" onclick="event.stopPropagation(); viewAsDocument(${item.id}, '${item.content_type || 'video'}', 15)" title="Short">Short</button>` : ''}
                     `;
                 }
 
@@ -6885,12 +6883,12 @@
                 const summaryButtonsHtml = hasSummary30 ? `
                     <div style="display: flex; gap: 6px; margin-top: 8px; flex-wrap: nowrap; align-items: center;">
                         <button class="action-btn secondary" onclick="event.stopPropagation(); viewAsDocument(${item.id}, '${item.content_type || 'video'}', 100)" style="font-size: 11px; padding: 4px 8px;" title="Full summary">Full</button>
-                        <button class="action-btn secondary" onclick="event.stopPropagation(); viewAsDocument(${item.id}, '${item.content_type || 'video'}', 30)" style="font-size: 11px; padding: 4px 8px;" title="Signal scan">Signal Scan</button>
+                        <button class="action-btn secondary" onclick="event.stopPropagation(); viewAsDocument(${item.id}, '${item.content_type || 'video'}', 15)" style="font-size: 11px; padding: 4px 8px;" title="Short">Short</button>
                     </div>
                 ` : '';
-                
+
                 return `
-                    <div class="knowledge-card" data-video-id="${item.id}" onclick="event.stopPropagation(); viewAsDocument(${item.id}, '${item.content_type || 'video'}', 30)" style="cursor: pointer;">
+                    <div class="knowledge-card" data-video-id="${item.id}" onclick="event.stopPropagation(); viewAsDocument(${item.id}, '${item.content_type || 'video'}', 15)" style="cursor: pointer;">
                         <div class="card-header">
                             <div class="card-header-top">
                                 <h3 class="card-title" onclick="event.stopPropagation(); startTitleEdit(event, ${item.id}, '${item.content_type}')">${contentIcon} ${item.title}</h3>
@@ -6920,7 +6918,7 @@
                                 ${hasSummary30 ? `
                                     <div class="card-summary-buttons">
                                         <button class="action-btn secondary" onclick="event.stopPropagation(); viewAsDocument(${item.id}, '${item.content_type || 'video'}', 100)" style="font-size: 10px; padding: 3px 6px;">Full</button>
-                                        <button class="action-btn secondary" onclick="event.stopPropagation(); viewAsDocument(${item.id}, '${item.content_type || 'video'}', 30)" style="font-size: 10px; padding: 3px 6px;">Signal Scan</button>
+                                        <button class="action-btn secondary" onclick="event.stopPropagation(); viewAsDocument(${item.id}, '${item.content_type || 'video'}', 15)" style="font-size: 10px; padding: 3px 6px;">Short</button>
                                     </div>
                                 ` : ''}
                             </div>
@@ -8020,14 +8018,16 @@
             const dateSummary = buildDateSummary(video);
             const summaryText = video.ai_summary || video.summary || '';
             const wordCount = summaryText && summaryText !== 'No summary available' ? getWordCount(summaryText) : 0;
-            const hasSummary30 = video.summary_30 && video.summary_30.trim().length > 0;
+            const shortenedSummaryTile = (video.summary_15 && video.summary_15.trim().length > 0) ? video.summary_15 :
+                                         (video.summary_50 && video.summary_50.trim().length > 0) ? video.summary_50 : null;
+            const hasSummary30 = !!shortenedSummaryTile;
 
             const modal = document.createElement('div');
             modal.className = 'analysis-modal';
             modal.id = modalId;
             modal.setAttribute('data-video-id', video.id);
             modal.setAttribute('data-summary-100', summaryText);
-            if (hasSummary30) modal.setAttribute('data-summary-30', video.summary_30);
+            if (shortenedSummaryTile) modal.setAttribute('data-summary-15', shortenedSummaryTile);
 
             if (isTwoTier) {
                 // Two-tier format: Quick Digest first, then expandable Detailed Analysis
@@ -8065,7 +8065,7 @@
                                 ${hasSummary30 ? `
                                     <div style="margin-bottom: 16px; display: flex; gap: 8px; align-items: center;">
                                         <button id="summary-btn-100-${video.id}" class="action-btn secondary summary-length-btn" onclick="switchSummaryLength(${video.id}, 100, event)" style="font-size: 12px; padding: 6px 12px; background: rgba(139, 92, 246, 0.3); border-color: rgba(139, 92, 246, 0.5);" title="Full summary">Full</button>
-                                        <button id="summary-btn-30-${video.id}" class="action-btn secondary summary-length-btn" onclick="switchSummaryLength(${video.id}, 30, event)" style="font-size: 12px; padding: 6px 12px;" title="Signal scan">Signal Scan</button>
+                                        <button id="summary-btn-30-${video.id}" class="action-btn secondary summary-length-btn" onclick="switchSummaryLength(${video.id}, 15, event)" style="font-size: 12px; padding: 6px 12px;" title="Short">Short</button>
                                     </div>
                                 ` : ''}
                                 <!-- Quick Digest Section -->
@@ -8135,7 +8135,7 @@
                                 ${hasSummary30 ? `
                                     <div style="margin-bottom: 16px; display: flex; gap: 8px; align-items: center;">
                                         <button id="summary-btn-100-${video.id}" class="action-btn secondary summary-length-btn" onclick="switchSummaryLength(${video.id}, 100, event)" style="font-size: 12px; padding: 6px 12px; background: rgba(139, 92, 246, 0.3); border-color: rgba(139, 92, 246, 0.5);" title="Full summary">Full</button>
-                                        <button id="summary-btn-30-${video.id}" class="action-btn secondary summary-length-btn" onclick="switchSummaryLength(${video.id}, 30, event)" style="font-size: 12px; padding: 6px 12px;" title="Signal scan">Signal Scan</button>
+                                        <button id="summary-btn-30-${video.id}" class="action-btn secondary summary-length-btn" onclick="switchSummaryLength(${video.id}, 15, event)" style="font-size: 12px; padding: 6px 12px;" title="Short">Short</button>
                                     </div>
                                 ` : ''}
                                 <div id="summary-content-${video.id}" class="content document-view-content" style="color: #e5e7eb; font-size: 16px; line-height: 1.8;">
@@ -8474,7 +8474,90 @@
                             <div class="content">${summary.tldr}</div>
                         </div>
                     ` : ''}
-                </body>
+                
+<script id="ks-nav-drag">
+(function() {
+  const nav = document.querySelector('nav.nav');
+  if (!nav) return;
+  const ORDER_KEY = 'ks_nav_order';
+
+  function links() { return [...nav.querySelectorAll('a[href]')]; }
+
+  function saveOrder() {
+    localStorage.setItem(ORDER_KEY, JSON.stringify(links().map(a => a.getAttribute('href'))));
+  }
+
+  function applyOrder() {
+    const saved = JSON.parse(localStorage.getItem(ORDER_KEY) || 'null');
+    if (!saved || !saved.length) return;
+    const map = Object.fromEntries(links().map(a => [a.getAttribute('href'), a]));
+    const ordered = saved.filter(h => map[h]).map(h => map[h]);
+    const extras  = links().filter(a => !saved.includes(a.getAttribute('href')));
+    const anchor  = nav.querySelector(':not(a)');
+    [...ordered, ...extras].forEach(a => anchor ? nav.insertBefore(a, anchor) : nav.appendChild(a));
+  }
+
+  let dragging = null, didDrag = false;
+
+  function init() {
+    links().forEach(a => {
+      a.style.cursor = 'grab';
+
+      a.addEventListener('mousedown', e => {
+        if (e.button !== 0) return;
+        const startX = e.clientX;
+        didDrag = false;
+
+        const onMove = ev => {
+          if (!didDrag && Math.abs(ev.clientX - startX) < 6) return;
+          if (!didDrag) {
+            didDrag = true;
+            dragging = a;
+            a.classList.add('ks-dragging');
+            a.style.cursor = 'grabbing';
+          }
+          // find insertion point
+          for (const t of links()) {
+            if (t === dragging) continue;
+            const r = t.getBoundingClientRect();
+            if (ev.clientX >= r.left && ev.clientX <= r.right) {
+              const before = ev.clientX < r.left + r.width / 2;
+              nav.insertBefore(dragging, before ? t : (t.nextElementSibling || nav.querySelector(':not(a)')));
+              break;
+            }
+          }
+        };
+
+        const onUp = () => {
+          document.removeEventListener('mousemove', onMove);
+          document.removeEventListener('mouseup', onUp);
+          if (dragging) {
+            dragging.classList.remove('ks-dragging');
+            dragging.style.cursor = 'grab';
+            dragging = null;
+            saveOrder();
+          }
+        };
+
+        document.addEventListener('mousemove', onMove);
+        document.addEventListener('mouseup', onUp);
+      });
+
+      // block navigation if we dragged
+      a.addEventListener('click', e => { if (didDrag) { e.preventDefault(); didDrag = false; } });
+    });
+  }
+
+  applyOrder();
+  init();
+})();
+</script>
+<style>
+nav.nav a { cursor: grab; user-select: none; }
+nav.nav a.ks-dragging { opacity: 0.4; outline: 1px dashed #8b5cf6; border-radius: 4px; }
+</style>
+
+</body>
                 </html>
             `;
         }
@@ -8555,13 +8638,15 @@
             const dateSummary = buildDateSummary(video);
             const summaryText = video.ai_summary || video.summary || 'No summary available';
             const wordCount = summaryText && summaryText !== 'No summary available' ? getWordCount(summaryText) : 0;
-            const hasSummary30 = video.summary_30 && video.summary_30.trim().length > 0;
+            const shortenedSummaryInfo = (video.summary_15 && video.summary_15.trim().length > 0) ? video.summary_15 :
+                                         (video.summary_50 && video.summary_50.trim().length > 0) ? video.summary_50 : null;
+            const hasSummary30 = !!shortenedSummaryInfo;
 
             const modal = document.createElement('div');
             modal.className = 'analysis-modal';
             modal.setAttribute('data-video-id', video.id);
             modal.setAttribute('data-summary-100', summaryText);
-            if (hasSummary30) modal.setAttribute('data-summary-30', video.summary_30);
+            if (shortenedSummaryInfo) modal.setAttribute('data-summary-15', shortenedSummaryInfo);
 
             modal.innerHTML = `
                 <div class="modal-overlay" onclick="closeModal()">
@@ -8590,7 +8675,7 @@
                             ${hasSummary30 ? `
                                 <div style="margin-bottom: 16px; display: flex; gap: 8px; align-items: center;">
                                     <button id="summary-btn-100-${video.id}" class="action-btn secondary summary-length-btn" onclick="switchSummaryLength(${video.id}, 100, event)" style="font-size: 12px; padding: 6px 12px; background: rgba(139, 92, 246, 0.3); border-color: rgba(139, 92, 246, 0.5);" title="Full summary">Full</button>
-                                    <button id="summary-btn-30-${video.id}" class="action-btn secondary summary-length-btn" onclick="switchSummaryLength(${video.id}, 30, event)" style="font-size: 12px; padding: 6px 12px;" title="Signal scan">Signal Scan</button>
+                                    <button id="summary-btn-30-${video.id}" class="action-btn secondary summary-length-btn" onclick="switchSummaryLength(${video.id}, 15, event)" style="font-size: 12px; padding: 6px 12px;" title="Short">Short</button>
                                 </div>
                             ` : ''}
                             <div id="summary-content-${video.id}" class="content document-view-content" style="color: #e5e7eb; font-size: 16px; line-height: 1.8;">
@@ -9117,8 +9202,10 @@
             let summaryText = '';
             if (length === 100) {
                 summaryText = modal.getAttribute('data-summary-100');
+            } else if (length === 15) {
+                summaryText = modal.getAttribute('data-summary-15') || modal.getAttribute('data-summary-30') || modal.getAttribute('data-summary-100');
             } else if (length === 30) {
-                summaryText = modal.getAttribute('data-summary-30') || modal.getAttribute('data-summary-100');
+                summaryText = modal.getAttribute('data-summary-30') || modal.getAttribute('data-summary-15') || modal.getAttribute('data-summary-100');
             }
             
             // Try to parse as JSON (for articles which store as JSON), otherwise use as-is (for videos)
@@ -9626,16 +9713,18 @@
             const isAudio = contentType === 'audio';
             const contentIcon = isAudio ? '🎵' : (contentType === 'article' ? '📄' : '🎥');
 
-            // Check for summary versions
-            const hasSummary30 = item.summary_30 && item.summary_30.trim().length > 0;
+            // Check for summary versions — prefer summary_15, fall back to summary_50
+            const shortenedSummary = (item.summary_15 && item.summary_15.trim().length > 0) ? item.summary_15.trim() :
+                                     (item.summary_50 && item.summary_50.trim().length > 0) ? item.summary_50.trim() : null;
+            const hasSummary30 = !!shortenedSummary;
 
             // Get the summary content based on summaryLength parameter
             let summaryContent = '';
             let currentLength = summaryLength;
 
             if (!item.queue_status) {
-                if (summaryLength === 30 && hasSummary30) {
-                    summaryContent = item.summary_30.trim();
+                if (summaryLength === 15 && shortenedSummary) {
+                    summaryContent = shortenedSummary;
                 } else if (item.ai_summary && item.ai_summary.trim()) {
                     summaryContent = item.ai_summary.trim();
                     currentLength = 100;
@@ -9860,17 +9949,17 @@
                             cursor: pointer;
                             transition: all 0.2s;
                         ">Full</button>
-                        <button class="doc-length-btn" data-length="30" style="
+                        <button class="doc-length-btn" data-length="15" style="
                             padding: 6px 14px;
                             border-radius: 6px;
-                            border: 1px solid ${currentLength === 30 ? 'rgba(139, 92, 246, 0.8)' : 'rgba(139, 92, 246, 0.4)'};
-                            background: ${currentLength === 30 ? 'rgba(139, 92, 246, 0.4)' : 'rgba(139, 92, 246, 0.15)'};
+                            border: 1px solid ${currentLength === 15 ? 'rgba(139, 92, 246, 0.8)' : 'rgba(139, 92, 246, 0.4)'};
+                            background: ${currentLength === 15 ? 'rgba(139, 92, 246, 0.4)' : 'rgba(139, 92, 246, 0.15)'};
                             color: #e5e7eb;
                             font-size: 13px;
                             font-weight: 500;
                             cursor: pointer;
                             transition: all 0.2s;
-                        ">Signal Scan</button>
+                        ">Short</button>
                         ${(contentType === 'article' && item.full_transcript) ? `
                         <div style="margin-left: auto;">
                             <button id="docViewArticleBtn" class="doc-length-btn" data-length="article" style="
@@ -10929,8 +11018,8 @@
                     const length = parseInt(btn.dataset.length);
                     let newContent = '';
 
-                    if (length === 30 && hasSummary30) {
-                        newContent = item.summary_30.trim();
+                    if (length === 15 && shortenedSummary) {
+                        newContent = shortenedSummary;
                     } else {
                         newContent = (item.ai_summary || item.summary || '').trim();
                     }
@@ -11167,8 +11256,10 @@
             const isAudio = contentType === 'audio';
             const contentIcon = isAudio ? '🎵' : (contentType === 'article' ? '📄' : (contentType === 'newsletter' ? '📰' : '🎥'));
 
-            // Check for summary versions
-            const hasSummary30 = item.summary_30 && item.summary_30.trim().length > 0;
+            // Check for summary versions — prefer summary_15, fall back to summary_50
+            const shortenedSummaryPopup = (item.summary_15 && item.summary_15.trim().length > 0) ? item.summary_15.trim() :
+                                          (item.summary_50 && item.summary_50.trim().length > 0) ? item.summary_50.trim() : null;
+            const hasSummary30 = !!shortenedSummaryPopup;
             const hasTranscript = contentType === 'video' && item.full_transcript && item.full_transcript.trim().length > 100;
 
             // Get the summary content based on summaryLength parameter
@@ -11176,8 +11267,8 @@
             let currentLength = summaryLength;
 
             if (!item.queue_status) {
-                if (summaryLength === 30 && hasSummary30) {
-                    summaryContent = item.summary_30.trim();
+                if (summaryLength === 15 && shortenedSummaryPopup) {
+                    summaryContent = shortenedSummaryPopup;
                 } else if (item.ai_summary && item.ai_summary.trim()) {
                     summaryContent = item.ai_summary.trim();
                     currentLength = 100;
@@ -11939,9 +12030,9 @@
                         ${(hasSummary30 || hasTranscript) ? `
                         <div style="margin-bottom: 24px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; padding: 8px 12px; background: rgba(139, 92, 246, 0.1); border-radius: 8px; border: 1px solid rgba(139, 92, 246, 0.3);">
                             <span style="color: #a1a1aa; font-size: 12px; margin-right: 8px;">Viewing:</span>
-                            <span style="color: #8b5cf6; font-size: 14px; font-weight: 600;">${summaryLength === 30 ? 'Signal Scan' : 'Full Summary'}</span>
+                            <span style="color: #8b5cf6; font-size: 14px; font-weight: 600;">${summaryLength === 15 ? 'Short' : 'Full Summary'}</span>
                             ${summaryLength !== 100 ? `<a href="#" onclick="event.preventDefault(); if(window.opener && window.opener.viewAsDocumentPopup) { window.opener.viewAsDocumentPopup(${itemId}, '${contentType}', 100); window.close(); }" style="color: #8b5cf6; text-decoration: none; margin-left: 12px; font-size: 12px;">View Full</a>` : ''}
-                            ${summaryLength !== 30 && hasSummary30 ? `<a href="#" onclick="event.preventDefault(); if(window.opener && window.opener.viewAsDocumentPopup) { window.opener.viewAsDocumentPopup(${itemId}, '${contentType}', 30); window.close(); }" style="color: #8b5cf6; text-decoration: none; margin-left: 8px; font-size: 12px;">Signal Scan</a>` : ''}
+                            ${summaryLength !== 15 && hasSummary30 ? `<a href="#" onclick="event.preventDefault(); if(window.opener && window.opener.viewAsDocumentPopup) { window.opener.viewAsDocumentPopup(${itemId}, '${contentType}', 15); window.close(); }" style="color: #8b5cf6; text-decoration: none; margin-left: 8px; font-size: 12px;">Short</a>` : ''}
                             ${hasTranscript ? `<a href="#" onclick="event.preventDefault(); if(window.opener && window.opener.viewTranscriptPopup) { window.opener.viewTranscriptPopup(${itemId}); window.close(); }" style="color: #a1a1aa; text-decoration: none; margin-left: 12px; font-size: 12px; border-left: 1px solid rgba(255,255,255,0.2); padding-left: 12px;">📜 Transcript</a>` : ''}
                         </div>
                         ` : ''}

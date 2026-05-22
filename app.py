@@ -2911,6 +2911,25 @@ def library():
     except FileNotFoundError:
         return '<h1>Library page not found</h1><p><a href="/">← Back to Capture</a></p>'
 
+@app.route('/library/images')
+def library_images():
+    from flask import redirect
+    return redirect('http://mac-studio:8888', code=302)
+
+@app.route('/library/captures')
+def library_captures():
+    try:
+        with open('captures.html', 'r') as f:
+            content = f.read()
+            from flask import Response
+            response = Response(content, mimetype='text/html')
+            response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+            response.headers['Pragma'] = 'no-cache'
+            response.headers['Expires'] = '0'
+            return response
+    except FileNotFoundError:
+        return '<h1>Captures page not found</h1><p><a href="/library">← Back to Library</a></p>'
+
 @app.route('/stats')
 def stats():
     try:
@@ -4416,63 +4435,12 @@ Be thorough — this is the full analysis that shorter summaries will be derived
     }
 
 
-def _process_upload_background(file_path, filename, source_ctx):
-    """Run the slow Vision API processing in a background thread so uploads return immediately."""
-    try:
-        metadata = processor.extract_video_metadata(file_path)
-        if metadata and metadata.get('is_youtube', False):
-            video_url = processor.find_youtube_video(metadata)
-            if video_url:
-                conn = sqlite3.connect(DATABASE_PATH)
-                cursor = conn.cursor()
-                cursor.execute('SELECT id FROM videos WHERE video_url = ?', (video_url,))
-                existing = cursor.fetchone()
-                cursor.execute(
-                    "SELECT id FROM processing_queue WHERE video_url = ? AND status IN ('queued', 'processing')",
-                    (video_url,)
-                )
-                existing_in_queue = cursor.fetchone()
-                conn.close()
-                if existing:
-                    conn2 = sqlite3.connect(DATABASE_PATH)
-                    conn2.execute('UPDATE videos SET last_duplicate_attempt = ? WHERE id = ?',
-                                  (datetime.now().isoformat(), existing[0]))
-                    conn2.commit()
-                    conn2.close()
-                    print(f"⏭️ Duplicate (bg): {filename} → video #{existing[0]}")
-                elif existing_in_queue:
-                    print(f"⏭️ Already queued (bg): {filename}")
-                else:
-                    title = metadata.get('title', '')
-                    channel = metadata.get('channel', '')
-                    processor.add_video_to_queue(video_url=video_url, title=title, channel_name=channel, force=True)
-                    print(f"✅ Queued (bg): {filename} → {video_url}")
-            else:
-                print(f"⚠️ No video URL found (bg): {filename}")
-        else:
-            result = visual_processor.process_visual_capture(file_path, source_context=source_ctx, db_path=DATABASE_PATH)
-            if result.get('review_status') == 'complete' and result.get('structured_data'):
-                try:
-                    full_text = json.dumps(result['structured_data'], indent=2)
-                    summary_50 = generate_shortened_summary(full_text, 50)
-                    if summary_50:
-                        conn_s = sqlite3.connect(DATABASE_PATH)
-                        conn_s.execute('UPDATE visual_captures SET summary_50=? WHERE id=?', (summary_50, result['id']))
-                        conn_s.commit()
-                        conn_s.close()
-                except Exception as sum_err:
-                    print(f"  Warning: summary_50 failed (bg): {sum_err}")
-            print(f"✅ Visual capture (bg) #{result.get('id')}: {result.get('content_type')}")
-    except Exception as e:
-        print(f"❌ Background processing failed for {filename}: {e}")
-
-
 @app.route('/api/upload', methods=['POST'])
 def upload_files():
     try:
         if 'files' not in request.files:
             return jsonify({'success': False, 'error': 'No files provided'}), 400
-
+        
         files = request.files.getlist('files')
         uploaded_files = []
         processing_results = []
@@ -4505,20 +4473,127 @@ def upload_files():
                     })
                 continue
 
-            # Dispatch processing to background thread — return immediately
-            source_ctx = request.form.get('source_context', 'upload')
-            t = threading.Thread(
-                target=_process_upload_background,
-                args=(file_path, filename, source_ctx),
-                daemon=True
-            )
-            t.start()
-            processing_results.append({
-                'filename': filename,
-                'status': 'received',
-                'message': 'Saved — processing in background'
-            })
-            print(f"📥 Received {filename} — processing in background")
+            # Process the screenshot immediately
+            try:
+                # Extract metadata first
+                metadata = processor.extract_video_metadata(file_path)
+
+                if metadata and metadata.get('is_youtube', False):
+                    # Find video URL
+                    video_url = processor.find_youtube_video(metadata)
+                    
+                    if video_url:
+                        # Check if already processed (unless force flag is set)
+                        force_reprocess = request.form.get('force', 'false').lower() == 'true'
+
+                        conn = sqlite3.connect(DATABASE_PATH)
+                        cursor = conn.cursor()
+                        cursor.execute('SELECT id FROM videos WHERE video_url = ?', (video_url,))
+                        existing = cursor.fetchone()
+                        # Also check processing_queue for in-flight items
+                        cursor.execute(
+                            "SELECT id FROM processing_queue WHERE video_url = ? AND status IN ('queued', 'processing')",
+                            (video_url,)
+                        )
+                        existing_in_queue = cursor.fetchone()
+                        conn.close()
+
+                        if (existing or existing_in_queue) and not force_reprocess:
+                            if existing:
+                                # Update last_duplicate_attempt timestamp on existing videos record
+                                conn2 = sqlite3.connect(DATABASE_PATH)
+                                cursor2 = conn2.cursor()
+                                cursor2.execute(
+                                    'UPDATE videos SET last_duplicate_attempt = ? WHERE id = ?',
+                                    (datetime.now().isoformat(), existing[0])
+                                )
+                                conn2.commit()
+                                conn2.close()
+
+                                processing_results.append({
+                                    'filename': filename,
+                                    'status': 'duplicate',
+                                    'video_id': existing[0],
+                                    'message': 'Video already processed'
+                                })
+                            else:
+                                # Duplicate found in processing_queue (still in-flight)
+                                processing_results.append({
+                                    'filename': filename,
+                                    'status': 'duplicate',
+                                    'queue_id': existing_in_queue[0],
+                                    'message': 'Video already in processing queue'
+                                })
+                        else:
+                            # Add to processing queue
+                            title = metadata.get('title', '')
+                            channel = metadata.get('channel', '')
+                            
+                            queue_item = processor.add_video_to_queue(
+                                video_url=video_url,
+                                title=title,
+                                channel_name=channel,
+                                force=True
+                            )
+                            
+                            processing_results.append({
+                                'filename': filename,
+                                'status': 'queued',
+                                'queue_id': queue_item['id'],
+                                'video_url': video_url,
+                                'message': 'Added to processing queue'
+                            })
+                            print(f"✅ Added {filename} to processing queue (queue ID: {queue_item['id']})")
+                    else:
+                        processing_results.append({
+                            'filename': filename,
+                            'status': 'error',
+                            'message': 'Could not find video URL'
+                        })
+                else:
+                    # Not a YouTube screenshot - process as visual capture (OCR classification + extraction)
+                    print(f"🔍 Not YouTube, processing as visual capture: {filename}")
+                    try:
+                        source_ctx = request.form.get('source_context', 'upload')
+                        result = visual_processor.process_visual_capture(
+                            file_path, source_context=source_ctx, db_path=DATABASE_PATH
+                        )
+                        # Generate 50% summary for completed captures
+                        if result.get('review_status') == 'complete' and result.get('structured_data'):
+                            try:
+                                full_text = json.dumps(result['structured_data'], indent=2)
+                                summary_50 = generate_shortened_summary(full_text, 50)
+                                if summary_50:
+                                    conn_s = sqlite3.connect(DATABASE_PATH)
+                                    conn_s.execute('UPDATE visual_captures SET summary_50=? WHERE id=?',
+                                                   (summary_50, result['id']))
+                                    conn_s.commit()
+                                    conn_s.close()
+                                    print(f"  summary_50 generated for capture #{result['id']}")
+                            except Exception as sum_err:
+                                print(f"  Warning: summary_50 generation failed: {sum_err}")
+                        processing_results.append({
+                            'filename': filename,
+                            'status': 'processed',
+                            'content_type': result['content_type'],
+                            'capture_id': result['id'],
+                            'message': f"Visual capture: {result['content_type']} (${result['estimated_cost']:.4f})"
+                        })
+                        print(f"✅ Visual capture #{result['id']}: {result['content_type']}")
+                    except Exception as visual_err:
+                        print(f"❌ Visual processing failed: {visual_err}")
+                        processing_results.append({
+                            'filename': filename,
+                            'status': 'error',
+                            'message': f'Visual processing failed: {str(visual_err)}'
+                        })
+            except Exception as e:
+                print(f"❌ Error processing {filename}: {e}")
+                processing_results.append({
+                    'filename': filename,
+                    'status': 'error',
+                    'message': str(e)
+                })
         
         return jsonify({
             'success': True,
@@ -4772,8 +4847,6 @@ def capture_icon_512():
     return send_from_directory('.', 'capture-icon-512.png', mimetype='image/png')
 
 
-
-
 @app.route('/mobile')
 def mobile_page():
     """Serve the mobile consumer PWA."""
@@ -4794,6 +4867,25 @@ def mobile_icon_192():
 @app.route('/mobile/icon-512.png')
 def mobile_icon_512():
     return send_from_directory('.', 'mobile-icon-512.png', mimetype='image/png')
+
+
+@app.route('/library/icon-180.png')
+def library_icon_180():
+    return send_from_directory('.', 'ks-library-icon-180.png', mimetype='image/png')
+
+@app.route('/library/favicon.png')
+def library_favicon():
+    return send_from_directory('.', 'ks-library-icon-32.png', mimetype='image/png')
+
+@app.route('/interface/icon-180.png')
+def interface_icon_180():
+    return send_from_directory('.', 'ks-interface-icon-180.png', mimetype='image/png')
+
+@app.route('/interface/favicon.png')
+def interface_favicon():
+    return send_from_directory('.', 'ks-interface-icon-32.png', mimetype='image/png')
+
+
 @app.route('/screenshots/<path:filename>')
 def serve_screenshot(filename):
     """Serve screenshot images for visual capture display."""
@@ -4952,17 +5044,48 @@ def process_article():
         # Import web scraping functionality
         import requests
         from bs4 import BeautifulSoup
-        
+        from urllib.parse import urlparse
+
+        parsed = urlparse(url)
+        is_apple_news = parsed.netloc in ('apple.news', 'www.apple.news')
+
         # Fetch the article
         headers = {
             'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
         }
-        
+
         response = requests.get(url, headers=headers, timeout=30)
         response.raise_for_status()
-        
+
         # Parse the HTML
         soup = BeautifulSoup(response.content, 'html.parser')
+
+        # Apple News links serve a JS redirect page — try to find the real publisher URL
+        if is_apple_news:
+            publisher_url = None
+            canonical = soup.find('link', rel='canonical')
+            og_url = soup.find('meta', property='og:url')
+            if canonical and canonical.get('href') and 'apple.news' not in canonical['href']:
+                publisher_url = canonical['href']
+            elif og_url and og_url.get('content') and 'apple.news' not in og_url['content']:
+                publisher_url = og_url['content']
+
+            if publisher_url:
+                # Re-fetch from the real publisher URL
+                response = requests.get(publisher_url, headers=headers, timeout=30)
+                response.raise_for_status()
+                soup = BeautifulSoup(response.content, 'html.parser')
+                url = publisher_url  # store the real URL
+            else:
+                # No publisher URL found — Apple News paywall or app-only content
+                og_title = soup.find('meta', property='og:title')
+                title_hint = og_title['content'] if og_title else (soup.find('title').get_text().strip() if soup.find('title') else '')
+                return jsonify({
+                    'success': False,
+                    'error': 'apple_news_blocked',
+                    'article_title': title_hint,
+                    'message': "Apple News links can't be scraped directly. Open the article in Apple News, copy the full text, and use the Paste Text tab below."
+                }), 422
         
         # Extract article content
         title = soup.find('title')
@@ -8039,48 +8162,6 @@ def add_subscription():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
-@app.route('/api/identify-channel', methods=['POST'])
-def identify_channel():
-    """Extract YouTube channel name from a photo using Vision. Lightweight — channel name only."""
-    if 'file' not in request.files:
-        return jsonify({'success': False, 'error': 'No file provided'}), 400
-    file = request.files['file']
-    try:
-        import base64
-        from pathlib import Path
-        image_data = base64.b64encode(file.read()).decode('utf-8')
-        ext = Path(file.filename).suffix.lower() if file.filename else '.jpg'
-        media_type = {'jpg': 'image/jpeg', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg',
-                      '.png': 'image/png', '.heic': 'image/heic', '.webp': 'image/webp'}.get(ext, 'image/jpeg')
-        response = processor.claude_client.messages.create(
-            model="claude-haiku-4-5-20251001",
-            max_tokens=100,
-            messages=[{
-                "role": "user",
-                "content": [
-                    {"type": "image", "source": {"type": "base64", "media_type": media_type, "data": image_data}},
-                    {"type": "text", "text": (
-                        "This is a photo of a TV or monitor showing YouTube. "
-                        "Extract the YouTube channel name and handle (@...) if visible. "
-                        "Reply with JSON only: {\"channel_name\": \"...\", \"channel_handle\": \"@...\"} "
-                        "If you cannot find a channel, reply: {\"channel_name\": null, \"channel_handle\": null}"
-                    )}
-                ]
-            }]
-        )
-        raw = response.content[0].text.strip()
-        # Parse JSON from response
-        import re as _re
-        match = _re.search(r'\{.*\}', raw, _re.DOTALL)
-        if match:
-            result = json.loads(match.group())
-            if result.get('channel_name'):
-                return jsonify({'success': True, 'channel_name': result['channel_name'], 'channel_handle': result.get('channel_handle')})
-        return jsonify({'success': False, 'error': 'No channel found in image'})
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
-
-
 @app.route('/api/subscriptions/<int:subscription_id>', methods=['DELETE'])
 def delete_subscription(subscription_id):
     """Delete a channel subscription."""
@@ -8114,7 +8195,6 @@ def toggle_auto_process(subscription_id):
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
-
 @app.route('/api/subscriptions/<int:subscription_id>/feature', methods=['POST'])
 def toggle_feature_subscription(subscription_id):
     """Toggle featured status for a channel subscription."""
@@ -8132,6 +8212,7 @@ def toggle_feature_subscription(subscription_id):
             conn.close()
             return jsonify({'success': False, 'error': 'Subscription not found'}), 404
         new_featured = 0 if row[0] else 1
+        # featuring also enables auto_process
         if new_featured:
             cursor.execute('UPDATE channel_subscriptions SET featured = 1, auto_process = 1 WHERE id = ?', (subscription_id,))
         else:
@@ -8142,6 +8223,7 @@ def toggle_feature_subscription(subscription_id):
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
+
 @app.route('/api/feed', methods=['GET'])
 def get_feed():
     """Mobile feed: latest video per featured channel, last 7 days."""
@@ -8149,6 +8231,7 @@ def get_feed():
         conn = sqlite3.connect(DATABASE_PATH)
         conn.row_factory = sqlite3.Row
         cursor = conn.cursor()
+        # Ensure featured column exists
         try:
             cursor.execute('ALTER TABLE channel_subscriptions ADD COLUMN featured INTEGER DEFAULT 0')
             conn.commit()
@@ -8194,6 +8277,7 @@ def get_feed():
         return jsonify({'success': True, 'items': items, 'count': len(items)})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
+
 
 @app.route('/api/subscriptions/<int:subscription_id>/refresh', methods=['POST'])
 def refresh_subscription(subscription_id):
@@ -11333,7 +11417,7 @@ def yt_podcast_retry(episode_id):
 def _newsletter_path(vertical, created_at):
     """Return filesystem path for the newsletter JSON matching a brief, or None if not found."""
     try:
-        date_str = created_at[:10]  # 'YYYY-MM-DD'
+        date_str = created_at[:10]  # "YYYY-MM-DD"
         path = os.path.join('newsletter_output', f'newsletter_{vertical}_{date_str}.json')
         return path if os.path.exists(path) else None
     except Exception:
@@ -12142,128 +12226,6 @@ def get_alert_count():
         return jsonify({'success': True, 'count': count})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
-
-
-
-
-# ── Video Pipeline Image Library ──────────────────────────────────────────────
-
-import glob as _glob
-
-LIBRARY_FILES_DIR = os.path.expanduser('~/video-pipeline/library/files')
-
-@app.route('/library/images')
-def library_images():
-    import glob, sqlite3 as _sq
-    files = sorted(
-        glob.glob(os.path.join(LIBRARY_FILES_DIR, '*.png')) +
-        glob.glob(os.path.join(LIBRARY_FILES_DIR, '*.jpg')),
-        key=os.path.getmtime, reverse=True
-    )
-    meta = {}
-    db_path = os.path.expanduser('~/video-pipeline/library/library.db')
-    if os.path.exists(db_path):
-        try:
-            conn = _sq.connect(db_path)
-            conn.row_factory = _sq.Row
-            rows = conn.execute(
-                'SELECT file_path, prompt, score, vertical, type FROM assets ORDER BY created_at DESC LIMIT 1000'
-            ).fetchall()
-            conn.close()
-            for r in rows:
-                meta[os.path.basename(r['file_path'])] = dict(r)
-        except Exception:
-            pass
-    cards = []
-    for f in files[:300]:
-        name = os.path.basename(f)
-        m = meta.get(name, {})
-        cards.append({
-            'url': '/library/files/' + name,
-            'name': name,
-            'prompt': m.get('prompt', ''),
-            'score': m.get('score', ''),
-            'vertical': m.get('vertical', ''),
-            'type': m.get('type', 'flux'),
-        })
-    total = len(files)
-    card_html = ''
-    for c in cards:
-        prompt_display = (c['prompt'][:90] if c['prompt'] else c['name'][:60]).replace("'", "&#39;")
-        score_tag = '<span class="tag score">score ' + str(c['score']) + '</span>' if c['score'] else ''
-        vert_tag = '<span class="tag score">' + str(c['vertical']) + '</span>' if c['vertical'] else ''
-        tag_class = c['type'] if c['type'] in ('flux', 'pexels') else 'flux'
-        lb_prompt = c['prompt'].replace("'", "\\'").replace('"', '\\"')[:120] if c['prompt'] else c['name']
-        card_html += (
-            '<div class="card" onclick="lb(\'' + c['url'] + '\',\'' + lb_prompt + '\',' +
-            repr(str(c['score'])) + ',\'' + str(c['vertical']) + '\')">'
-            '<img src="' + c['url'] + '" loading="lazy" alt="">'
-            '<div class="info">'
-            '<div class="prompt">' + prompt_display + '</div>'
-            '<div class="meta">'
-            '<span class="tag ' + tag_class + '">' + c['type'] + '</span>'
-            + score_tag + vert_tag +
-            '</div></div></div>\n'
-        )
-    html = '''<!DOCTYPE html>
-<html>
-<head>
-<meta charset="utf-8">
-<title>Studio Image Library</title>
-<style>
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { background: #0d0d0f; color: #e2e8f0; font-family: -apple-system, sans-serif; padding: 20px; }
-h1 { font-size: 15px; font-weight: 600; color: #a5b4fc; margin-bottom: 4px; }
-.sub { font-size: 11px; color: #475569; margin-bottom: 20px; }
-.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 10px; }
-.card { background: #161820; border: 1px solid #1e2030; border-radius: 8px; overflow: hidden; cursor: pointer; transition: border-color .15s; }
-.card:hover { border-color: #4f46e5; }
-.card img { width: 100%; aspect-ratio: 16/9; object-fit: cover; display: block; background: #0d0f1a; }
-.card .info { padding: 8px 10px; }
-.card .prompt { font-size: 10px; color: #94a3b8; line-height: 1.4; max-height: 40px; overflow: hidden; }
-.card .meta { display: flex; gap: 6px; margin-top: 5px; flex-wrap: wrap; }
-.tag { font-size: 9px; padding: 2px 6px; border-radius: 3px; font-weight: 500; }
-.tag.flux { background: #312e81; color: #a5b4fc; }
-.tag.pexels { background: #052e16; color: #4ade80; }
-.tag.score { background: #1c1917; color: #a8a29e; }
-.lightbox { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.92); z-index: 100; align-items: center; justify-content: center; flex-direction: column; gap: 12px; }
-.lightbox.open { display: flex; }
-.lightbox img { max-width: 90vw; max-height: 80vh; border-radius: 6px; }
-.lightbox .lb-meta { font-size: 11px; color: #64748b; text-align: center; max-width: 600px; }
-.lightbox .close { position: absolute; top: 16px; right: 20px; font-size: 22px; cursor: pointer; color: #475569; }
-</style>
-</head>
-<body>
-<h1>Studio Image Library</h1>
-<div class="sub">''' + str(total) + ''' images total &middot; showing ''' + str(len(cards)) + ''' most recent &middot; FLUX generated + scored</div>
-<div class="grid">
-''' + card_html + '''</div>
-<div class="lightbox" id="lb" onclick="if(event.target===this)this.classList.remove('open')">
-  <span class="close" onclick="document.getElementById('lb').classList.remove('open')">&#x2715;</span>
-  <img id="lb-img" src="">
-  <div class="lb-meta" id="lb-meta"></div>
-</div>
-<script>
-function lb(url, prompt, score, vert) {
-  document.getElementById('lb-img').src = url;
-  var meta = prompt || url;
-  if (score) meta += ' · score ' + score;
-  if (vert) meta += ' · ' + vert;
-  document.getElementById('lb-meta').textContent = meta;
-  document.getElementById('lb').classList.add('open');
-}
-document.addEventListener('keydown', function(e) {
-  if (e.key === 'Escape') document.getElementById('lb').classList.remove('open');
-});
-</script>
-</body>
-</html>'''
-    return html
-
-
-@app.route('/library/files/<path:filename>')
-def library_file(filename):
-    return send_from_directory(LIBRARY_FILES_DIR, filename)
 
 
 if __name__ == '__main__':
