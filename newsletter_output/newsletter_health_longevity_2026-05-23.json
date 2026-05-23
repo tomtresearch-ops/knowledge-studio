@@ -1,0 +1,31 @@
+{
+  "headline": "Three ways cellular aging is becoming reversible\u2014and what to do about it now",
+  "subtitle": "A enzyme that rewinds senescence, a polyamine that restores immune youth, and the circadian code that gates longevity.",
+  "editorial_intro": "This week, aging research crossed a threshold. We're no longer just observing what goes wrong with age\u2014we're identifying precise molecular switches we can flip back on. Three breakthroughs converge on a single insight: aging isn't inevitable; it's a set of controllable processes. Here's what's shifting and why it matters for your next five years.",
+  "signals": [
+    {
+      "headline": "DIS3 enzyme reverses cellular aging by generating tRNA fragments",
+      "body": "Researchers identified a specific enzyme (DIS3 ribonuclease) that directly antagonizes aging at the cellular level by generating tRNA halves\u2014short RNA pieces that suppress senescence. This moves the field from mapping what breaks down to demonstrating what can be repaired. The pathway is now actionable for drug development.",
+      "whycare": "Watch for DIS3-targeting therapeutics entering trials within 18 months. This represents the first mechanistic bridge between stress response and practical senescence reversal\u2014a shift from theory to druggable target."
+    },
+    {
+      "headline": "Spermidine restores immune function in older adults\u2014first human proof",
+      "body": "A polyamine compound previously studied only in animals now shows real results in humans: it measurably reverses immune cell senescence and boosts vaccine response in older adults. This is the first-in-human efficacy data for a well-characterized longevity compound, crossing from mechanism into clinical validation.",
+      "whycare": "Start tracking Phase 2b trials launching this summer. If confirmed, spermidine supplementation could become a standard protocol for immune aging\u2014potentially available and affordable within 2\u20133 years. Dose-response data will tell you who benefits most."
+    },
+    {
+      "headline": "Sleep and meal timing gate your immune defenses with 100-fold potency",
+      "body": "Circadian clock programming controls antiviral immunity so powerfully that infection risk can swing 100-fold depending on time of day. This reveals why sleep-wake synchronization and time-restricted eating matter for aging: they're not just lifestyle\u2014they're immunological infrastructure.",
+      "whycare": "Align vaccine timing with your circadian peak, adopt consistent meal windows, and prioritize sleep regularity. These free levers may amplify longevity gains from any drug or supplement by ensuring your immune system operates at full strength."
+    }
+  ],
+  "bigger_picture": "A pattern is emerging across all three signals: aging is modular and reversible at multiple points in the system. DIS3 fixes cells directly; spermidine restores immune capacity; circadian alignment unleashes the immune system's full power. Together, they suggest a unified playbook\u2014mechanistic intervention (drugs or compounds) combined with behavioral timing (sleep, meals, vaccines). The field is moving from asking \"Can aging be slowed?\" to \"Which layer of aging should we target first, and in what sequence?\" This convergence explains the acceleration: we're not waiting for a single silver bullet anymore. We're layering interventions that work on different scales\u2014molecular, cellular, and systemic\u2014which means synergy is now the bet.",
+  "_meta": {
+    "vertical": "health_longevity",
+    "brief_id": 296,
+    "brief_date": "2026-05-23 01:32:55",
+    "signal_count": 319,
+    "source_count": 7,
+    "generated_at": "2026-05-22T22:00:37.327895"
+  }
+}
