@@ -101,59 +101,8 @@ def generate_script(brief):
     return script, script_path
 
 
-_ROMAN_TO_WORD = {
-    'I': 'one', 'II': 'two', 'III': 'three', 'IV': 'four',
-    'V': 'five', 'VI': 'six', 'VII': 'seven', 'VIII': 'eight',
-    'IX': 'nine', 'X': 'ten', 'XI': 'eleven', 'XII': 'twelve',
-}
-
-def _load_pronunciation_rules():
-    """Load pronunciation rules from tts_pronunciation.json next to this file."""
-    rules_path = os.path.join(PROJECT_DIR, 'tts_pronunciation.json')
-    if not os.path.exists(rules_path):
-        return [], []
-    with open(rules_path) as f:
-        data = json.load(f)
-    return data.get('literal', []), data.get('pattern', [])
-
-
-def normalize_text_for_tts(text):
-    """Apply pronunciation normalization rules before text hits the TTS model.
-
-    Rules are read from tts_pronunciation.json — edit that file to add/fix rules.
-    No restart required; rules are reloaded each time this runs.
-    """
-    literal_rules, pattern_rules = _load_pronunciation_rules()
-
-    # Apply literal (exact string) replacements first
-    for rule in literal_rules:
-        find = rule.get('find', '')
-        replace = rule.get('replace', '')
-        if find and find != replace:  # skip no-op rules (e.g. CRISPR note)
-            text = text.replace(find, replace)
-
-    # Catch-all: Phase + any roman numeral not already handled by literals
-    def replace_phase_numeral(m):
-        numeral = m.group(1)
-        word = _ROMAN_TO_WORD.get(numeral.upper())
-        return f"Phase {word}" if word else m.group(0)
-    text = re.sub(r'\bPhase ([IVX]+)\b', replace_phase_numeral, text)
-
-    # Apply pattern (regex) replacements — skip the Phase placeholder (handled above)
-    for rule in pattern_rules:
-        find = rule.get('find', '')
-        replace = rule.get('replace', '')
-        if find and 'PHASE_NUMERAL_PLACEHOLDER' not in find:
-            try:
-                text = re.sub(find, replace, text)
-            except re.error:
-                pass  # malformed pattern — skip silently
-
-    return text
-
-
 def clean_script_for_tts(script):
-    """Strip markdown formatting, stage directions, then apply pronunciation normalization."""
+    """Strip markdown formatting and stage directions that TTS should never read."""
     script = re.sub(r'^#+\s+.*$', '', script, flags=re.MULTILINE)
     script = re.sub(r'\*\*\[.*?\]\*\*', '', script)          # **[OPEN]**, **[CLOSE]**, **[SECTION HEADERS]**
     script = re.sub(r'\[.*?\]', '', script)                   # [OPEN], [CLOSE], any remaining bracketed directions
@@ -161,7 +110,6 @@ def clean_script_for_tts(script):
     script = re.sub(r'\*([^*]+)\*', r'\1', script)
     script = re.sub(r'^---+\s*$', '', script, flags=re.MULTILINE)  # horizontal rules
     script = re.sub(r'\n{3,}', '\n\n', script)
-    script = normalize_text_for_tts(script)
     return script.strip()
 
 
