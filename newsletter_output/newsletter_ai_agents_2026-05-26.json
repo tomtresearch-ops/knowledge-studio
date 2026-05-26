@@ -1,0 +1,31 @@
+{
+  "headline": "Agent Operating Systems Are Here\u2014And They Look Nothing Like Chatbots",
+  "subtitle": "Production agents now need memory, state machines, and guardrails. Plus: LangGraph replaces older frameworks, and tool-calling precision is the new bottleneck.",
+  "editorial_intro": "The agent boom is shifting from 'can we build this?' to 'can we ship this safely at scale?' Three converging signals show that production agents follow an identical architecture\u2014and the winners are frameworks that treat agents as systems, not toys.",
+  "signals": [
+    {
+      "headline": "Agent Operating Systems Ship Persistent Memory, Not Just Chat",
+      "body": "Hermes, OpenClaw, and Antigravity 2.0 are shipping unified dashboards that manage multiple agents with shared memory and continuous goal execution across sessions. The shift from stateless chatbots to stateful systems is no longer theoretical\u2014it's shipping. This architecture solves the real problem: agents that resume mid-task after hitting API limits, without data loss or re-prompting.",
+      "whycare": "Stop evaluating agents by demo quality. Adopt or build around frameworks shipping explicit memory, state machines, and checkpoint/resume mechanics\u2014these are now table stakes, not nice-to-haves. Agents without them will keep failing at the same spots."
+    },
+    {
+      "headline": "LangGraph Becomes the Default for Builders Who Ship Real Work",
+      "body": "Reddit's migration from Google's ADK and older patterns to LangGraph is accelerating because it solves production problems: replay-ability, transaction guarantees, and explicit state management. Builders are moving past 'can my agent work?' to 'can my agent work reliably at scale?' LangGraph's transaction model prevents data loss when systems fail\u2014a feature no other framework ships with parity.",
+      "whycare": "If you're building agent systems for anything beyond prototypes, spend a week evaluating LangGraph's state management. Its replay and checkpoint mechanics will save you from the incident reports now flooding Reddit."
+    },
+    {
+      "headline": "Tool-Calling Precision Is Now the Primary Model Selection Criterion",
+      "body": "Claude Code's widespread adoption reveals that the bottleneck has shifted: it's no longer 'can the model reason?' but 'can the model reliably write correct tool calls?' Builders stress-testing Kimi K2.6, Qwen 3.6, and DeepSeek V4 as alternatives because tool-use performance now dominates model selection. This signals a fundamental reset in what 'agent capability' means.",
+      "whycare": "Benchmark new models on your actual CLI tool suite before upgrading. Tool-calling fidelity is now the decisive factor\u2014raw reasoning power matters far less for agentic systems than the precision of API/tool integration."
+    }
+  ],
+  "bigger_picture": "Three architectural layers are crystallizing as the baseline for production agents: persistent memory, explicit state machines, and human approval gates for consequential actions. Every agent actually shipping real work implements all three. Open-source frameworks (Hermes, OpenClaw) are outpacing closed platforms because customization and local-first execution matter more than polish. The 'agent framework' era is ending; the 'agent infrastructure' era is beginning. Builders who treat agents as systems\u2014not clever prompts\u2014are the ones shipping reliably.",
+  "_meta": {
+    "vertical": "ai_agents",
+    "brief_id": 322,
+    "brief_date": "2026-05-26 01:31:44",
+    "signal_count": 183,
+    "source_count": 7,
+    "generated_at": "2026-05-25T22:00:26.193239"
+  }
+}

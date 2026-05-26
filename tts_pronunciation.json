@@ -1,81 +1,373 @@
 {
-  "_readme": "Pronunciation fix rules for TTS normalization. Two types: 'literal' (exact find/replace, case-sensitive option) and 'pattern' (regex find/replace). Add new rules here whenever you hear a mispronunciation. Changes take effect on the next episode run — no restart needed.",
-
+  "_readme": "Pronunciation fix rules for TTS normalization. Two types: 'literal' (exact find/replace, case-sensitive option) and 'pattern' (regex find/replace). Add new rules here whenever you hear a mispronunciation. Changes take effect on the next episode run \u2014 no restart needed.",
   "literal": [
-    {"find": "Phase I ",         "replace": "Phase one ",       "note": "Roman numeral I after Phase"},
-    {"find": "Phase II ",        "replace": "Phase two ",       "note": ""},
-    {"find": "Phase III ",       "replace": "Phase three ",     "note": ""},
-    {"find": "Phase IV ",        "replace": "Phase four ",      "note": ""},
-    {"find": "Phase I/II",       "replace": "Phase one slash two", "note": ""},
-    {"find": "Phase II/III",     "replace": "Phase two slash three", "note": ""},
-    {"find": "Phase I,",         "replace": "Phase one,",       "note": "Phase I at end of clause"},
-    {"find": "Phase II,",        "replace": "Phase two,",       "note": ""},
-    {"find": "Phase III,",       "replace": "Phase three,",     "note": ""},
-    {"find": "Phase I.",         "replace": "Phase one.",       "note": "Phase I at end of sentence"},
-    {"find": "Phase II.",        "replace": "Phase two.",       "note": ""},
-    {"find": "Phase III.",       "replace": "Phase three.",     "note": ""},
-    {"find": "mRNA",             "replace": "m RNA",            "note": "messenger RNA"},
-    {"find": "siRNA",            "replace": "s i RNA",          "note": "small interfering RNA"},
-    {"find": "saRNA",            "replace": "s a RNA",          "note": "self-amplifying RNA"},
-    {"find": "CAR-T",            "replace": "CAR T",            "note": "chimeric antigen receptor T-cell"},
-    {"find": "CAR-NK",           "replace": "CAR N K",          "note": ""},
-    {"find": "FDA",              "replace": "F D A",            "note": ""},
-    {"find": "NIH",              "replace": "N I H",            "note": ""},
-    {"find": "EMA",              "replace": "E M A",            "note": "European Medicines Agency"},
-    {"find": "CRISPR",           "replace": "CRISPR",           "note": "already pronounced correctly — keep as-is"},
-    {"find": "GLP-1",            "replace": "G L P one",        "note": "glucagon-like peptide one"},
-    {"find": "PD-1",             "replace": "P D one",          "note": "programmed death one"},
-    {"find": "PD-L1",            "replace": "P D L one",        "note": ""},
-    {"find": "AAV",              "replace": "A A V",            "note": "adeno-associated virus"},
-    {"find": "LNP",              "replace": "L N P",            "note": "lipid nanoparticle"},
-    {"find": "LNPs",             "replace": "L N Ps",           "note": ""},
-    {"find": "ctDNA",            "replace": "C T DNA",          "note": "circulating tumor DNA"},
-    {"find": "PCSK9",            "replace": "P C S K nine",     "note": ""},
-    {"find": "ICD",              "replace": "I C D",            "note": "implantable cardioverter defibrillator"},
-    {"find": "ICU",              "replace": "I C U",            "note": ""},
-    {"find": "IV ",              "replace": "I V ",             "note": "intravenous — space after to avoid 'IV' as roman numeral four"},
-    {"find": "et al.",           "replace": "et al",            "note": "remove period so TTS doesn't pause oddly"},
-    {"find": "i.e.",             "replace": "that is,",         "note": ""},
-    {"find": "e.g.",             "replace": "for example,",     "note": ""},
-    {"find": "vs.",              "replace": "versus",           "note": ""},
-    {"find": " vs ",             "replace": " versus ",         "note": ""},
-    {"find": "Dr.",              "replace": "Doctor",           "note": ""},
-    {"find": "No.",              "replace": "Number",           "note": "avoid 'No' being read as negation"},
-
-    {"find": "live attenuated",  "replace": "lyve attenuated",  "note": "homograph: live /laɪv/ — TTS reads short-i by default"},
-    {"find": "live virus",       "replace": "lyve virus",       "note": "homograph: live /laɪv/"},
-    {"find": "live vaccine",     "replace": "lyve vaccine",     "note": "homograph: live /laɪv/"},
-    {"find": "live pathogen",    "replace": "lyve pathogen",    "note": "homograph: live /laɪv/"},
-    {"find": "live cell",        "replace": "lyve cell",        "note": "homograph: live /laɪv/"},
-    {"find": "live cells",       "replace": "lyve cells",       "note": "homograph: live /laɪv/"},
-    {"find": "long-lived",       "replace": "long-lyved",       "note": "homograph: lived /laɪvd/ — long-lived = long-lasting"},
-    {"find": "short-lived",      "replace": "short-lyved",      "note": "homograph: lived /laɪvd/"},
-
-    {"find": "these compounds",  "replace": "these COM-pounds", "note": "homograph: compound noun stress — TTS defaults to verb (com-POUND)"},
-    {"find": "the compounds",    "replace": "the COM-pounds",   "note": "homograph: compound noun stress"},
-    {"find": "new compounds",    "replace": "new COM-pounds",   "note": "homograph: compound noun stress"},
-    {"find": "such compounds",   "replace": "such COM-pounds",  "note": "homograph: compound noun stress"},
-    {"find": "compounds that",   "replace": "COM-pounds that",  "note": "homograph: compound noun stress"},
-    {"find": "compounds which",  "replace": "COM-pounds which", "note": "homograph: compound noun stress"},
-    {"find": "compounds are",    "replace": "COM-pounds are",   "note": "homograph: compound noun stress"},
-    {"find": "compounds were",   "replace": "COM-pounds were",  "note": "homograph: compound noun stress"},
-    {"find": "compounds have",   "replace": "COM-pounds have",  "note": "homograph: compound noun stress"},
-    {"find": "pharmaceutical compound", "replace": "pharmaceutical COM-pound", "note": "homograph: compound noun stress"},
-    {"find": "chemical compound",       "replace": "chemical COM-pound",       "note": "homograph: compound noun stress"},
-    {"find": "drug compound",           "replace": "drug COM-pound",           "note": "homograph: compound noun stress"},
-    {"find": "organic compound",        "replace": "organic COM-pound",        "note": "homograph: compound noun stress"},
-    {"find": "a compound that",         "replace": "a COM-pound that",         "note": "homograph: compound noun stress"},
-    {"find": "a compound which",        "replace": "a COM-pound which",        "note": "homograph: compound noun stress"},
-    {"find": "the compound ",           "replace": "the COM-pound ",           "note": "homograph: compound noun stress"}
+    {
+      "find": "compound ",
+      "replace": "COM-pound ",
+      "note": "catch-all compound"
+    },
+    {
+      "find": "compounds ",
+      "replace": "COM-pounds ",
+      "note": "catch-all plural"
+    },
+    {
+      "find": "Phase i ",
+      "replace": "Phase one ",
+      "note": "lowercase"
+    },
+    {
+      "find": "Phase ii ",
+      "replace": "Phase two ",
+      "note": "lowercase"
+    },
+    {
+      "find": "Phase iii ",
+      "replace": "Phase three ",
+      "note": "lowercase"
+    },
+    {
+      "find": "Phase I ",
+      "replace": "Phase one ",
+      "note": "Roman numeral I after Phase"
+    },
+    {
+      "find": "Phase II ",
+      "replace": "Phase two ",
+      "note": ""
+    },
+    {
+      "find": "Phase III ",
+      "replace": "Phase three ",
+      "note": ""
+    },
+    {
+      "find": "Phase IV ",
+      "replace": "Phase four ",
+      "note": ""
+    },
+    {
+      "find": "Phase I/II",
+      "replace": "Phase one slash two",
+      "note": ""
+    },
+    {
+      "find": "Phase II/III",
+      "replace": "Phase two slash three",
+      "note": ""
+    },
+    {
+      "find": "Phase I,",
+      "replace": "Phase one,",
+      "note": "Phase I at end of clause"
+    },
+    {
+      "find": "Phase II,",
+      "replace": "Phase two,",
+      "note": ""
+    },
+    {
+      "find": "Phase III,",
+      "replace": "Phase three,",
+      "note": ""
+    },
+    {
+      "find": "Phase I.",
+      "replace": "Phase one.",
+      "note": "Phase I at end of sentence"
+    },
+    {
+      "find": "Phase II.",
+      "replace": "Phase two.",
+      "note": ""
+    },
+    {
+      "find": "Phase III.",
+      "replace": "Phase three.",
+      "note": ""
+    },
+    {
+      "find": "mRNA",
+      "replace": "m RNA",
+      "note": "messenger RNA"
+    },
+    {
+      "find": "siRNA",
+      "replace": "s i RNA",
+      "note": "small interfering RNA"
+    },
+    {
+      "find": "saRNA",
+      "replace": "s a RNA",
+      "note": "self-amplifying RNA"
+    },
+    {
+      "find": "CAR-T",
+      "replace": "CAR T",
+      "note": "chimeric antigen receptor T-cell"
+    },
+    {
+      "find": "CAR-NK",
+      "replace": "CAR N K",
+      "note": ""
+    },
+    {
+      "find": "FDA",
+      "replace": "F D A",
+      "note": ""
+    },
+    {
+      "find": "NIH",
+      "replace": "N I H",
+      "note": ""
+    },
+    {
+      "find": "EMA",
+      "replace": "E M A",
+      "note": "European Medicines Agency"
+    },
+    {
+      "find": "CRISPR",
+      "replace": "CRISPR",
+      "note": "already pronounced correctly \u2014 keep as-is"
+    },
+    {
+      "find": "GLP-1",
+      "replace": "G L P one",
+      "note": "glucagon-like peptide one"
+    },
+    {
+      "find": "PD-1",
+      "replace": "P D one",
+      "note": "programmed death one"
+    },
+    {
+      "find": "PD-L1",
+      "replace": "P D L one",
+      "note": ""
+    },
+    {
+      "find": "AAV",
+      "replace": "A A V",
+      "note": "adeno-associated virus"
+    },
+    {
+      "find": "LNP",
+      "replace": "L N P",
+      "note": "lipid nanoparticle"
+    },
+    {
+      "find": "LNPs",
+      "replace": "L N Ps",
+      "note": ""
+    },
+    {
+      "find": "ctDNA",
+      "replace": "C T DNA",
+      "note": "circulating tumor DNA"
+    },
+    {
+      "find": "PCSK9",
+      "replace": "P C S K nine",
+      "note": ""
+    },
+    {
+      "find": "ICD",
+      "replace": "I C D",
+      "note": "implantable cardioverter defibrillator"
+    },
+    {
+      "find": "ICU",
+      "replace": "I C U",
+      "note": ""
+    },
+    {
+      "find": "IV ",
+      "replace": "I V ",
+      "note": "intravenous \u2014 space after to avoid 'IV' as roman numeral four"
+    },
+    {
+      "find": "et al.",
+      "replace": "et al",
+      "note": "remove period so TTS doesn't pause oddly"
+    },
+    {
+      "find": "i.e.",
+      "replace": "that is,",
+      "note": ""
+    },
+    {
+      "find": "e.g.",
+      "replace": "for example,",
+      "note": ""
+    },
+    {
+      "find": "vs.",
+      "replace": "versus",
+      "note": ""
+    },
+    {
+      "find": " vs ",
+      "replace": " versus ",
+      "note": ""
+    },
+    {
+      "find": "Dr.",
+      "replace": "Doctor",
+      "note": ""
+    },
+    {
+      "find": "No.",
+      "replace": "Number",
+      "note": "avoid 'No' being read as negation"
+    },
+    {
+      "find": "live attenuated",
+      "replace": "lyve attenuated",
+      "note": "homograph: live /la\u026av/ \u2014 TTS reads short-i by default"
+    },
+    {
+      "find": "live virus",
+      "replace": "lyve virus",
+      "note": "homograph: live /la\u026av/"
+    },
+    {
+      "find": "live vaccine",
+      "replace": "lyve vaccine",
+      "note": "homograph: live /la\u026av/"
+    },
+    {
+      "find": "live pathogen",
+      "replace": "lyve pathogen",
+      "note": "homograph: live /la\u026av/"
+    },
+    {
+      "find": "live cell",
+      "replace": "lyve cell",
+      "note": "homograph: live /la\u026av/"
+    },
+    {
+      "find": "live cells",
+      "replace": "lyve cells",
+      "note": "homograph: live /la\u026av/"
+    },
+    {
+      "find": "long-lived",
+      "replace": "long-lyved",
+      "note": "homograph: lived /la\u026avd/ \u2014 long-lived = long-lasting"
+    },
+    {
+      "find": "short-lived",
+      "replace": "short-lyved",
+      "note": "homograph: lived /la\u026avd/"
+    },
+    {
+      "find": "these compounds",
+      "replace": "these COM-pounds",
+      "note": "homograph: compound noun stress \u2014 TTS defaults to verb (com-POUND)"
+    },
+    {
+      "find": "the compounds",
+      "replace": "the COM-pounds",
+      "note": "homograph: compound noun stress"
+    },
+    {
+      "find": "new compounds",
+      "replace": "new COM-pounds",
+      "note": "homograph: compound noun stress"
+    },
+    {
+      "find": "such compounds",
+      "replace": "such COM-pounds",
+      "note": "homograph: compound noun stress"
+    },
+    {
+      "find": "compounds that",
+      "replace": "COM-pounds that",
+      "note": "homograph: compound noun stress"
+    },
+    {
+      "find": "compounds which",
+      "replace": "COM-pounds which",
+      "note": "homograph: compound noun stress"
+    },
+    {
+      "find": "compounds are",
+      "replace": "COM-pounds are",
+      "note": "homograph: compound noun stress"
+    },
+    {
+      "find": "compounds were",
+      "replace": "COM-pounds were",
+      "note": "homograph: compound noun stress"
+    },
+    {
+      "find": "compounds have",
+      "replace": "COM-pounds have",
+      "note": "homograph: compound noun stress"
+    },
+    {
+      "find": "pharmaceutical compound",
+      "replace": "pharmaceutical COM-pound",
+      "note": "homograph: compound noun stress"
+    },
+    {
+      "find": "chemical compound",
+      "replace": "chemical COM-pound",
+      "note": "homograph: compound noun stress"
+    },
+    {
+      "find": "drug compound",
+      "replace": "drug COM-pound",
+      "note": "homograph: compound noun stress"
+    },
+    {
+      "find": "organic compound",
+      "replace": "organic COM-pound",
+      "note": "homograph: compound noun stress"
+    },
+    {
+      "find": "a compound that",
+      "replace": "a COM-pound that",
+      "note": "homograph: compound noun stress"
+    },
+    {
+      "find": "a compound which",
+      "replace": "a COM-pound which",
+      "note": "homograph: compound noun stress"
+    },
+    {
+      "find": "the compound ",
+      "replace": "the COM-pound ",
+      "note": "homograph: compound noun stress"
+    }
   ],
-
   "pattern": [
-    {"find": "\\bPhase ([IVX]+)\\b",  "replace": "PHASE_NUMERAL_PLACEHOLDER", "note": "catch-all for any Phase + roman numeral not covered by literals — handled in code"},
-    {"find": "(\\d+)B\\b",            "replace": "\\1 billion",  "note": "70B → 70 billion (parameter counts)"},
-    {"find": "(\\d+)M\\b",            "replace": "\\1 million",  "note": "500M → 500 million"},
-    {"find": "(\\d+)%",               "replace": "\\1 percent",  "note": "avoid TTS stumbling on percent sign"},
-    {"find": "\\$(\\d)",              "replace": "\\1 dollar",   "note": "dollar sign before number"}
+    {
+      "find": "\\bPhase ([IVX]+)\\b",
+      "replace": "PHASE_NUMERAL_PLACEHOLDER",
+      "note": "catch-all for any Phase + roman numeral not covered by literals \u2014 handled in code"
+    },
+    {
+      "find": "(\\d+)B\\b",
+      "replace": "\\1 billion",
+      "note": "70B \u2192 70 billion (parameter counts)"
+    },
+    {
+      "find": "(\\d+)M\\b",
+      "replace": "\\1 million",
+      "note": "500M \u2192 500 million"
+    },
+    {
+      "find": "(\\d+)%",
+      "replace": "\\1 percent",
+      "note": "avoid TTS stumbling on percent sign"
+    },
+    {
+      "find": "\\$(\\d)",
+      "replace": "\\1 dollar",
+      "note": "dollar sign before number"
+    }
   ],
-
   "_add_here": "To add a new rule: paste a new object into 'literal' with find/replace/note. Restart not required."
 }

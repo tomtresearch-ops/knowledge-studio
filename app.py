@@ -840,20 +840,24 @@ class DatabaseService:
         self._ensure_video_columns(cursor, conn)
 
         cursor.execute('''
-            SELECT id, title, channel, video_url, full_transcript,
-                   ai_summary, summary_50, summary_30, summary_15, processing_date, status, filename, confidence_score, tags, prompt_used,
-                   published_at, COALESCE(favorited, 0) as favorited, original_publish_date, view_count, last_duplicate_attempt
-            FROM videos
-            WHERE status IN ('completed', 'error', 'failed', 'no_transcript', 'no_video_found')
-            ORDER BY processing_date DESC
+            SELECT v.id, v.title, v.channel, v.video_url, v.full_transcript,
+                   v.ai_summary, v.summary_50, v.summary_30, v.summary_15, v.processing_date, v.status, v.filename, v.confidence_score, v.tags, v.prompt_used,
+                   v.published_at, COALESCE(v.favorited, 0) as favorited, v.original_publish_date, v.view_count, v.last_duplicate_attempt,
+                   CASE WHEN cv.processed_video_id IS NOT NULL THEN 1 ELSE 0 END as from_subscription
+            FROM videos v
+            LEFT JOIN channel_videos cv ON v.id = cv.processed_video_id
+            WHERE v.status IN ('completed', 'error', 'failed', 'no_transcript', 'no_video_found')
+            GROUP BY v.id
+            ORDER BY v.processing_date DESC
         ''')
-        
+
         videos = []
         for row in cursor.fetchall():
-            video = self._serialize_video_row(row)
+            video = self._serialize_video_row(row)  # row has from_subscription; serializer ignores unknown keys
             if video:
+                video['from_subscription'] = bool(row['from_subscription'])
                 videos.append(video)
-        
+
         conn.close()
         return videos
     
