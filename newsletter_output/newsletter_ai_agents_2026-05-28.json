@@ -1,0 +1,31 @@
+{
+  "headline": "The Agent Market Just Split in Two",
+  "subtitle": "Hermes dethroned the model wars, Cursor shipped its own $0.50 coding model, and healthcare agents are failing at 72%\u2014revealing what actually matters.",
+  "editorial_intro": "The agent market is maturing faster than anyone expected, and it's not going the way the hype predicted. The bottleneck isn't raw capability anymore\u2014it's operational infrastructure. Three signals this week show where real money and adoption are actually flowing.",
+  "signals": [
+    {
+      "headline": "Infrastructure, Not Intelligence, Became the Moat",
+      "body": "Hermes is now the production agent runtime of choice, processing 560B tokens daily versus 151B for its predecessor. It won by being reliable and observable\u2014not by being smartest. Simultaneously, Cursor shipped Compos2.5, a proprietary coding model that matches frontier performance at 1/20th the cost ($0.50 per task instead of $11). The market moved from 'which model wins?' to 'which framework runs without breaking?'",
+      "whycare": "Stop betting on model wars. If you're building agents, your competitive advantage lives in monitoring, recovery loops, and multi-agent coordination\u2014not in which LLM you're calling. The companies winning are treating models as interchangeable and infrastructure as irreplaceable."
+    },
+    {
+      "headline": "Humans Still Run the Show in High-Stakes Work",
+      "body": "Healthcare agents are failing on 72% of U.S. medical workflows, and it's not because the models are dumb\u2014Claude, GPT, and Gemini all fail on the same tasks. The problem: agents can't handle compliance handoffs, multi-step context retention, or graceful degradation when things go wrong. Meanwhile, coding agents paired with human approval loops are already generating revenue. The pattern is stark: agents as replacements fail; agents as amplifiers (drafts, documentation, approvals) ship.",
+      "whycare": "If your domain requires human judgment, liability, or regulatory audit trails, don't design for full autonomy. Design for augmentation: approval loops, transparency, and documented handoffs. That's what's actually shipping in production today."
+    },
+    {
+      "headline": "Context Is Now the Limiting Factor",
+      "body": "Claude Code developers are building ad-hoc knowledge layers\u2014GitHub integrations, codebase graph parsers, markdown skill libraries\u2014to give the model explicit understanding of how code is organized. Teams are literally re-reading files 40 times because agents lack structural codebase understanding. Meanwhile, open-weight models in persistent environments (an 10-day MMO sim generated 93k training events) show that self-improving agents need stateful infrastructure most builders don't have. The gap isn't between models\u2014it's between raw capability and domain-specific context.",
+      "whycare": "Build lightweight knowledge layers (repo graphs, skill libraries, memory caches) on top of existing models instead of waiting for smarter ones. Infrastructure builders adding these abstraction layers to Claude Code and open-weight models will win the next category."
+    }
+  ],
+  "bigger_picture": "The agent industry is bifurcating into two separate markets that aren't converging. Orchestrator-style agents (Claude Code + human loops) are production-ready and generating revenue today. Autonomous-style agents (Hermes, self-improving systems) are technically interesting but failing in regulated domains and hitting hard limits at scale. The real insight: model capability is 20% of the problem. The other 80%\u2014memory management, error recovery, context retention, audit trails, operational reliability\u2014is where the actual work and defensible value live. Every production team we're tracking is building infrastructure, not chasing benchmark improvements. The companies capturing value next are those optimizing the operational layer, not the model layer.",
+  "_meta": {
+    "vertical": "ai_agents",
+    "brief_id": 343,
+    "brief_date": "2026-05-28 01:32:07",
+    "signal_count": 191,
+    "source_count": 7,
+    "generated_at": "2026-05-27T22:00:27.097895"
+  }
+}
