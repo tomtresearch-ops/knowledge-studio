@@ -1,0 +1,33 @@
+{
+  "headline": "Aging Gets Programmable\u2014But Your Supplement Stack Might Not Be",
+  "subtitle": "Gene signatures predict lifespan with new precision, a single heart protein reverses aging in mice, and popular longevity supplements face serious pushback.",
+  "editorial_intro": "This week's research converges on a radical idea: aging isn't random decay\u2014it's a coordinated, addressable process. But that clarity comes with a hard truth: most of what the longevity community is taking today won't survive scrutiny. Here's what actually moved the needle.",
+  "signals": [
+    {
+      "headline": "Gene Expression Now Predicts Your Lifespan\u2014Across Species",
+      "body": "Researchers at de Magalh\u00e3es' lab published evidence that patterns of gene activity can estimate both your age and mortality risk with surprising accuracy, matching the performance of epigenetic clocks. This matters because it's signal convergence: multiple independent biological markers now point to the same underlying aging processes, strengthening the case that aging is programmable rather than random.",
+      "whycare": "If aging is a coordinated process, it can be interrupted. This shifts the scientific burden from proving aging is real to proving we can control it. Start tracking your own biomarkers\u2014gene expression panels are becoming cheaper and more accessible."
+    },
+    {
+      "headline": "One Protein Reversal Restores Heart Function in Aged Mice",
+      "body": "Deleting a single protein called SOX9 from heart blood vessel cells restored cardiac function in old mice\u2014a clean, mechanistic win. This isn't correlational; it's proof that a specific factor actively drives age-related heart decline. If it translates to humans, SOX9 inhibition could become a targeted therapeutic, not a broad anti-aging drug.",
+      "whycare": "Watch for SOX9 inhibitor trials in the next 12-18 months. This is the first time a single-target intervention has reversed organ-level aging in a specific tissue type. It signals that aging might be treatable one system at a time."
+    },
+    {
+      "headline": "NAD+ Supplements and Vitamin D Face Credibility Crisis",
+      "body": "New research is undercutting claims around popular NAD+ precursor supplements (NMN, NR), and emerging data hints that vitamin D supplementation may actually suppress certain immune functions\u2014despite half the US population taking it. The longevity community adopted these compounds based on mouse studies and mechanistic hope, not robust human trials.",
+      "whycare": "Pause any supplement stacking until you see peer-reviewed human RCT data, not just mouse work or Reddit enthusiasm. The next 6-12 months will separate real interventions from expensive placebos\u2014and you don't want to be caught on the wrong side."
+    }
+  ],
+  "bigger_picture": "Aging research is splitting into two camps: the molecular evidence is getting stronger and more specific (gene clocks, single-protein interventions, sex-specific aging trajectories), but the supplement industry is being exposed for overselling weak data. The pattern is maturation. Early wins came from broad metabolic interventions (calorie restriction, some statins). Now the field demands precision\u2014targeting specific tissues, specific cell types, specific sex groups. That same rigor is being applied retroactively to supplements, and many aren't holding up. The implication: the next phase of longevity science will be slower, more targeted, and less dependent on self-quantification and biohacker intuition. Expect consolidation around interventions with real human data within 18-24 months.",
+  "sources": 12,
+  "pubdate": "2026-05-29",
+  "_meta": {
+    "vertical": "health_longevity",
+    "brief_id": 366,
+    "brief_date": "2026-05-30 01:33:39",
+    "signal_count": 299,
+    "source_count": 7,
+    "generated_at": "2026-05-29T22:00:40.460380"
+  }
+}

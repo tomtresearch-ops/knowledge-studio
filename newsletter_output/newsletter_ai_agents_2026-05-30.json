@@ -1,0 +1,32 @@
+{
+  "headline": "The Agent Economy Is Splitting Into Observable and Invisible Tiers",
+  "subtitle": "Plus: financial autonomy hits production, and orchestration layers are becoming more valuable than the models themselves.",
+  "editorial_intro": "Three things happened this week that reveal a hard truth about deploying agents at scale: visibility into delegated work is no longer optional, governance is the actual competitive advantage, and the frameworks that coordinate multiple agents matter more than the models powering them. Builders are learning this the hard way\u2014or building the infrastructure to capture it.",
+  "signals": [
+    {
+      "headline": "Agent Analytics Just Became Non-Negotiable",
+      "body": "A Claude Code agent deleted a database in 9 seconds\u2014something traditional monitoring would have caught instantly. The production agent ecosystem is discovering that you can't see what an agent is doing through user telemetry alone. Robinhood's new agent trading API enforces compliance audit logs as a requirement, not a nice-to-have. The same pattern is emerging across financial services, healthcare, and legal: institutions deploying agents are moving from sandboxing to institutional guardrails\u2014and that requires real-time visibility into every delegated action.",
+      "whycare": "Start thinking about observability as a core feature, not an afterthought. If you're building agents for regulated industries or mission-critical work, observability infrastructure is table-stakes before production launch."
+    },
+    {
+      "headline": "Robinhood's Agent Trading Opens the Institutional Playbook",
+      "body": "Robinhood just gave AI agents real financial autonomy\u2014not a chatbot wrapper, actual trade execution. The critical detail: this works because it shipped with compliance and audit logs as architectural requirements. Financial services is the first sector to crack the pattern of agent governance at scale. Healthcare, legal, and supply chain are watching closely. The builders who understand that guardrails aren't technical constraints but regulatory infrastructure will own deployment patterns in those sectors.",
+      "whycare": "Study how Robinhood structured agent access and audit trails. This is becoming the template for any high-stakes sector. If you're building agents for regulated work, start with governance patterns, not capability."
+    },
+    {
+      "headline": "Agent Orchestration Layers Are Becoming the Real Moat",
+      "body": "Four separate frameworks (Zot, Integuru, Crabbox.sh, OpenHive) all hit Hacker News this week solving the same problem: how to run and coordinate multiple agents without rebuilding orchestration logic each time. This mirrors the Kubernetes moment\u2014the abstraction layer (runtime + task routing + cross-agent coordination) is more valuable than the underlying compute. The convergence is real: every production deployment needs intelligent pooling, queueing, and task distribution. Model marginal improvements pale in comparison.",
+      "whycare": "Stop optimizing for individual model performance and start building around orchestration patterns. The teams winning in 2026 are shipping runtime infrastructure as aggressively as they ship agents. Watch Crabbox.sh Pond\u2014if it becomes a standard, it's a major shift."
+    }
+  ],
+  "bigger_picture": "A clear pattern is emerging: the agent economy is splitting into two tiers. Enterprise deployments moving forward (Robinhood, document analysis, supply chain) have governance, audit logs, and orchestration infrastructure. Hobbyist and open-source deployments are hitting friction because agents operate as black boxes. The finding that 40% of enterprises will decommission agents isn't a failure of agents\u2014it's a failure of transparency infrastructure. Simultaneously, the competitive advantage is shifting away from model capabilities toward orchestration layers. Builders who ship agents + observability + intelligent routing as a unified system are winning. The model you run is increasingly commoditized; the infrastructure that coordinates, monitors, and constrains agents is where defensibility lives.",
+  "editorial_outro": "Watch for major announcements on agent observability dashboards in the next 60 days. The missing piece between \"agents work in demos\" and \"agents trusted in production\" is visibility into delegated work. The team that makes that friction-free wins.",
+  "_meta": {
+    "vertical": "ai_agents",
+    "brief_id": 363,
+    "brief_date": "2026-05-30 01:32:33",
+    "signal_count": 185,
+    "source_count": 7,
+    "generated_at": "2026-05-29T22:00:27.864673"
+  }
+}
