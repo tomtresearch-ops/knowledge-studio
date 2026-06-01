@@ -1,0 +1,31 @@
+{
+  "headline": "Agents Are Becoming Infrastructure\u2014And the Stack Is Splintering",
+  "subtitle": "Claude's parallel agent spawning, specialized tooling fragmentation, and the rise of memory-as-action are reshaping how teams build at scale",
+  "editorial_intro": "The agent era just shifted. We're past the 'LLM plus tools' phase. This week, three converging signals reveal that builders are moving from chaining prompts to designing emergent hierarchies\u2014and discovering that monolithic frameworks can't keep up. The winners won't be all-in-one platforms; they'll be tools that solve one problem perfectly.",
+  "signals": [
+    {
+      "headline": "Claude's Dynamic Workflows Go Parallel\u2014And Agents Are Self-Spawning Teams",
+      "body": "Claude Code just moved from sequential agent chains to parallel, self-organizing multi-agent pipelines. Reports show agents autonomously spinning up 70-agent orchestrations for complex tasks\u2014meaning the model itself is discovering and composing agent hierarchies at runtime. This isn't a feature upgrade; it's a new execution model.",
+      "whycare": "Stop thinking about control flow as something you code. Start designing agent systems that let models compose teams autonomously. This is the shift from 'do this, then do that' to 'organize yourselves'\u2014and it changes how you architect for reliability and scale."
+    },
+    {
+      "headline": "The Agent Stack Is Fragmenting Into Specialized Tools",
+      "body": "HarnessKit, Ouijit, Ghost AI, and four other focused tools launched this week\u2014each solving a specific production problem: skill management, task orchestration, database isolation for safe testing, and feedback loops. This mirrors the early web stack: generic frameworks are losing to specialized harnesses that do one thing well.",
+      "whycare": "Evaluate your current agent framework against this emerging pattern. You likely need multiple tools, not one platform. Pick tools that solve your specific pain (state isolation, cost optimization, eval framework) rather than betting on all-in-one platforms that won't evolve fast enough."
+    },
+    {
+      "headline": "Token Cost Anxiety Is Driving Builders Toward Lean, Tool-Smart Agents",
+      "body": "Reddit and Hacker News threads show builders hitting cost cliffs\u2014context bloat is adding 10x expense for minimal accuracy gain. The production pattern emerging: agents with smart tool selection (lazy-loading schemas, precise invocation) crush token costs by 98% compared to brute-force context-heavy approaches. Structured state machines (LangGraph) are also reducing hallucination by 70%+ in tested cases.",
+      "whycare": "Optimize for cost and latency, not context window size. Build agents that minimize context and maximize tool precision. If your agent uses a 200K context window to cut hallucination by 2%, you're losing on economics. The next generation of builders will win by being lean and surgical."
+    }
+  ],
+  "bigger_picture": "Three patterns are crystallizing simultaneously: (1) agents are becoming their own category of infrastructure with specialized tooling replacing monolithic frameworks, (2) the model context window is becoming a bottleneck rather than a feature\u2014token-constrained agents with smart tool selection now outperform bloated ones, and (3) control flow is shifting from code to learned autonomy, with models composing agent hierarchies themselves. Together, these signal a fundamental reset: the competitive advantage in 2026 isn't owning a platform, it's solving one problem better than anyone else, and building for a world where agents orchestrate other agents without explicit instructions.",
+  "_meta": {
+    "vertical": "ai_agents",
+    "brief_id": 384,
+    "brief_date": "2026-06-01 01:32:47",
+    "signal_count": 186,
+    "source_count": 7,
+    "generated_at": "2026-05-31T22:00:32.347762"
+  }
+}
