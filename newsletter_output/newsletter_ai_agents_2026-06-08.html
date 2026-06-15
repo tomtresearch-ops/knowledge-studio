@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Agents Brief — June 8, 2026</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Georgia', 'Times New Roman', serif;
+    background: #0a0a0a;
+    color: #e8e4df;
+    line-height: 1.75;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 40px 24px;
+  }
+
+  .header {
+    padding-bottom: 28px;
+    margin-bottom: 32px;
+    border-bottom: 1px solid #2a2520;
+  }
+
+  .masthead {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 11px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #7a6f63;
+    margin-bottom: 16px;
+  }
+
+  .issue-title {
+    font-size: 26px;
+    font-weight: 700;
+    color: #f0ebe4;
+    line-height: 1.35;
+    margin-bottom: 12px;
+  }
+
+  .issue-subtitle {
+    font-size: 16px;
+    color: #a89e93;
+    line-height: 1.6;
+    font-style: italic;
+  }
+
+  .issue-meta {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 12px;
+    color: #5a5049;
+    margin-top: 16px;
+  }
+
+  .editorial {
+    font-size: 16px;
+    color: #c4bdb3;
+    line-height: 1.85;
+    margin-bottom: 36px;
+  }
+
+  .signal {
+    margin-bottom: 32px;
+  }
+
+  .signal-number {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #4a9e8e;
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+
+  .signal-headline {
+    font-size: 19px;
+    font-weight: 700;
+    color: #f0ebe4;
+    line-height: 1.4;
+    margin-bottom: 12px;
+  }
+
+  .signal-body {
+    font-size: 15.5px;
+    color: #b5ada3;
+    line-height: 1.85;
+  }
+
+  .signal-whycare {
+    font-size: 15px;
+    color: #4a9e8e;
+    line-height: 1.75;
+    margin-top: 12px;
+    font-weight: 500;
+  }
+
+  .divider {
+    border: none;
+    border-top: 1px solid #1e1a16;
+    margin: 32px 0;
+  }
+
+  .bottomline {
+    background: #111;
+    border-left: 3px solid #4a9e8e;
+    padding: 20px 24px;
+    margin: 36px 0;
+    border-radius: 0 4px 4px 0;
+  }
+
+  .bottomline-label {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 10px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: #4a9e8e;
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+
+  .bottomline-text {
+    font-size: 15.5px;
+    color: #c4bdb3;
+    line-height: 1.8;
+  }
+
+  .cta-row {
+    text-align: center;
+    margin: 36px 0;
+  }
+
+  .cta-button {
+    display: inline-block;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    text-decoration: none;
+    padding: 12px 28px;
+    border-radius: 4px;
+    margin: 0 6px;
+  }
+
+  .cta-primary {
+    background: #4a9e8e;
+    color: #0a0a0a;
+  }
+
+  .cta-secondary {
+    background: #1e1a16;
+    color: #4a9e8e;
+  }
+
+  .footer {
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid #1e1a16;
+    text-align: center;
+  }
+
+  .footer-text {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 11px;
+    color: #4a443d;
+    line-height: 2;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <div class="header">
+    <div class="masthead">AI Agents Brief</div>
+    <div class="issue-title">The Agent Reliability Reckoning: Why Bigger Isn't Working Anymore</div>
+    <div class="issue-subtitle">Production teams are ditching infinite context for bounded execution, graph-based retrieval is replacing raw token windows, and infrastructure is eating the agent stack.</div>
+    <div class="issue-meta">June 8, 2026 &middot; 3 min read</div>
+  </div>
+
+  <div class="editorial">
+    The agent dream is hitting reality. Teams shipping agents at scale have stopped chasing smarter models and started building guardrails instead. Three signals converge this week around the same truth: the gap between demo and production is widening, and it's forcing a fundamental shift in how we architect agent systems.
+  </div>
+
+  
+  <div class="signal">
+    <div class="signal-number">01</div>
+    <div class="signal-headline">Graph-Based Retrieval Is Becoming Table Stakes</div>
+    <div class="signal-body">Graphify's breakthrough with Claude Code shows a 60% token reduction while improving accuracy by converting codebases into queryable knowledge graphs. This isn't theoretical optimization anymore—it's the pattern winning in production coding agents. Teams are realizing that semantic indexing and structured retrieval beat raw context windows every time.</div>
+    <div class="signal-whycare">Start treating your agent's memory like a database, not a filing cabinet. If you're still loading full codebases or documents into context windows, you're losing to teams using indexed retrieval.</div>
+  </div>
+  <hr class="divider">
+
+  <div class="signal">
+    <div class="signal-number">02</div>
+    <div class="signal-headline">LangGraph Won. Now the Problem Is Operations.</div>
+    <div class="signal-body">Multiple production teams (Row-Bot with 10 subsystems, Sotis reliability library, email processors handling 15K messages daily) have converged on LangGraph for deterministic state machines. But Reddit signals reveal the real crisis: existing frameworks have observability gaps. Teams are building their own monitoring layers because production agents are flying blind.</div>
+    <div class="signal-whycare">If you're choosing a framework, pick one with operational visibility built in. The next generation of agent infrastructure will be won by whoever solves monitoring, cost tracking, and version control—not by whoever adds more reasoning steps.</div>
+  </div>
+  <hr class="divider">
+
+  <div class="signal">
+    <div class="signal-number">03</div>
+    <div class="signal-headline">Agent Cost Reduction Is Now the Survival Question</div>
+    <div class="signal-body">Builder threads have shifted from 'does it work?' to 'can we afford this at scale?' Multiple teams report struggling with inference costs, and context persistence remains a hard wall in production. The teams winning are those using cheaper models for routing, expensive models for execution, and aggressive caching strategies.</div>
+    <div class="signal-whycare">Audit your agent's cost-per-execution now. Bundles that include cost optimization strategies will outcompete frameworks requiring custom engineering. This is becoming a competitive moat.</div>
+  </div>
+  
+
+
+  <div class="bottomline">
+    <div class="bottomline-label">The Bigger Picture</div>
+    <div class="bottomline-text">
+      Three patterns emerge across these signals: (1) the agent reliability crisis is real, and the solution isn't smarter models—it's bounded execution with explicit failure modes; (2) infrastructure is consolidating around MCP and LangGraph, but the gap between proof-of-concept and production is actually widening; (3) operational layers (monitoring, governance, version control, cost optimization) are now the unsolved problems that capture real value. The best agents today are heavily constrained agents. Production teams have learned that autonomous reasoning needs deterministic railguards, not emergent intelligence.
+    </div>
+  </div>
+
+  <div class="cta-row">
+    <a href="#" class="cta-button cta-primary">Read the Full Brief</a>
+    
+  </div>
+
+  <div class="footer">
+    <div class="footer-text">
+      AI Agents Brief<br>
+      AI-curated intelligence on autonomous agents, agent frameworks, and the agent economy<br>
+      186 signals processed from 7 sources
+    </div>
+  </div>
+
+</div>
+
+</body>
+</html>

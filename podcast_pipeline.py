@@ -368,15 +368,15 @@ def run_pipeline(vertical="ai_tech"):
     # 8. Copy to iCloud
     copy_to_icloud(mp3_path)
 
-    # 9. Deploy to Netlify
-    deploy_to_netlify()
+    # 9. Deploy to GitHub Pages
+    deploy_to_github_pages()
 
     print(f"  ✅ Done — {vertical} podcast episode ready")
     return True
 
 
-def deploy_to_netlify():
-    """Run deploy_podcast.py to update RSS feeds and push to Netlify."""
+def deploy_to_github_pages():
+    """Run deploy_podcast.py to update RSS feeds and push to GitHub Pages."""
     try:
         deploy_script = os.path.join(PROJECT_DIR, "deploy_podcast.py")
         if os.path.exists(deploy_script):
@@ -385,13 +385,13 @@ def deploy_to_netlify():
                 capture_output=True, text=True, timeout=300
             )
             if result.returncode == 0:
-                print("  📡 Netlify deploy complete")
+                print("  📡 GitHub Pages deploy complete")
             else:
-                print(f"  ⚠️  Netlify deploy failed: {result.stderr[-200:]}")
+                print(f"  ⚠️  GitHub Pages deploy failed: {result.stderr[-200:]}")
         else:
-            print("  ⚠️  deploy_podcast.py not found, skipping Netlify deploy")
+            print("  ⚠️  deploy_podcast.py not found, skipping GitHub Pages deploy")
     except Exception as e:
-        print(f"  ⚠️  Netlify deploy error: {e}")
+        print(f"  ⚠️  GitHub Pages deploy error: {e}")
 
 
 if __name__ == "__main__":

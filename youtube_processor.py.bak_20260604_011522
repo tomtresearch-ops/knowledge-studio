@@ -238,16 +238,16 @@ class YouTubeProcessor:
         self.claude_client = anthropic.Anthropic(api_key=CLAUDE_API_KEY)
         self.init_database()
 
+    def _is_gpu_busy(self) -> bool:
+        """Return True if mflux or other heavy GPU processes are running."""
+        return _is_gpu_busy()
+
         self.pending_files = set()
         self.batch_timer = None
         self._queue_worker_stop_event = threading.Event()
         self._queue_worker_thread: Optional[threading.Thread] = None
         self._last_transcript_fetch_timestamp: float = 0.0
         self._start_queue_worker()
-
-    def _is_gpu_busy(self) -> bool:
-        """Return True if mflux or other heavy GPU processes are running."""
-        return _is_gpu_busy()
     
     def _get_connection(self) -> sqlite3.Connection:
         """Get SQLite connection with dict row factory."""
