@@ -1,0 +1,74 @@
+[
+  {
+    "id": "noun_raw",
+    "take": 0,
+    "text": "This is a stable chemical compound that resists breakdown over time.",
+    "wav": "noun_raw_take0.wav"
+  },
+  {
+    "id": "noun_raw",
+    "take": 1,
+    "text": "This is a stable chemical compound that resists breakdown over time.",
+    "wav": "noun_raw_take1.wav"
+  },
+  {
+    "id": "noun_raw",
+    "take": 2,
+    "text": "This is a stable chemical compound that resists breakdown over time.",
+    "wav": "noun_raw_take2.wav"
+  },
+  {
+    "id": "verb_raw",
+    "take": 0,
+    "text": "These small errors compound over time into much bigger problems.",
+    "wav": "verb_raw_take0.wav"
+  },
+  {
+    "id": "verb_raw",
+    "take": 1,
+    "text": "These small errors compound over time into much bigger problems.",
+    "wav": "verb_raw_take1.wav"
+  },
+  {
+    "id": "verb_raw",
+    "take": 2,
+    "text": "These small errors compound over time into much bigger problems.",
+    "wav": "verb_raw_take2.wav"
+  },
+  {
+    "id": "noun_resp",
+    "take": 0,
+    "text": "This is a stable chemical COM-pound that resists breakdown over time.",
+    "wav": "noun_resp_take0.wav"
+  },
+  {
+    "id": "noun_resp",
+    "take": 1,
+    "text": "This is a stable chemical COM-pound that resists breakdown over time.",
+    "wav": "noun_resp_take1.wav"
+  },
+  {
+    "id": "noun_resp",
+    "take": 2,
+    "text": "This is a stable chemical COM-pound that resists breakdown over time.",
+    "wav": "noun_resp_take2.wav"
+  },
+  {
+    "id": "verb_resp",
+    "take": 0,
+    "text": "These small errors com-POUND over time into much bigger problems.",
+    "wav": "verb_resp_take0.wav"
+  },
+  {
+    "id": "verb_resp",
+    "take": 1,
+    "text": "These small errors com-POUND over time into much bigger problems.",
+    "wav": "verb_resp_take1.wav"
+  },
+  {
+    "id": "verb_resp",
+    "take": 2,
+    "text": "These small errors com-POUND over time into much bigger problems.",
+    "wav": "verb_resp_take2.wav"
+  }
+]
