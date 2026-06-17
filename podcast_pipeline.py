@@ -15,6 +15,7 @@ import subprocess
 import numpy as np
 import soundfile as sf
 from datetime import datetime
+from pronounce_classes import normalize as normalize_sci_tokens
 from dotenv import load_dotenv
 
 load_dotenv(os.path.join(os.path.dirname(os.path.abspath(__file__)), '.env'))
@@ -162,6 +163,7 @@ def clean_script_for_tts(script):
     script = re.sub(r'^---+\s*$', '', script, flags=re.MULTILINE)  # horizontal rules
     script = re.sub(r'\n{3,}', '\n\n', script)
     script = normalize_text_for_tts(script)
+    script = normalize_sci_tokens(script)  # expand TMEM174-style gene/acronym tokens to spoken form
     return script.strip()
 
 
