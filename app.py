@@ -2941,6 +2941,15 @@ def stats():
             return f.read()
     except FileNotFoundError:
         return '<h1>Stats page not found</h1><p><a href="/">← Back to Capture</a></p>'
+@app.route('/reports')
+def reports():
+    try:
+        with open('reports.html', 'r') as f:
+            return f.read()
+    except FileNotFoundError:
+        return '<h1>Reports page not found</h1><p><a href="/">← Back to Capture</a></p>'
+
+
 
 @app.route('/api/stats', methods=['GET'])
 def get_stats():

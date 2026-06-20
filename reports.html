@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Knowledge Studio — Reports</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='18' fill='%231a1a50'/><text y='55' x='50' font-size='58' text-anchor='middle' font-family='system-ui' fill='white' font-weight='bold'>KS</text></svg>">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            color: #e2e8f0;
+            min-height: 100vh;
+        }
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 32px;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            background: rgba(0,0,0,0.25);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .logo { font-size: 18px; font-weight: 700; color: #a78bfa; letter-spacing: 0.03em; }
+        nav.nav { display: flex; gap: 20px; align-items: center; flex-wrap: wrap; }
+        nav.nav a {
+            color: #94a3b8;
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 500;
+            padding: 4px 0;
+            border-bottom: 2px solid transparent;
+            transition: color 0.15s, border-color 0.15s;
+        }
+        nav.nav a:hover { color: #e2e8f0; }
+        nav.nav a.active { color: #a78bfa; border-bottom-color: #a78bfa; }
+
+        .layout {
+            display: flex;
+            height: calc(100vh - 57px);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 280px;
+            min-width: 220px;
+            border-right: 1px solid rgba(255,255,255,0.07);
+            padding: 24px 16px;
+            overflow-y: auto;
+            flex-shrink: 0;
+        }
+        .sidebar h2 {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: #64748b;
+            margin-bottom: 16px;
+            padding: 0 8px;
+        }
+        .report-card {
+            padding: 12px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: all 0.15s;
+            margin-bottom: 6px;
+        }
+        .report-card:hover { background: rgba(167,139,250,0.08); border-color: rgba(167,139,250,0.15); }
+        .report-card.active { background: rgba(167,139,250,0.12); border-color: rgba(167,139,250,0.3); }
+        .report-card .tag {
+            font-size: 10px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #7c3aed;
+            background: rgba(124,58,237,0.15);
+            padding: 2px 7px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-bottom: 6px;
+        }
+        .report-card .title { font-size: 13px; font-weight: 600; color: #e2e8f0; line-height: 1.35; }
+        .report-card .meta { font-size: 11px; color: #64748b; margin-top: 4px; }
+
+        /* Main content */
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 36px 48px;
+            max-width: 820px;
+        }
+        .content h1 { font-size: 26px; font-weight: 700; color: #f1f5f9; margin-bottom: 6px; }
+        .content .subtitle { font-size: 13px; color: #64748b; margin-bottom: 32px; }
+        .content h2 {
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #a78bfa;
+            margin: 32px 0 12px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid rgba(167,139,250,0.2);
+        }
+        .content h3 { font-size: 14px; font-weight: 600; color: #94a3b8; margin: 20px 0 8px; }
+        .content p { font-size: 14px; line-height: 1.7; color: #cbd5e1; margin-bottom: 12px; }
+        .content ul, .content ol { padding-left: 20px; margin-bottom: 12px; }
+        .content li { font-size: 14px; line-height: 1.7; color: #cbd5e1; margin-bottom: 4px; }
+        .content strong { color: #f1f5f9; font-weight: 600; }
+        .content a { color: #7c3aed; text-decoration: none; }
+        .content a:hover { text-decoration: underline; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 16px 0 24px;
+            font-size: 13px;
+        }
+        th {
+            text-align: left;
+            padding: 8px 12px;
+            background: rgba(255,255,255,0.05);
+            color: #94a3b8;
+            font-weight: 600;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+        td {
+            padding: 10px 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            color: #cbd5e1;
+            vertical-align: top;
+        }
+        td:first-child { color: #94a3b8; }
+        td strong { color: #f1f5f9; }
+        tr:hover td { background: rgba(255,255,255,0.02); }
+
+        .callout {
+            background: rgba(167,139,250,0.07);
+            border-left: 3px solid #7c3aed;
+            border-radius: 0 8px 8px 0;
+            padding: 14px 18px;
+            margin: 16px 0;
+            font-size: 13px;
+            line-height: 1.65;
+            color: #cbd5e1;
+        }
+        .callout strong { color: #c4b5fd; }
+
+        .sources {
+            margin-top: 36px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.07);
+        }
+        .sources h3 { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: #64748b; margin-bottom: 10px; }
+        .sources a { display: block; font-size: 12px; color: #6366f1; margin-bottom: 5px; text-decoration: none; }
+        .sources a:hover { text-decoration: underline; }
+
+        .empty { padding: 80px 48px; color: #475569; font-size: 14px; }
+    </style>
+</head>
+<body>
+<header>
+    <span class="logo">KS</span>
+    <nav class="nav">
+        <a href="/">Capture</a>
+        <a href="/library">Library</a>
+        <a href="http://mac-studio.local:8888">Images</a>
+        <a href="/channels">Channels</a>
+        <a href="/briefing">Briefing Room</a>
+        <a href="/intelligence">Intelligence</a>
+        <a href="/stats">Stats</a>
+        <a href="/studio">Studio</a>
+        <a href="/library/captures">Captures</a>
+        <a href="/reports" class="active">Reports</a>
+    </nav>
+</header>
+
+<div class="layout">
+    <div class="sidebar">
+        <h2>Research Reports</h2>
+        <div class="report-card active" onclick="showReport('creatine')">
+            <span class="tag">Health</span>
+            <div class="title">Creatine Protocol</div>
+            <div class="meta">Jun 20, 2026 · KS + Web research</div>
+        </div>
+        <!-- Future reports inject here -->
+    </div>
+
+    <div class="content" id="report-content">
+        <!-- CREATINE REPORT -->
+        <h1>Creatine Protocol</h1>
+        <p class="subtitle">Compiled Jun 20, 2026 · KS library (Candow/DOAC, Rhonda Patrick FoundMyFitness, DeLauer, Kelley MD, Azadi, Tim Ferriss) + web research</p>
+
+        <h2>Best Kind</h2>
+        <p><strong>Creatine monohydrate. Full stop.</strong> 30+ years of human research. Cheapest. Most studied. A 2025 RCT confirmed monohydrate and HCl produce identical strength and body composition results in elite athletes. HCl has higher water solubility but no meaningful absorption advantage — the "38x more soluble" claim doesn't translate to better outcomes. Only reason to consider HCl: GI distress with monohydrate, which affects a small minority.</p>
+        <p>Look for: pure creatine monohydrate, <strong>Creapure-certified</strong> if you want German-sourced pharmaceutical grade (DeLauer's preferred).</p>
+
+        <h2>How Much</h2>
+        <table>
+            <thead>
+                <tr><th>Goal</th><th>Dose</th><th>Source</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Muscle / performance / baseline</td><td><strong>3–5g/day</strong></td><td>Candow (120+ papers), ISSN, Azadi</td></tr>
+                <tr><td>Bone protection (40+)</td><td><strong>8–12g/day</strong></td><td>Dr. Darren Candow specifically</td></tr>
+                <tr><td>Brain / cognitive enhancement</td><td><strong>10g/day</strong></td><td>Rhonda Patrick — 10g doubles brain creatine vs 2–4g (neuroimaging confirmed)</td></tr>
+                <tr><td>Sleep deprivation / acute stress</td><td><strong>20–25g that day</strong></td><td>Rhonda Patrick travel protocol; 2022 <em>Scientific Reports</em> study</td></tr>
+            </tbody>
+        </table>
+        <div class="callout">
+            <strong>Rhonda Patrick's actual protocol:</strong> 10g daily baseline, bumps to 20–25g when sleep-deprived or traveling. Most evidence-informed stack right now for someone optimizing both body and brain.
+        </div>
+        <p><strong>Loading phase:</strong> Optional. 20g/day × 5–7 days saturates faster. Skip it and take 5g daily — same saturation point in ~3–4 weeks. No performance difference at steady state.</p>
+
+        <h2>When</h2>
+        <p>Consistency &gt; timing. That's the consistent finding across all sources.</p>
+        <ul>
+            <li><strong>On training days:</strong> Post-workout slight edge — muscle blood flow is higher, nutrient uptake enhanced.</li>
+            <li><strong>On rest days:</strong> Morning with food. Some evidence carbs improve uptake.</li>
+            <li><strong>If taking 10g+:</strong> Split doses — 5g AM / 5g PM. Rhonda Patrick's approach. Better GI tolerance, more consistent absorption.</li>
+            <li><strong>Timing note:</strong> Creatine absorbs in 1–2 hours, peaks up to 4 hours. For a pre-workout cognitive edge, take 60–90 min before.</li>
+        </ul>
+
+        <h2>Key Signals from Your Library</h2>
+        <ul>
+            <li><strong>DeLauer [KS 731]:</strong> Frames creatine as the underrated longevity compound — cellular energy buffer against mitochondrial decline. Older adults see proportionally bigger benefits than young athletes because cognitive aging is fundamentally an energy problem.</li>
+            <li><strong>Dr. Kelley, ER doc [KS 928]:</strong> Flag it to your doctor if taking 10g+. Creatine's metabolite (creatinine) elevates in bloodwork and can falsely suggest kidney damage, triggering unnecessary workups. Kidneys are fine — the number isn't.</li>
+            <li><strong>Alzheimer's pilot (2025):</strong> 20g/day × 8 weeks → +11% brain creatine, +17% working memory. Early but significant signal.</li>
+            <li><strong>Vegans / vegetarians:</strong> Dramatically larger response — lower dietary baseline means higher ceiling for supplementation benefit.</li>
+        </ul>
+
+        <h2>Bottom Line</h2>
+        <div class="callout">
+            Creatine monohydrate, <strong>5g minimum daily, 10g if brain function matters to you.</strong> Post-workout or morning, split if 10g+. Don't overthink timing. Consistency is the whole game — it saturates over weeks, not hours.
+        </div>
+
+        <div class="sources">
+            <h3>Sources</h3>
+            <a href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC12291177/" target="_blank">Creatine monohydrate vs HCl RCT — NCBI 2025</a>
+            <a href="https://fitnessvolt.com/rhonda-patrick-creatine-game-changer-brain-function/" target="_blank">Dr. Rhonda Patrick: 10g/day brain dosing — Fitness Volt</a>
+            <a href="https://x.com/foundmyfitness/status/1907498458388508819" target="_blank">Rhonda Patrick on X: 10g doubles brain creatine vs 2–4g</a>
+            <a href="https://www.foundmyfitness.com/topics/creatine" target="_blank">FoundMyFitness: Creatine topic</a>
+            <a href="https://www.transparentlabs.com/blogs/all/creatine-timing" target="_blank">Creatine timing research — Transparent Labs</a>
+            <span style="font-size:12px; color:#475569; margin-top: 8px; display:block;">KS clips: DeLauer [731], Candow/DOAC [3060], FoundMyFitness [2975], Kelley MD [928], Azadi [644], Tim Ferriss [70]</span>
+        </div>
+    </div>
+</div>
+
+<script>
+function showReport(id) {
+    document.querySelectorAll('.report-card').forEach(c => c.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+    // Future: swap content pane for multi-report support
+}
+</script>
+</body>
+</html>
