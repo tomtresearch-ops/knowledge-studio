@@ -189,10 +189,16 @@
             <div class="title">Creatine Protocol</div>
             <div class="meta">Jun 20, 2026 · KS + Web research</div>
         </div>
+        <div class="report-card" onclick="showReport('jarvis')">
+            <span class="tag">Strategy · Internal</span>
+            <div class="title">The Race to the Personal &quot;Jarvis&quot; On-Ramp</div>
+            <div class="meta">Jun 23, 2026 · Web research + Tech Timelines</div>
+        </div>
         <!-- Future reports inject here -->
     </div>
 
     <div class="content" id="report-content">
+    <div class="report-pane" id="pane-creatine">
         <!-- CREATINE REPORT -->
         <h1>Creatine Protocol</h1>
         <p class="subtitle">Compiled Jun 20, 2026 · KS library (Candow/DOAC, Rhonda Patrick FoundMyFitness, DeLauer, Kelley MD, Azadi, Tim Ferriss) + web research</p>
@@ -250,13 +256,203 @@
             <span style="font-size:12px; color:#475569; margin-top: 8px; display:block;">KS clips: DeLauer [731], Candow/DOAC [3060], FoundMyFitness [2975], Kelley MD [928], Azadi [644], Tim Ferriss [70]</span>
         </div>
     </div>
+    <div class="report-pane" id="pane-jarvis" style="display:none">
+        <h1>The Race to the Personal "Jarvis" On-Ramp — 2026 Landscape</h1>
+        <p class="subtitle">Research memo · Jun 23, 2026 · web research + Tech Timelines · INTERNAL</p>
+        <div class="callout"><p><strong>Editor's note (Tom, 2026-06-23) — read the white space through this lens:</strong> Jarvis's power is what it does for the <strong>living</strong> — the ultimate personal assistant. Digital Estate serves the dead's affairs, and even that (wrapping up an estate, a memorial avatar) ultimately benefits the <em>living</em>. So the estate/executor angle below is a <strong>go-to-market beachhead</strong> — urgency, willingness to pay, a fragmented market no incumbent touches, and a cascade into the whole household — <strong>not</strong> the core of the prize. The household cascade is the <em>bridge</em>: estate entry → living family already inside the product → living-person skins → Jarvis. Estate is the door; the living-person assistant is the house. Don't mistake the wedge for the value.</p></div>
+        <h2>1. Thesis</h2>
+<p>A personal agent is only as good as the data it's grounded in. The on-ramp leader is therefore whoever <strong>already custodies the most of your life</strong> — email, calendar, drive, docs, photos, accounts. Custody, not model quality, is the moat. The on-ramp matures in three steps: <strong>passive ingestion</strong> (apps that already hold your data become the foundation) → <strong>active interrogation</strong> (the agent asks a million questions, gets granted accounts/subscriptions/documents) → <strong>composed picture</strong> (a working model of the person). Leadership differs by cohort and there is real white space for a neutral cross-custodian aggregator.</p>
+<h2>2. Leaderboard</h2>
+<p>Ranked by <strong>(data-custody breadth) × (agent-access trajectory)</strong>.</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Player</th>
+<th>What they already hold</th>
+<th>Agent / access posture (2026)</th>
+<th>On-ramp strength</th>
+<th>Key gap</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><strong>Google</strong> (Workspace + Gemini)</td>
+<td>Gmail, Calendar, Drive/Docs, Photos, Chrome, Maps, Android — the deepest single custody footprint</td>
+<td><strong>Workspace Intelligence</strong> (Apr 22 2026) reads across the full footprint <em>by default</em>; <strong>Gemini Spark</strong> = always-on personal agent executing across Gmail/Docs/Sheets/Slides/web</td>
+<td>Highest — custody + native agent in one account</td>
+<td>Consumer trust on "reads everything by default"; cross-platform (non-Google) data still external</td>
+</tr>
+<tr>
+<td>2</td>
+<td><strong>Microsoft</strong> (365 + Copilot)</td>
+<td>Outlook, Teams, OneDrive/SharePoint, Office docs — dominates <em>work</em> identity</td>
+<td><strong>Agent 365</strong> (GA May 2026) + <strong>Copilot Cowork</strong> + Copilot Studio; deep connector/federation graph (HubSpot, Notion, Moody's, GitHub, etc.)</td>
+<td>Very high for knowledge workers; strongest enterprise-grade agent governance</td>
+<td>Weak on <em>personal/home</em> life (no consumer photos/social/mobile OS custody)</td>
+</tr>
+<tr>
+<td>3</td>
+<td><strong>OpenAI</strong> (ChatGPT)</td>
+<td>No native custody — but <strong>connectors</strong> pull Gmail, Calendar, Contacts, Drive, Outlook, Box, Dropbox + cross-chat <strong>Memory</strong></td>
+<td>Connectors auto-referenced in chat; Memory composes a profile across chats + connected apps; proactive layer (Pulse → folded into scheduled tasks/daily briefing, Jun 2026)</td>
+<td>High <em>mindshare</em>, neutral-ish posture, fastest "composed picture" via memory</td>
+<td><strong>Borrows</strong> all data via OAuth; owns none — custody can be revoked; no OS/inbox of its own</td>
+</tr>
+<tr>
+<td>4</td>
+<td><strong>Apple</strong> (iCloud + Apple Intelligence)</td>
+<td>iCloud mail/photos/files, Messages, Health, Safari history, on-device everything — uniquely <em>intimate</em> custody</td>
+<td>Personalized Siri (personal context, on-screen awareness, app actions) <strong>repeatedly delayed → Spring 2026</strong> on new "V2" architecture</td>
+<td>Privacy-native, on-device, most intimate data</td>
+<td>Agent capability is <strong>late and unproven</strong>; execution risk is the story</td>
+</tr>
+<tr>
+<td>5</td>
+<td><strong>Anthropic</strong> (Claude + MCP)</td>
+<td>No custody — first-party connectors for Drive/Gmail/Calendar; <strong>485+ MCP integrations</strong> (Jun 2026); MCP is the open standard</td>
+<td>Read+create only on first-party Google connectors (no move/rename/delete); breadth via MCP ecosystem; doesn't train on connector data</td>
+<td>Best <em>open-protocol</em> position; neutral, privacy-forward</td>
+<td>Thin native memory/proactivity; read-mostly; no consumer custody</td>
+</tr>
+<tr>
+<td>6</td>
+<td><strong>Notion</strong></td>
+<td>Workspace docs/wiki/db — custody of <em>structured knowledge work</em>, not life</td>
+<td><strong>AgentOS</strong> (May 2026): named custom agents, workspace-as-memory, schedules/triggers; connectors to Slack, Gmail, Outlook, Drive</td>
+<td>Strong for self-organized creators/operators</td>
+<td>Custom agents stateless between runs (DIY memory); life data lives elsewhere</td>
+</tr>
+<tr>
+<td>7</td>
+<td><strong>Amazon</strong> (Alexa+)</td>
+<td>Purchase history, home/IoT, some account life</td>
+<td>Alexa+ (GA US Feb 2026) agentic actions (book Uber/repairs), remembers prefs + Amazon account data; model-agnostic (Nova + Claude)</td>
+<td>Strong <em>home/voice</em> surface</td>
+<td>Shallow document/work custody; app experience weak</td>
+</tr>
+<tr>
+<td>8</td>
+<td><strong>Meta</strong></td>
+<td>Social graph, messaging (WhatsApp/IG/Messenger), photos</td>
+<td>Meta AI assistant embedded in apps; consumer-scale but social-only</td>
+<td>Massive reach, weak <em>productivity</em> custody</td>
+<td>No work/email/drive/calendar; not a life-OS on-ramp</td>
+</tr>
+</tbody>
+</table>
+<h2>3. By Cohort — who is the natural on-ramp</h2>
+<table>
+<thead>
+<tr>
+<th>Cohort</th>
+<th>Natural on-ramp</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Knowledge workers</strong></td>
+<td><strong>Google</strong> or <strong>Microsoft</strong> (whichever owns their work identity)</td>
+<td>Email + calendar + drive already there; agent ships inside the same account. Microsoft if employer-bound; Google if Workspace-native.</td>
+</tr>
+<tr>
+<td><strong>Writers / creators</strong> (large body of original long-form scattered across drive, email, local files, publishing platforms)</td>
+<td><strong>No clean winner — the gap.</strong> Closest: <strong>OpenAI/Claude via connectors</strong> (vendor-neutral pull) or <strong>Notion</strong> (if already self-organized there)</td>
+<td>Their corpus is <em>fragmented by definition</em> — Drive + local + email + Substack/YT/CMS. No single custodian holds it, so connector-based composition beats custody. <strong>This is the white-space cohort.</strong></td>
+</tr>
+<tr>
+<td><strong>Executives</strong></td>
+<td><strong>Microsoft</strong> (corporate) backed by an EA workflow</td>
+<td>Identity, scheduling, comms all in 365; governance + delegation matter more than consumer features.</td>
+</tr>
+<tr>
+<td><strong>Everyday consumers</strong></td>
+<td><strong>Apple</strong> (iPhone-centric) or <strong>Google</strong> (Android-centric); <strong>Amazon</strong> in the home</td>
+<td>Whoever owns the phone OS owns the passive-ingestion layer. Apple wins intimacy <em>if/when</em> Siri ships; Google wins capability now.</td>
+</tr>
+</tbody>
+</table>
+<h2>4. Mechanism / Maturity Curve</h2>
+<p><strong>Passive ingestion → Active interrogation → Composed picture.</strong></p>
+<table>
+<thead>
+<tr>
+<th>Stage</th>
+<th>What it is</th>
+<th>Who's there today</th>
+<th>Enabling tech</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>1. Passive ingestion</strong></td>
+<td>App already stores/gleans your data; becomes the foundation with no extra work</td>
+<td>Google (Workspace Intelligence, default-on), Microsoft (Graph), Apple (on-device index)</td>
+<td>Native custody; identity graph; on-device indexing</td>
+</tr>
+<tr>
+<td><strong>2. Active interrogation</strong></td>
+<td>Agent asks questions, is <em>granted</em> access to documents/subscriptions/accounts beyond the home turf</td>
+<td>OpenAI &amp; Anthropic (OAuth <strong>connectors</strong>), Microsoft (<strong>federated connectors</strong>), Gemini Spark (cross-app goals)</td>
+<td><strong>MCP</strong> (open standard, 485+ Claude integrations), OAuth connectors, Copilot connector graph</td>
+</tr>
+<tr>
+<td><strong>3. Composed picture</strong></td>
+<td>A persistent working model of the person; proactive, cross-source</td>
+<td>OpenAI (cross-chat <strong>Memory</strong> + Pulse/scheduled briefings), Gemini Spark (autonomous background goals), Notion (workspace-as-memory)</td>
+<td>Long-term memory primitives, proactive scheduling, agent runtimes</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Read:</strong> Custody players (Google/MS/Apple) own Stage 1 but are gated to <em>their own</em> data. Model players (OpenAI/Anthropic) leapfrog to Stage 2–3 via connectors but <strong>own none of the data</strong> and can be cut off. Nobody yet owns a <em>neutral</em> Stage-3 composed picture spanning all custodians.</p>
+<h2>5. White Space — the independent "Jarvis on-ramp" opening</h2>
+<p>What no incumbent will build because it cannibalizes their lock-in:</p>
+<ul>
+<li><strong>Neutrality / cross-custodian composition.</strong> Every leader composes only <em>their</em> slice (Google won't ingest your Apple Health; Apple won't read your Workspace). A neutral aggregator that legitimately holds OAuth to <em>all</em> custodians + local files + publishing platforms owns the only <strong>complete</strong> composed picture. This is precisely the writer/creator gap.</li>
+<li><strong>Portability as a product.</strong> Incumbents optimize for lock-in; neutral formats / model routers / exportable memory are an explicitly <em>anti-incumbent</em> feature. A user-owned, portable "life graph" is structurally something only an independent can sell.</li>
+<li><strong>The estate / executor wedge.</strong> Digital inheritance is <strong>fragmented and broken</strong> in 2026: RUFADAA gives only partial fiduciary access, platforms default to ToS, no cross-platform death-verification standard, legacy tools have low adoption. An aggregator that already custodies cross-account access for the <em>living</em> user is the natural rails for <strong>executor handoff</strong> — a wedge no incumbent touches (it's adjacent to none of their core businesses, and OpenID is openly calling for standards). Strong top-of-funnel: the executor use case cascades to the whole household.</li>
+<li><strong>Active-interrogation as the moat.</strong> Incumbents do passive ingestion well; none aggressively run Stage-2 interrogation (asking the million questions, requesting subscriptions/accounts) because it feels invasive <em>for them</em>. A trusted neutral party whose <em>entire value prop</em> is the composed picture can earn that permission where a data-monetizing incumbent can't.</li>
+</ul>
+<p><strong>Bottom line on white space:</strong> the opening is not a better model — it's a <strong>neutral, portable, cross-custodian composer with an estate/executor wedge</strong>. That is the one position none of the eight leaders can occupy without undermining their own moat.</p>
+<h2>6. Sources</h2>
+<ul>
+<li>https://gemini.google/overview/agent/spark/</li>
+<li>https://www.technology.org/2026/04/23/google-gemini-workspace-intelligence/</li>
+<li>https://blog.google/products-and-platforms/products/workspace/gemini-workspace-updates-march-2026/</li>
+<li>https://www.microsoft.com/en-us/security/blog/2026/05/01/microsoft-agent-365-now-generally-available-expands-capabilities-and-integrations/</li>
+<li>https://www.microsoft.com/en-us/microsoft-365/blog/2026/05/05/copilot-cowork-from-conversation-to-action-across-skills-integrations-and-devices/</li>
+<li>https://learn.microsoft.com/en-us/microsoft-365/copilot/connectors/overview</li>
+<li>https://www.apple.com/apple-intelligence/</li>
+<li>https://www.macrumors.com/2025/06/12/apple-intelligence-siri-spring-2026/</li>
+<li>https://ia.acs.org.au/article/2026/apple-reveals-the-ai-behind-siri-s-big-2026-upgrade.html</li>
+<li>https://help.openai.com/en/articles/11487775-connectors-in-chatgpt</li>
+<li>https://openai.com/index/introducing-chatgpt-pulse/</li>
+<li>https://help.openai.com/en/articles/12293630-chatgpt-pulse</li>
+<li>https://support.claude.com/en/articles/11176164-use-connectors-to-extend-claude-s-capabilities</li>
+<li>https://support.claude.com/en/articles/10166901-use-google-workspace-connectors</li>
+<li>https://github.com/rdmgator12/awesome-claude-connectors</li>
+<li>https://techcrunch.com/2026/05/13/notion-just-turned-its-workspace-into-a-hub-for-ai-agents/</li>
+<li>https://www.notion.com/help/guides/get-started-with-your-personal-agent-in-notion</li>
+<li>https://techcrunch.com/2026/02/04/alexa-amazons-ai-assistant-is-now-available-to-everyone-in-the-u-s/</li>
+<li>https://www.cnbc.com/2026/02/04/amazon-alexa-plus-us-releas.html</li>
+<li>https://openid.net/why-digital-estates-need-standards-and-why-we-need-them-now/</li>
+<li>https://en.wikipedia.org/wiki/Digital_inheritance</li>
+<li>https://www.americanbar.org/groups/real_property_trust_estate/resources/estate-planning/digital-property/</li>
+<li>https://www.constellationr.com/insights/news/how-avoid-vendor-lock-ai-age</li>
+</ul>
+    </div>
+    </div>
 </div>
 
 <script>
 function showReport(id) {
     document.querySelectorAll('.report-card').forEach(c => c.classList.remove('active'));
-    event.currentTarget.classList.add('active');
-    // Future: swap content pane for multi-report support
+    if (window.event && event.currentTarget) event.currentTarget.classList.add('active');
+    document.querySelectorAll('.report-pane').forEach(p => p.style.display = 'none');
+    var pane = document.getElementById('pane-' + id);
+    if (pane) { pane.style.display = ''; var rc = document.getElementById('report-content'); if (rc) rc.scrollTop = 0; }
 }
 </script>
 </body>
