@@ -352,7 +352,7 @@ def main():
                         print(f"  Generating {vertical} podcast...")
                         result = subprocess.run(
                             [tts_python, pipeline_script, vertical],
-                            capture_output=True, text=True, timeout=1800
+                            capture_output=True, text=True, timeout=3600
                         )
                         if result.returncode == 0:
                             print(f"  {vertical} done")
@@ -485,7 +485,7 @@ def main():
                         print(f"  🎙️  Generating {vertical} podcast...")
                         result = subprocess.run(
                             [tts_python, pipeline_script, vertical],
-                            capture_output=True, text=True, timeout=1800
+                            capture_output=True, text=True, timeout=3600
                         )
                         if result.returncode == 0:
                             print(f"  ✅ {vertical} podcast done")

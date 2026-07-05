@@ -30,7 +30,7 @@ MAX_EPISODES_DEFAULT = 3
 # ── Branding (swap these when brand is finalized) ────────────────────────────
 BRAND_AUTHOR = "Knowledge Studio"  # TODO: replace with final brand name
 BRAND_OWNER_NAME = "Knowledge Studio"  # TODO: replace with final owner name
-BRAND_OWNER_EMAIL = "placeholder@example.com"  # TODO: replace with real email
+BRAND_OWNER_EMAIL = "mediaverticals@proton.me"
 
 FEED_CONFIG = {
     "ai_tech": {
