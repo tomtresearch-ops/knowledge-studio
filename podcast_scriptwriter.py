@@ -100,13 +100,19 @@ Target: 2000-3000 words (roughly 10-15 minutes when spoken). The current brief i
 """
 
 
-def rewrite_brief_as_script(brief_text: str, vertical: str = "ai_tech") -> str:
+def rewrite_brief_as_script(brief_text: str, vertical: str = "ai_tech",
+                            recent_episodes=None, judge_feedback=None) -> str:
     """
     Take a daily brief and rewrite it as a conversational podcast script.
 
     Args:
         brief_text: The raw daily brief content (markdown)
         vertical: The brief vertical (ai_tech, health_longevity, futures_trends)
+        recent_episodes: optional [(date_str, script_text)] of prior episodes,
+            newest first — gives the show memory so stories aren't retold as
+            breaking news and established facts don't regress to speculation
+        judge_feedback: optional list of issue dicts from the editorial judge;
+            when present this is a revision pass
 
     Returns:
         The podcast script as plain text (no markdown formatting)
@@ -124,19 +130,52 @@ def rewrite_brief_as_script(brief_text: str, vertical: str = "ai_tech") -> str:
 
     domain = vertical_context.get(vertical, "technology and trends")
 
+    continuity_block = ""
+    if recent_episodes:
+        prior = "\n\n".join(
+            f"--- EPISODE FROM {date_str} ---\n{text}"
+            for date_str, text in recent_episodes
+        )
+        continuity_block = f"""
+
+## Show memory — what recent episodes already covered
+
+The scripts below are this show's most recent published episodes. Continuity rules:
+- Do NOT re-cover a story a prior episode already covered unless today's brief contains a genuinely NEW development on it. If you do return to a story, explicitly frame the continuity ("as we covered in the last episode...") and lead with what's new — never retell it as breaking news.
+- Never regress an established fact to speculation. If a prior episode stated why something happened, that is settled on this show — build on it, don't re-open it with guesses.
+- Prefer today's fresh signals over re-treading prior ground.
+
+{prior}
+
+--- END OF PRIOR EPISODES ---
+"""
+
+    revision_block = ""
+    if judge_feedback:
+        problems = "\n".join(
+            f"- [{iss.get('type', 'issue')}] {iss.get('detail', '')} FIX: {iss.get('fix', '')}"
+            for iss in judge_feedback
+        )
+        revision_block = f"""
+
+## REVISION PASS — the editorial reviewer flagged these defects in the previous draft. Fix every one:
+
+{problems}
+"""
+
     user_prompt = f"""Here is today's {domain} daily brief. Rewrite it as a conversational podcast script following the system instructions.
 
 Remember: same signal density, different delivery. Guide the listener through the information. Connect the dots. Share your interpretation. Be honest about what's certain and what's your read.
 
 Target length: 2000-3000 words.
-
+{continuity_block}{revision_block}
 ---
 
 {brief_text}"""
 
     response = client.messages.create(
         model="claude-haiku-4-5-20251001",
-        max_tokens=4096,
+        max_tokens=8000,
         system=SCRIPTWRITER_SYSTEM_PROMPT,
         messages=[{"role": "user", "content": user_prompt}],
     )

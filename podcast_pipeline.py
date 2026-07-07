@@ -84,11 +84,43 @@ def episode_already_exists(brief_id):
 
 
 def generate_script(brief):
-    """Convert a brief to a podcast script using the scriptwriter."""
+    """Convert a brief to a podcast script using the scriptwriter.
+
+    QA gates (2026-07-06): the scriptwriter now sees the show's recent
+    episodes (continuity memory), and an editorial judge audits the draft for
+    re-covered stories / fact regression / truncation, with one revision pass.
+    """
     from podcast_scriptwriter import rewrite_brief_as_script
+    from podcast_qa import load_recent_scripts, judge_script, write_qa_report, _log as qa_log
+
+    recent = load_recent_scripts(brief['vertical'], n=3)
+    if recent:
+        print(f"  Continuity: feeding {len(recent)} prior episodes ({', '.join(d for d, _ in recent)})")
 
     print(f"  Generating script from brief #{brief['id']}...")
-    script = rewrite_brief_as_script(brief['content'], vertical=brief['vertical'])
+    script = rewrite_brief_as_script(brief['content'], vertical=brief['vertical'],
+                                     recent_episodes=recent)
+
+    verdict = judge_script(script, recent)
+    qa_report = {"vertical": brief['vertical'], "brief_id": brief['id'],
+                 "judge_first_pass": verdict}
+    if verdict.get("verdict") == "revise" and verdict.get("issues"):
+        qa_log(f"{brief['vertical']}: judge flagged {len(verdict['issues'])} issue(s), revising — "
+               + "; ".join(i.get('detail', '')[:120] for i in verdict['issues']))
+        script = rewrite_brief_as_script(brief['content'], vertical=brief['vertical'],
+                                         recent_episodes=recent,
+                                         judge_feedback=verdict['issues'])
+        verdict2 = judge_script(script, recent)
+        qa_report["judge_after_revision"] = verdict2
+        if verdict2.get("verdict") == "revise":
+            # Publish the revised draft anyway (a stalled daily show is worse),
+            # but leave a loud trace for review.
+            qa_log(f"{brief['vertical']}: STILL flagged after revision — publishing revised draft, review needed: "
+                   + "; ".join(i.get('detail', '')[:120] for i in verdict2.get('issues', [])))
+    else:
+        qa_log(f"{brief['vertical']}: judge pass on first draft")
+    write_qa_report(brief['vertical'], datetime.now().strftime("%Y-%m-%d"), qa_report)
+
     word_count = len(script.split())
     print(f"  Script: {word_count} words (~{word_count // 150} min spoken)")
 
@@ -216,46 +248,70 @@ def generate_audio_tts(script, voice_ref_path, output_wav_path):
     all_audio = []
     total_start = time.time()
 
+    # QA gate (2026-07-06): each chunk is validated (present, sane duration,
+    # no internal dead air) and retried up to MAX_CHUNK_RETRIES. A chunk that
+    # still fails aborts the run — previously a failed chunk was silently
+    # dropped, deleting a whole passage from the published episode.
+    from podcast_qa import chunk_audio_ok
+    MAX_CHUNK_RETRIES = 2
+
     for i, chunk in enumerate(chunks):
-        print(f"  Chunk {i+1}/{len(chunks)} ({len(chunk.split())} words)...", end="", flush=True)
-        start = time.time()
+        chunk_words = len(chunk.split())
+        chunk_audio = None
+        chunk_sr = None
 
-        # Generate to a temp file, then read it back
-        temp_prefix = os.path.join(AUDIO_DIR, f"_tts_chunk_{i}")
-        generate_audio(
-            text=chunk,
-            model=model,
-            ref_audio=voice_ref_path,
-            ref_text=ref_text,
-            lang_code="en",
-            file_prefix=temp_prefix,
-            audio_format="wav",
-            join_audio=True,
-            verbose=False,
-            temperature=0.7,
-            max_tokens=4096,
-        )
+        for attempt in range(1 + MAX_CHUNK_RETRIES):
+            label = f"  Chunk {i+1}/{len(chunks)} ({chunk_words} words)"
+            if attempt:
+                label += f" [retry {attempt}]"
+            print(f"{label}...", end="", flush=True)
+            start = time.time()
 
-        # Read back the generated chunk
-        chunk_file = f"{temp_prefix}.wav"
-        if os.path.exists(chunk_file):
-            chunk_audio, chunk_sr = sf.read(chunk_file)
+            # Generate to a temp file, then read it back
+            temp_prefix = os.path.join(AUDIO_DIR, f"_tts_chunk_{i}")
+            generate_audio(
+                text=chunk,
+                model=model,
+                ref_audio=voice_ref_path,
+                ref_text=ref_text,
+                lang_code="en",
+                file_prefix=temp_prefix,
+                audio_format="wav",
+                join_audio=True,
+                verbose=False,
+                temperature=0.7,
+                max_tokens=4096,
+            )
+
+            chunk_file = f"{temp_prefix}.wav"
             elapsed = time.time() - start
-            duration = len(chunk_audio) / chunk_sr
-            print(f" {duration:.0f}s audio in {elapsed:.0f}s")
+            if not os.path.exists(chunk_file):
+                print(f" FAILED — no audio produced ({elapsed:.0f}s)")
+                mx.clear_cache()
+                continue
 
-            all_audio.append(chunk_audio)
-            silence = np.zeros(int(chunk_sr * 0.5), dtype=chunk_audio.dtype)
-            all_audio.append(silence)
-
-            # Clean up temp file
+            candidate, candidate_sr = sf.read(chunk_file)
             os.remove(chunk_file)
-        else:
-            elapsed = time.time() - start
-            print(f" FAILED ({elapsed:.0f}s)")
+            ok, reason = chunk_audio_ok(candidate, candidate_sr, chunk_words)
+            duration = len(candidate) / candidate_sr
+            if ok:
+                print(f" {duration:.0f}s audio in {elapsed:.0f}s")
+                chunk_audio, chunk_sr = candidate, candidate_sr
+                mx.clear_cache()
+                break
+            print(f" REJECTED — {reason} ({elapsed:.0f}s)")
+            mx.clear_cache()
 
-        # Clear MLX cache between chunks
-        mx.clear_cache()
+        if chunk_audio is None:
+            raise RuntimeError(
+                f"TTS chunk {i+1}/{len(chunks)} failed QA after "
+                f"{1 + MAX_CHUNK_RETRIES} attempts — aborting so a gapped "
+                f"episode is never published"
+            )
+
+        all_audio.append(chunk_audio)
+        silence = np.zeros(int(chunk_sr * 0.5), dtype=chunk_audio.dtype)
+        all_audio.append(silence)
 
     if not all_audio:
         raise RuntimeError("No audio chunks were generated successfully")
@@ -363,6 +419,20 @@ def run_pipeline(vertical="ai_tech"):
     mp3_filename = f"podcast_{vertical}_{date_str}.mp3"
     mp3_path = os.path.join(AUDIO_DIR, mp3_filename)
     mp3_size = convert_to_mp3(wav_path, mp3_path)
+
+    # 6b. Final audio integrity gate (2026-07-06) — dead-air gaps, silent
+    # tails, truncated/runaway duration. Fails BEFORE register/deploy so a
+    # defective episode never reaches the feed.
+    from podcast_qa import audio_integrity_check, _log as qa_log
+    audio_ok, audio_issues = audio_integrity_check(mp3_path, len(script.split()))
+    if not audio_ok:
+        for issue in audio_issues:
+            qa_log(f"{vertical}: AUDIO GATE FAIL — {issue}")
+        raise RuntimeError(
+            f"Audio integrity gate failed for {mp3_filename}: {'; '.join(audio_issues)} "
+            f"— episode NOT registered or deployed"
+        )
+    qa_log(f"{vertical}: audio gate pass ({mp3_filename})")
 
     # 7. Register episode
     register_episode(brief, script, mp3_filename, mp3_size, duration)
