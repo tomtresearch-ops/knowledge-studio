@@ -8364,21 +8364,24 @@ def cleanup_shorts():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
-# Global flag to prevent concurrent refresh-all operations
-_refresh_all_in_progress = False
+# Guard against concurrent refresh-all runs. A timestamp (not a boolean) so a
+# hung run can't wedge the endpoint forever: locks older than
+# _REFRESH_ALL_MAX_SECONDS are treated as stale and the next caller proceeds.
+_refresh_all_started_at = None
+_REFRESH_ALL_MAX_SECONDS = 30 * 60
 
 @app.route('/api/refresh-all-feeds', methods=['POST'])
 def refresh_all_feeds():
     """Refresh all subscriptions: YouTube channels, newsletters, and podcasts."""
-    global _refresh_all_in_progress
+    global _refresh_all_started_at
 
-    if _refresh_all_in_progress:
+    if _refresh_all_started_at and (time.time() - _refresh_all_started_at) < _REFRESH_ALL_MAX_SECONDS:
         return jsonify({
             'success': False,
             'error': 'Refresh already in progress. Please wait.'
         }), 409
 
-    _refresh_all_in_progress = True
+    _refresh_all_started_at = time.time()
     results = {
         'youtube': {'refreshed': 0, 'errors': 0, 'new_videos': 0},
         'newsletters': {'refreshed': 0, 'errors': 0, 'new_issues': 0},
@@ -8386,8 +8389,6 @@ def refresh_all_feeds():
     }
 
     try:
-        import time
-
         # Refresh YouTube subscriptions
         try:
             youtube_subs = processor.list_subscriptions()
@@ -8422,6 +8423,7 @@ def refresh_all_feeds():
         # Refresh newsletter subscriptions
         try:
             import feedparser
+            import requests as _nl_requests
             newsletter_subs = db_service.list_newsletter_subscriptions()
             for sub in newsletter_subs:
                 try:
@@ -8429,7 +8431,11 @@ def refresh_all_feeds():
                     if not feed_url:
                         continue
 
-                    feed = feedparser.parse(feed_url)
+                    # Fetch with an explicit timeout so one dead feed host
+                    # can't hang the whole refresh (wedged Jun 29 – Jul 7).
+                    _nl_resp = _nl_requests.get(feed_url, timeout=30,
+                                                headers={'User-Agent': 'Mozilla/5.0 (KnowledgeStudio)'})
+                    feed = feedparser.parse(_nl_resp.content)
                     new_count = 0
 
                     for entry in feed.entries[:50]:
@@ -8487,7 +8493,7 @@ def refresh_all_feeds():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
     finally:
-        _refresh_all_in_progress = False
+        _refresh_all_started_at = None
 
 @app.route('/api/channel-videos', methods=['GET'])
 def list_channel_videos():

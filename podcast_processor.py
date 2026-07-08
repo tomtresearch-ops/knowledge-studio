@@ -179,7 +179,10 @@ class PodcastProcessor:
             
             # Parse feed with error handling
             try:
-                feed = feedparser.parse(feed_url)
+                # Fetch with a timeout so a dead feed host can't hang the caller.
+                _resp = requests.get(feed_url, timeout=30,
+                                     headers={'User-Agent': 'Mozilla/5.0 (KnowledgeStudio)'})
+                feed = feedparser.parse(_resp.content)
             except Exception as parse_error:
                 error_msg = str(parse_error)
                 if 'pattern' in error_msg.lower() or 'expected' in error_msg.lower() or 'match' in error_msg.lower():
@@ -347,7 +350,10 @@ class PodcastProcessor:
             
             # Parse feed with error handling
             try:
-                feed = feedparser.parse(feed_url)
+                # Fetch with a timeout so a dead feed host can't hang the caller.
+                _resp = requests.get(feed_url, timeout=30,
+                                     headers={'User-Agent': 'Mozilla/5.0 (KnowledgeStudio)'})
+                feed = feedparser.parse(_resp.content)
             except Exception as parse_error:
                 error_msg = str(parse_error)
                 if 'pattern' in error_msg.lower() or 'expected' in error_msg.lower() or 'match' in error_msg.lower():
