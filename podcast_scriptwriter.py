@@ -10,6 +10,7 @@ This module is the Podcast Scriptwriter layer.
 
 import os
 import anthropic
+import claude_cli_client  # routes inference to the subscription (see module docstring)
 from datetime import datetime
 
 
@@ -117,7 +118,7 @@ def rewrite_brief_as_script(brief_text: str, vertical: str = "ai_tech",
     Returns:
         The podcast script as plain text (no markdown formatting)
     """
-    client = anthropic.Anthropic()
+    client = claude_cli_client.make_client()
 
     vertical_context = {
         "ai_tech": "AI and technology",
@@ -210,7 +211,7 @@ Target length: 2000-3000 words.
 
 def generate_episode_title(script: str) -> str:
     """Generate a short descriptive episode title from the podcast script."""
-    client = anthropic.Anthropic()
+    client = claude_cli_client.make_client()
     response = client.messages.create(
         model="claude-haiku-4-5-20251001",
         max_tokens=60,
@@ -230,7 +231,7 @@ def generate_episode_summary(title: str, script: str, vertical: str = "") -> str
     ks_youtube: comprehensive summary (broad audience, text-digest value)
     all others: curiosity/hook framing (drives listens, teases without revealing)
     """
-    client = anthropic.Anthropic()
+    client = claude_cli_client.make_client()
 
     if vertical == "ks_youtube":
         prompt = f"""The podcast episode is titled: "{title}"

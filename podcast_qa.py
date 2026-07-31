@@ -203,6 +203,7 @@ If there are no defects, verdict is "pass" and issues is []."""
 def judge_script(script, recent_episodes, model="claude-sonnet-4-6"):
     """Run the editorial judge. Returns dict {verdict, issues} (fails open)."""
     import anthropic
+    import claude_cli_client  # routes inference to the subscription
 
     if not recent_episodes:
         return {"verdict": "pass", "issues": [], "note": "no prior episodes to compare"}
@@ -217,7 +218,7 @@ def judge_script(script, recent_episodes, model="claude-sonnet-4-6"):
     )
 
     try:
-        client = anthropic.Anthropic()
+        client = claude_cli_client.make_client()
         response = client.messages.create(
             model=model,
             max_tokens=1500,

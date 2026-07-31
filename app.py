@@ -9,6 +9,7 @@ import sqlite3
 import json
 import os
 import anthropic
+import claude_cli_client  # routes inference to the subscription (see module docstring)
 from dotenv import load_dotenv
 import shutil
 from datetime import datetime, timedelta
@@ -31,7 +32,7 @@ CORS(app)
 DATABASE_PATH = "youtube_intelligence.db"
 CLAUDE_API_KEY = os.getenv("ANTHROPIC_API_KEY")
 
-claude_client = anthropic.Anthropic(api_key=CLAUDE_API_KEY)
+claude_client = claude_cli_client.make_client(api_key=CLAUDE_API_KEY)
 
 def generate_shortened_summary(full_summary: str, target_percentage: int) -> str:
     """
@@ -4373,7 +4374,7 @@ Provide a detailed analysis covering:
 
 Be thorough — this is the full analysis that shorter summaries will be derived from."""
 
-    client = anthropic.Anthropic()
+    client = claude_cli_client.make_client()
     response = client.messages.create(
         model="claude-haiku-4-5-20251001",
         max_tokens=4000,

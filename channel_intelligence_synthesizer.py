@@ -8,7 +8,7 @@ import os
 import sqlite3
 from datetime import datetime
 from typing import Optional, List, Dict, Tuple
-from anthropic import Anthropic
+from claude_cli_client import make_client as Anthropic  # subscription, not metered API
 
 
 MODEL = "claude-haiku-4-5-20251001"

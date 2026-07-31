@@ -8,7 +8,7 @@ import os
 import sys
 from datetime import datetime
 from typing import Optional
-from anthropic import Anthropic
+from claude_cli_client import make_client as Anthropic  # subscription, not metered API
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 

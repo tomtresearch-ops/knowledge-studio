@@ -20,6 +20,7 @@ import re
 import xml.etree.ElementTree as ET
 from typing import Optional, Dict, List, Any, Tuple
 import anthropic
+import claude_cli_client  # routes inference to the subscription (see module docstring)
 from dotenv import load_dotenv
 
 
@@ -235,7 +236,7 @@ Original Summary:
 class YouTubeProcessor:
     def __init__(self):
         self.db_path = DATABASE_PATH
-        self.claude_client = anthropic.Anthropic(api_key=CLAUDE_API_KEY)
+        self.claude_client = claude_cli_client.make_client(api_key=CLAUDE_API_KEY)
         self.init_database()
 
         self.pending_files = set()

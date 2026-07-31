@@ -16,6 +16,7 @@ import sqlite3
 from datetime import datetime
 
 import anthropic
+import claude_cli_client  # routes inference to the subscription (see module docstring)
 from PIL import Image
 
 
@@ -424,7 +425,7 @@ def detect_content_type(image_b64, media_type="image/jpeg"):
     Uses Haiku for classification (cheap — just needs a yes/no per type).
     Returns (content_type, usage_stats).
     """
-    client = anthropic.Anthropic()
+    client = claude_cli_client.make_client()
     usage_stats = {'api_calls': 0, 'input_tokens': 0, 'output_tokens': 0, 'cost': 0.0}
 
     for content_type, prompt in CONTENT_TYPE_PROMPTS.items():
@@ -474,7 +475,7 @@ def extract_structured_data(image_b64, content_type, media_type="image/jpeg"):
 
     Returns (structured_data_dict, usage_stats).
     """
-    client = anthropic.Anthropic()
+    client = claude_cli_client.make_client()
     model = MODEL_ROUTING.get(content_type, CLASSIFY_MODEL)
     usage_stats = {'api_calls': 0, 'input_tokens': 0, 'output_tokens': 0, 'cost': 0.0, 'model': model}
 

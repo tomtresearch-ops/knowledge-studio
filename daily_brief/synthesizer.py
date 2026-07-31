@@ -7,7 +7,7 @@ import json
 import os
 from datetime import datetime
 from typing import Optional
-from anthropic import Anthropic
+from claude_cli_client import make_client as Anthropic  # subscription, not metered API
 
 
 def prepare_signal_digest(collected_data: dict) -> str:

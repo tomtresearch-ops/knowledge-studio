@@ -12,6 +12,7 @@ import time
 import traceback
 
 import anthropic
+import claude_cli_client  # routes inference to the subscription (see module docstring)
 import feedparser
 import requests
 from bs4 import BeautifulSoup
@@ -30,7 +31,7 @@ class NewsletterAutoSubscriber:
 
     def __init__(self, db_service):
         self.db = db_service
-        self.client = anthropic.Anthropic(api_key=CLAUDE_API_KEY)
+        self.client = claude_cli_client.make_client(api_key=CLAUDE_API_KEY)
 
     def _update_status(self, sub_id, status, message, **extra):
         """Update subscription status in DB."""
