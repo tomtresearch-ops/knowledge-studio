@@ -1,0 +1,23 @@
+{
+ "id": 3439,
+ "video_id": "aHx6Je3heig",
+ "video_url": "https://www.youtube.com/watch?v=aHx6Je3heig",
+ "title": "UNSTOPPABLE LEG POWER!",
+ "channel_id": null,
+ "channel_name": "Not clearly visible",
+ "thumbnail_url": null,
+ "published_at": null,
+ "status": "pending_retry",
+ "priority": 0,
+ "retry_count": 3,
+ "max_retries": 10,
+ "transcript_length": null,
+ "error_message": "No transcript available - will retry",
+ "queued_at": "2026-08-03 01:33:22",
+ "started_at": null,
+ "completed_at": null,
+ "next_attempt_at": "2026-08-04 05:05:40",
+ "last_error_at": "2026-08-04 04:45:40",
+ "processed_video_id": null,
+ "transcript_cache": null
+}

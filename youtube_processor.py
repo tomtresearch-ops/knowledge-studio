@@ -84,6 +84,36 @@ def _parse_formatted_duration(duration_str: str) -> Optional[int]:
         return None
 QUEUE_MIN_TRANSCRIPT_LENGTH = int(os.getenv("QUEUE_MIN_TRANSCRIPT_LENGTH", "2000"))
 
+# Upper bound on what one video may send to a model. Added 2026-08-03.
+# There had never been one. A genuine two-hour interview is ~120k chars; anything
+# beyond this is a compilation, a livestream, or mislabelled captions.
+MAX_SUMMARY_TRANSCRIPT_CHARS = int(os.getenv("MAX_SUMMARY_TRANSCRIPT_CHARS", "150000"))
+
+# A stored summary shorter than this is an error string, not a summary. Added 2026-08-03
+# after four videos silently stored 224-char "session limit" errors AS their summaries
+# and were marked completed.
+MIN_VALID_SUMMARY_CHARS = int(os.getenv("MIN_VALID_SUMMARY_CHARS", "400"))
+
+
+def summary_looks_like_error(summary: str) -> bool:
+    """True if this 'summary' is actually a failure message that must not be stored as content."""
+    if not summary:
+        return True
+    s = summary.strip()
+    if len(s) < MIN_VALID_SUMMARY_CHARS:
+        return True
+    lowered = s[:400].lower()
+    markers = (
+        "summary generation error",
+        "session limit",
+        "hit your usage limit",
+        "claude -p failed",
+        "rate limit",
+        "api overload",
+        "processing failed",
+    )
+    return any(m in lowered for m in markers)
+
 def _parse_view_count(view_str: str) -> Optional[int]:
     """Parse view count string (e.g., '1.2M views', '45,234 views', '1K') to integer"""
     if not view_str:
@@ -210,7 +240,7 @@ Original Summary:
         try:
             import requests as _greq
             _gr = _greq.post(
-            f'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={_gemini_key}',
+            f'https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key={_gemini_key}',
                 json={'contents': [{'parts': [{'text': prompt}]}]},
                 timeout=60
             )
@@ -323,6 +353,9 @@ class YouTubeProcessor:
             'retry_count': "ALTER TABLE processing_queue ADD COLUMN retry_count INTEGER DEFAULT 0",
             'max_retries': "ALTER TABLE processing_queue ADD COLUMN max_retries INTEGER DEFAULT 3",
             'transcript_length': "ALTER TABLE processing_queue ADD COLUMN transcript_length INTEGER",
+            # Added 2026-08-03: holds the transcript itself, not just its length, so a
+            # successful fetch survives any downstream failure and is never re-pulled.
+            'transcript_cache': "ALTER TABLE processing_queue ADD COLUMN transcript_cache TEXT",
             'error_message': "ALTER TABLE processing_queue ADD COLUMN error_message TEXT",
             'queued_at': "ALTER TABLE processing_queue ADD COLUMN queued_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP",
             'started_at': "ALTER TABLE processing_queue ADD COLUMN started_at TIMESTAMP",
@@ -2590,6 +2623,59 @@ class YouTubeProcessor:
         ]
         return any(keyword in message for keyword in keywords)
 
+    def _get_cached_transcript(self, item: Dict[str, Any]) -> Optional[str]:
+        """Return an already-fetched transcript for this queue item, or None.
+
+        Checks the queue row's own cache first, then any existing videos row for the same
+        URL. Added 2026-08-03 — a transcript that has been successfully pulled once must
+        never be pulled again.
+        """
+        video_url = item.get('video_url')
+        if not video_url:
+            return None
+        conn = self._get_connection()
+        try:
+            cur = conn.cursor()
+            try:
+                row = cur.execute(
+                    'SELECT transcript_cache FROM processing_queue WHERE id = ?',
+                    (item.get('id'),)
+                ).fetchone()
+                if row and row['transcript_cache'] and len(row['transcript_cache']) >= QUEUE_MIN_TRANSCRIPT_LENGTH:
+                    return row['transcript_cache']
+            except sqlite3.OperationalError:
+                pass  # column not present yet on an un-migrated database
+
+            row = cur.execute(
+                'SELECT full_transcript FROM videos WHERE video_url = ? '
+                'AND full_transcript IS NOT NULL ORDER BY id DESC LIMIT 1',
+                (video_url,)
+            ).fetchone()
+            if row and row['full_transcript'] and len(row['full_transcript']) >= QUEUE_MIN_TRANSCRIPT_LENGTH:
+                return row['full_transcript']
+        except Exception as exc:
+            print(f"⚠️  Transcript cache lookup failed: {exc}")
+        finally:
+            conn.close()
+        return None
+
+    def _cache_transcript(self, item: Dict[str, Any], transcript: str):
+        """Persist a freshly-fetched transcript immediately, before anything can fail."""
+        conn = self._get_connection()
+        try:
+            conn.execute(
+                'UPDATE processing_queue SET transcript_cache = ?, transcript_length = ? WHERE id = ?',
+                (transcript, len(transcript), item.get('id'))
+            )
+            conn.commit()
+            print(f"💾 Transcript cached ({len(transcript)} chars) — this video will never be refetched")
+        except sqlite3.OperationalError as exc:
+            print(f"⚠️  Could not cache transcript (schema not migrated?): {exc}")
+        except Exception as exc:
+            print(f"⚠️  Could not cache transcript: {exc}")
+        finally:
+            conn.close()
+
     def _process_queue_item(self, item: Dict[str, Any]):
         video_url = item.get('video_url')
         if not video_url:
@@ -2600,20 +2686,35 @@ class YouTubeProcessor:
         channel_name = item.get('channel_name') or ''
         print(f"🎯 Processing queued video: {title or video_url}")
         
-        # Transcript extraction with rate limiting protection
-        try:
-            self._wait_for_transcript_window()
-            transcript = self.get_transcript(video_url)
-            self._last_transcript_fetch_timestamp = time.time()
-        except Exception as exc:
-            print(f"⚠️  Transcript error for {video_url}: {exc}")
-            if self._is_rate_limit_error(exc):
-                self._mark_queue_failure(item, f"Transcript rate limited: {exc}", retry=True, cooldown_seconds=QUEUE_RATE_LIMIT_COOLDOWN_SECONDS)
-            else:
-                self._mark_queue_failure(item, f"Transcript error: {exc}", retry=True, cooldown_seconds=QUEUE_GENERAL_RETRY_COOLDOWN_SECONDS)
-            time.sleep(QUEUE_POST_PROCESS_SLEEP_SECONDS)
-            return
-        
+        # Transcript: fetch AT MOST ONCE, ever. Added 2026-08-03.
+        # A successful fetch used to be thrown away whenever any later stage failed, so a
+        # retry went back to YouTube for text we already had. That is wasteful on a good
+        # day and fatal on a bad one — on 2026-08-03 YouTube began bot-blocking every
+        # yt-dlp client, which would have made four already-fetched videos unrecoverable.
+        # The transcript is now persisted the instant it arrives and reused on every
+        # subsequent attempt.
+        transcript = self._get_cached_transcript(item)
+        if transcript:
+            print(f"♻️  Reusing stored transcript ({len(transcript)} chars) — no refetch")
+        else:
+            try:
+                self._wait_for_transcript_window()
+                transcript = self.get_transcript(video_url)
+                self._last_transcript_fetch_timestamp = time.time()
+            except Exception as exc:
+                print(f"⚠️  Transcript error for {video_url}: {exc}")
+                if self._is_rate_limit_error(exc):
+                    self._mark_queue_failure(item, f"Transcript rate limited: {exc}", retry=True, cooldown_seconds=QUEUE_RATE_LIMIT_COOLDOWN_SECONDS)
+                else:
+                    self._mark_queue_failure(item, f"Transcript error: {exc}", retry=True, cooldown_seconds=QUEUE_GENERAL_RETRY_COOLDOWN_SECONDS)
+                time.sleep(QUEUE_POST_PROCESS_SLEEP_SECONDS)
+                return
+
+            # Persist BEFORE summarisation, so a downstream failure can never cost the fetch.
+            if transcript and len(transcript) >= QUEUE_MIN_TRANSCRIPT_LENGTH:
+                self._cache_transcript(item, transcript)
+
+
         if not transcript:
             # Mark as no_transcript but allow retries - transcripts may become available later
             # or it might be a temporary issue (rate limiting, network, etc.)
@@ -2679,7 +2780,23 @@ class YouTubeProcessor:
             self._mark_queue_failure(item, f"Summarization error: {exc}", retry=True, cooldown_seconds=QUEUE_CLAUDE_RETRY_COOLDOWN_SECONDS)
             time.sleep(QUEUE_POST_PROCESS_SLEEP_SECONDS)
             return
-        
+
+        # Guard added 2026-08-03: generate_summary swallows its own exceptions and RETURNS
+        # the error text as if it were a summary. Four videos were stored with 224-char
+        # "session limit" error strings as their summaries and marked completed — a silent
+        # corruption that looked like success. Retry instead of storing the failure.
+        if summary_looks_like_error(summary_text):
+            preview = (summary_text or "").strip().replace("\n", " ")[:120]
+            print(f"🚫 Rejected non-summary for {video_url}: {preview}")
+            self._mark_queue_failure(
+                item,
+                f"Summarization returned an error string, not a summary: {preview}",
+                retry=True,
+                cooldown_seconds=QUEUE_CLAUDE_RETRY_COOLDOWN_SECONDS,
+            )
+            time.sleep(QUEUE_POST_PROCESS_SLEEP_SECONDS)
+            return
+
         # Store results
         try:
             processed_video_id = self.store_queue_processing_result(item, transcript, summary_text, prompt_used)
@@ -2873,7 +2990,7 @@ Set "is_youtube": true if you can see ANY YouTube UI elements (title bar, channe
                 try:
                     import requests as _vreq
                     _gresp = _vreq.post(
-                        f'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={_gemini_key}',
+                        f'https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key={_gemini_key}',
                         json={"contents": [{"parts": [
                             {"inline_data": {"mime_type": media_type, "data": image_data}},
                             {"text": _vision_prompt}
@@ -3443,7 +3560,20 @@ Set "is_youtube": true if you can see ANY YouTube UI elements (title bar, channe
             # Tier 1: Aggressively clean transcript to reduce size
             clean_transcript = self.clean_transcript_for_summary(transcript)
             print(f"🧹 Cleaned transcript: {len(transcript)} -> {len(clean_transcript)} characters")
-            
+
+            # Tier 1b: Hard size cap. Added 2026-08-03.
+            # Without this there is no upper bound on how much a single video can consume.
+            # On 2026-08-03 one video carried a 1,269,364-char transcript (226,592 words of
+            # the WRONG content — mislabelled captions) and was chunked into ~13 separate
+            # model calls: 52% of that entire day's processing load, from one video.
+            # A genuine two-hour interview lands around 120k chars. Anything past the cap is
+            # a compilation, a livestream, or bad captions — none of it worth the capacity.
+            if len(clean_transcript) > MAX_SUMMARY_TRANSCRIPT_CHARS:
+                original_len = len(clean_transcript)
+                clean_transcript = clean_transcript[:MAX_SUMMARY_TRANSCRIPT_CHARS]
+                print(f"✂️  Transcript over cap: {original_len} -> {MAX_SUMMARY_TRANSCRIPT_CHARS} chars "
+                      f"(capped; {original_len - MAX_SUMMARY_TRANSCRIPT_CHARS} chars dropped)")
+
             # Detect content type for prompt routing
             content_type = self.detect_content_type(title, clean_transcript, duration_seconds)
             print(f"📋 Content type detected: {content_type}")
@@ -3624,7 +3754,7 @@ Return ONLY valid JSON with no markdown formatting."""
                 try:
                     import requests as _greq2
                     _gr2 = _greq2.post(
-                        f'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={_gemini_key2}',
+                        f'https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key={_gemini_key2}',
                         json={'contents': [{'parts': [{'text': prompt}]}]},
                         timeout=120
                     )
