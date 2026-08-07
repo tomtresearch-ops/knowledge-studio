@@ -5,7 +5,6 @@ Runs the file monitoring and processing in the background
 """
 
 import os
-import sqlite3  # overdue-brand catch-up check (2026-08-06)
 import sys
 import time
 import json
@@ -43,123 +42,49 @@ def should_refresh_feeds():
         return True
     return False
 
-# PAUSED 2026-08-06 (Tom): the KS lines (ks_youtube brief+podcast at 11:00/11:15 PM,
-# ks_examiner ops brief) are off. They run on the same subscription quota as the three
-# live brands. Flip to True to bring both back — single-line undo, no other edits.
-KS_LINES_ENABLED = False
-
-
 def should_generate_briefs():
-    """Check if it's time for the nightly brief generation (2:00 AM).
+    """Check if it's time for the nightly brief generation (9:30 PM)
 
-    Moved from 9:30 PM to 2:00 AM on 2026-08-06 (Tom). The 9:30 PM start opened
-    against a subscription session quota already spent on the day's own work, so
-    whatever ran last in the sequence starved — the direct cause of Breakthrough
-    Medicine going dark 2026-07-10 → 2026-08-06. The overnight window is clean:
-    Tom has logged off and the session limit has reset.
-
-    Feeds still refresh at 9 PM, so a 2 AM brief is working from a ~5-hour-old pull.
+    Runs at 9:30 PM to give the 9 PM feed refresh time to complete first.
     """
     now = datetime.now()
-    # 2:00-2:05 AM window
-    if now.hour == 2 and 0 <= now.minute < 5:
+    # 9:30-9:35 PM window — after the 9 PM feed refresh has finished
+    if now.hour == 21 and 30 <= now.minute < 35:
         return True
     return False
-
-def _overdue_verticals():
-    """Live brands whose newest episode is older than their cadence allows.
-
-    Added 2026-08-06. A brand that misses its slot used to wait a full week for the
-    next one — so a single bad night became seven days of silence, and two bad
-    nights became a month. Now a missed slot is picked up on the very next run.
-
-    Read-only, best-effort: any failure returns nothing and the ordinary day-based
-    schedule stands. Catching up is a bonus, never a precondition for publishing.
-    """
-    grace_days = {'future_medicine': 7, 'health_longevity': 7, 'ai_tech': 3}
-    try:
-        db_path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                               "youtube_intelligence.db")
-        conn = sqlite3.connect(f"file:{db_path}?mode=ro", uri=True, timeout=10)
-        rows = conn.execute(
-            "SELECT vertical, MAX(created_at) FROM brief_podcast_episodes "
-            "WHERE vertical IN ('future_medicine','health_longevity','ai_tech') "
-            "GROUP BY vertical"
-        ).fetchall()
-        conn.close()
-    except Exception as exc:
-        print(f"   ⚠️  Could not check for overdue brands: {exc}")
-        return []
-
-    newest = {v: ts for v, ts in rows if ts}
-    overdue = []
-    for vertical, grace in grace_days.items():
-        ts = newest.get(vertical)
-        if not ts:
-            continue
-        try:
-            age = (datetime.now() - datetime.fromisoformat(ts)).days
-        except Exception:
-            continue
-        if age > grace:
-            overdue.append((vertical, age))
-    return overdue
-
 
 def get_verticals_for_today():
     """Determine which verticals should generate briefs today.
 
-    SCOPE (Tom, 2026-08-06): only three brands run — Breakthrough Medicine,
-    Longevity Edge, AI Landscape. ai_agents, local_ai_intel and the KS lines are
-    PAUSED. Reason: inference runs on the subscription, the nightly consumes it
-    sequentially, and whatever ran first ate the session quota — which is why
-    Breakthrough Medicine (previously third in line) produced nothing between
-    2026-07-10 and 2026-08-06.
+    Core verticals:
+    - ai_tech: daily
+    - health_longevity: Tuesday and Friday
+    - future_medicine: Monday and Thursday
+    - futures_trends: Wednesday (once a week, PAUSED)
 
-    ORDER IS PRIORITY, not cosmetics. The list is returned lowest-cadence-first so
-    the rarest brand gets the freshest quota:
-    - future_medicine  (Breakthrough Medicine) — Monday and Thursday   → FIRST
-    - health_longevity (Longevity Edge)        — Tuesday and Friday    → SECOND
-    - ai_tech          (AI Landscape)          — daily                 → LAST
-
-    Life-stage verticals and futures_trends remain PAUSED (see below).
+    Life-stage verticals (weekly, spread across the week):
+    - Monday:    early_childhood, elementary, middle_school
+    - Tuesday:   high_school, college, early_career
+    - Wednesday: mid_career, late_career, seniors
     """
     today = datetime.now()
     day_of_week = today.weekday()  # 0=Mon, 1=Tue, 2=Wed, 3=Thu, 4=Fri, 5=Sat, 6=Sun
 
-    verticals = []
-
-    if day_of_week in (0, 3):  # Monday, Thursday
-        verticals.append('future_medicine')  # Breakthrough Medicine — highest priority
+    verticals = ['ai_tech']  # Always daily
+    verticals.append('ai_agents')  # Always daily
 
     if day_of_week in (1, 4):  # Tuesday, Friday
-        verticals.append('health_longevity')  # Longevity Edge
+        verticals.append('health_longevity')
 
-    verticals.append('ai_tech')  # AI Landscape — daily, runs last by design
-
-    # PAUSED 2026-08-06 (Tom): not publishing these for the moment. Re-enable by
-    # uncommenting — order still matters, append AFTER ai_tech.
-    # verticals.append('ai_agents')          # daily
-    # if day_of_week in (0, 2, 4):           # Monday, Wednesday, Friday
-    #     verticals.append('local_ai_intel')
+    if day_of_week in (0, 3):  # Monday, Thursday
+        verticals.append('future_medicine')
 
     # futures_trends: PAUSED — editorial identity rethink in progress (turned off Feb 28)
     # if day_of_week == 2:  # Wednesday
     #     verticals.append('futures_trends')
 
-    # Catch-up: an overdue brand jumps to the FRONT of tonight's run regardless of
-    # what day it is. Priority order is preserved among the catch-ups themselves.
-    priority = ['future_medicine', 'health_longevity', 'ai_tech']
-    overdue = _overdue_verticals()
-    if overdue:
-        overdue.sort(key=lambda item: priority.index(item[0])
-                     if item[0] in priority else 99)
-        # Insert in reverse so the highest-priority catch-up ends up first.
-        for vertical, age in reversed(overdue):
-            if vertical in verticals:
-                verticals.remove(vertical)
-            verticals.insert(0, vertical)
-            print(f"   ⏰ Catch-up: {vertical} is {age} days stale — moved to front")
+    if day_of_week in (0, 2, 4):  # Monday, Wednesday, Friday
+        verticals.append('local_ai_intel')
 
     # Life-stage verticals — PAUSED (editorial design incomplete, running since Feb 23 without review)
     # Uncomment when editorial quality reviewed and approved by Tom.
@@ -296,11 +221,10 @@ def main():
     print("📱 Drop screenshots into the folder to process them")
     print("🔍 Use the web interface at http://localhost:5001 to view results")
     print("📡 Auto-refreshing feeds at 9am, 3pm, and 9pm")
-    print("📰 Auto-generating briefs at 2:00am (Breakthrough Medicine Mon/Thu, Longevity Edge Tue/Fri, AI Landscape daily)")
-    print("🎙️  Auto-generating podcasts at 2:30am, newsletters at 4:00am")
-    print("📧 Auto-generating newsletters at 4:00am → Ghost drafts")
-    print("🐕 Publish watchdog at 5:00am and 6:00pm — alerts if any brand goes stale")
-    print("🎙️  Podcasts run sequentially at 2:30am — priority order: Breakthrough Medicine, Longevity Edge, AI Landscape")
+    print("📰 Auto-generating briefs at 9:30pm (AI&Tech daily, Health Tue/Fri, Futures Wed)")
+    print("🎙️  Auto-generating podcasts at 9:45pm (core verticals, except Futures)")
+    print("📧 Auto-generating newsletters at 10:00pm → Ghost drafts")
+    print("🎙️  All core podcast verticals run sequentially at 9:45pm, ks_youtube at 11:15pm")
     print("\nPress Ctrl+C to stop monitoring...\n")
     
     observer.start()
@@ -316,7 +240,6 @@ def main():
     # Track scheduled feed refresh (9am, 3pm, 9pm)
     last_feed_refresh_hour = None  # Track which hour we last refreshed to avoid duplicates
 
-    last_watchdog_hour = None  # publish watchdog runs 5 AM and 6 PM
     # Track nightly brief generation (9:30 PM)
     last_brief_generation_date = None  # Track date to avoid duplicate generation
 
@@ -413,18 +336,15 @@ def main():
                 ["pgrep", "-f", "podcast_pipeline.py"],
                 capture_output=True
             ).stdout.strip())
-            if now.hour == 2 and 30 <= now.minute < 35 and last_podcast_generation_date != today and not podcast_already_running:
+            if now.hour == 21 and 45 <= now.minute < 50 and last_podcast_generation_date != today and not podcast_already_running:
                 try:
                     print("Podcast generation: sequential run")
                     tts_python = os.path.expanduser("~/tts-env/bin/python3")
                     pipeline_script = os.path.join(os.path.dirname(os.path.abspath(__file__)), "podcast_pipeline.py")
 
-                    # Priority order (Tom, 2026-08-06): rarest brand first, so the
-                    # scarce subscription quota goes to Breakthrough Medicine before
-                    # anything else. Must stay in step with get_verticals_for_today().
-                    all_podcast_order = ["future_medicine", "health_longevity", "ai_tech"]
+                    all_podcast_order = ["ai_tech", "ai_agents", "health_longevity", "future_medicine", "local_ai_intel"]
                     todays_verticals = set(get_verticals_for_today())
-                    podcast_skip = {"futures_trends", "ai_agents", "local_ai_intel"}
+                    podcast_skip = {"futures_trends"}
                     podcast_verticals = [v for v in all_podcast_order if v in todays_verticals and v not in podcast_skip]
 
                     podcast_results = {}
@@ -458,7 +378,7 @@ def main():
 
             # Generate newsletters at 10:00 PM (after briefs and podcasts)
             # Creates editorial newsletter from each brief and posts as Ghost draft
-            if now.hour == 4 and 0 <= now.minute < 5 and last_newsletter_generation_date != today:
+            if now.hour == 22 and 0 <= now.minute < 5 and last_newsletter_generation_date != today:
                 try:
                     print(f"\n📧 Newsletter generation ({now.strftime('%I:%M %p')})")
                     newsletter_script = os.path.join(os.path.dirname(os.path.abspath(__file__)), "newsletter_generator.py")
@@ -510,28 +430,9 @@ def main():
                     print(f"⚠️  Error in newsletter generation: {e}")
                     notify_mattermost("alerts", f"**Newsletter generation error:** {e}")
 
-            # Publish watchdog — 5:00 AM, after the whole overnight run has landed,
-            # and again at 6:00 PM so a stall is caught the same day rather than
-            # weeks later. Measures the OUTCOME (episode age in the live feed), not
-            # whether a job reported success — process-level checks are exactly what
-            # missed Breakthrough Medicine going dark for 27 days. Alerts itself.
-            if now.hour in (5, 18) and 0 <= now.minute < 5 and last_watchdog_hour != now.hour:
-                try:
-                    watchdog_script = os.path.join(
-                        os.path.dirname(os.path.abspath(__file__)), "publish_watchdog.py")
-                    result = subprocess.run(
-                        [sys.executable, watchdog_script],
-                        capture_output=True, text=True, timeout=180
-                    )
-                    print(f"\n🐕 Publish watchdog\n{result.stdout}")
-                    last_watchdog_hour = now.hour
-                except Exception as e:
-                    print(f"⚠️  Watchdog error: {e}")
-                    notify_mattermost("alerts", f"**Publish watchdog error:** {e}")
-
             # Generate KS briefs at 11:00 PM (staggered from main pipeline)
             # Two verticals: ks_youtube (content intelligence) and ks_examiner (operations report)
-            if KS_LINES_ENABLED and now.hour == 23 and 0 <= now.minute < 5 and last_ks_brief_date != today:
+            if now.hour == 23 and 0 <= now.minute < 5 and last_ks_brief_date != today:
                 try:
                     print(f"\n📰 KS brief generation ({now.strftime('%I:%M %p')})")
                     ks_verticals = ['ks_youtube', 'ks_examiner']
@@ -573,7 +474,7 @@ def main():
             # Generate KS podcasts at 11:15 PM (staggered 15 min after briefs)
             # Only ks_youtube gets a podcast — ks_examiner is read-only operational report
             ks_podcast_already_running = bool(subprocess.run(["pgrep", "-f", "podcast_pipeline.py"], capture_output=True).stdout.strip())
-            if KS_LINES_ENABLED and now.hour == 23 and 15 <= now.minute < 20 and last_ks_podcast_date != today and not ks_podcast_already_running:
+            if now.hour == 23 and 15 <= now.minute < 20 and last_ks_podcast_date != today and not ks_podcast_already_running:
                 try:
                     print(f"\n🎙️  KS podcast generation ({now.strftime('%I:%M %p')})")
                     tts_python = os.path.expanduser("~/tts-env/bin/python3")

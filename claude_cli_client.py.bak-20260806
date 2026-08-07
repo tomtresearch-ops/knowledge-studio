@@ -27,12 +27,6 @@ Notes on fidelity:
 
 Kill switch: set KS_USE_API=1 in the environment to fall back to the real
 metered API without editing or redeploying any code.
-
-2026-08-06: added AUTOMATIC per-call fallback to the metered API when the
-subscription path fails, so a session limit or a logged-out CLI can no longer
-stop distribution silently. Subscription stays the default and preferred path;
-the paid path is only ever touched after a failure, and every use is recorded to
-logs/api_fallback.jsonl for the staleness watchdog to surface.
 """
 
 from __future__ import annotations
@@ -46,71 +40,6 @@ from pathlib import Path
 
 CLAUDE_BIN = os.environ.get("CLAUDE_BIN", "/opt/homebrew/bin/claude")
 DEFAULT_TIMEOUT = int(os.environ.get("CLAUDE_CLI_TIMEOUT", "600"))
-
-# ── Automatic fallback to the metered API ────────────────────────────────────
-# Added 2026-08-06 (Tom): "we can't have it like not publishing."
-#
-# The subscription is still the DEFAULT and preferred path — nothing here spends
-# money while `claude -p` is working. But a subscription failure (session limit,
-# logged-out CLI, timeout) used to kill the run silently, which is exactly how
-# Breakthrough Medicine went dark for 27 days. Now any CLI failure retries once
-# on the metered API so distribution continues, and the fallback is RECORDED so
-# it surfaces as an alert instead of passing unnoticed.
-#
-# Disable with KS_API_FALLBACK=0. Force metered-only with KS_USE_API=1.
-FALLBACK_ENABLED = os.environ.get("KS_API_FALLBACK", "1") != "0"
-FALLBACK_LOG = os.environ.get(
-    "KS_FALLBACK_LOG",
-    os.path.join(os.path.dirname(os.path.abspath(__file__)), "logs", "api_fallback.jsonl"),
-)
-
-
-# Only these callers may spend money. Everything else (video processing, signal
-# scans, screenshot vision) stays subscription-only and simply fails as before.
-#
-# Why: the video/screenshot pipeline makes 50-150 calls a day against ~25-50 videos,
-# an order of magnitude more than the nightly publish run. Without this allow-list a
-# day of CLI trouble would quietly spend the balance on video summaries rather than
-# on the thing the credits are FOR. Tom's condition for funding it, 2026-08-06:
-# money goes to publishing alone.
-PUBLISHING_CALLERS = ("synthesizer.py", "podcast_scriptwriter.py", "podcast_pipeline.py")
-
-
-def _caller_is_publishing() -> bool:
-    """True when this call is on the publish path. Fails CLOSED (no spending)."""
-    try:
-        import inspect
-        for frame in inspect.stack()[1:12]:
-            name = os.path.basename(frame.filename)
-            if name in PUBLISHING_CALLERS:
-                return True
-    except Exception:
-        return False
-    return False
-
-
-def _record_fallback(model: str, reason: str, outcome: str) -> None:
-    """Breadcrumb every fallback so the watchdog can see degraded operation.
-
-    Never raises — a logging failure must not take down a publish run.
-    """
-    import datetime as _dt
-    import json as _json
-
-    line = _json.dumps({
-        "ts": _dt.datetime.now().isoformat(timespec="seconds"),
-        "model": model or "",
-        "reason": reason[:300],
-        "outcome": outcome,
-    })
-    print(f"⚠️  SUBSCRIPTION PATH FAILED → metered API ({outcome}): {reason[:160]}",
-          flush=True)
-    try:
-        os.makedirs(os.path.dirname(FALLBACK_LOG), exist_ok=True)
-        with open(FALLBACK_LOG, "a", encoding="utf-8") as fh:
-            fh.write(line + "\n")
-    except Exception:
-        pass
 
 
 class ClaudeCLIError(RuntimeError):
@@ -199,64 +128,6 @@ class _Messages:
 
     def create(self, model: str = None, max_tokens: int = None,
                messages=None, system=None, **kwargs) -> _Response:
-        """Subscription first; on failure, retry once on the metered API.
-
-        The fallback returns the real SDK's Message object, which exposes the same
-        `.content[0].text` and `.usage` fields this codebase reads — so callers
-        cannot tell the two paths apart.
-        """
-        try:
-            return self._create_via_cli(model, max_tokens, messages, system, **kwargs)
-        except ClaudeCLIError as exc:
-            if not FALLBACK_ENABLED:
-                raise
-            if not _caller_is_publishing():
-                # Not a publish call — never spend. Same behaviour as before the
-                # fallback existed, but say so, so it isn't mistaken for a silent stall.
-                print(f"⚠️  Subscription call failed (no metered fallback — not a publish "
-                      f"call): {str(exc)[:120]}", flush=True)
-                raise
-            try:
-                resp = self._create_via_api(model, max_tokens, messages, system, **kwargs)
-            except Exception as api_exc:
-                # Both paths down. Record it, then raise the ORIGINAL CLI error so
-                # existing handlers and log-greps still see the familiar shape.
-                _record_fallback(model, str(exc), f"metered API also failed: {api_exc}")
-                raise exc
-            _record_fallback(model, str(exc), "recovered on metered API")
-            return resp
-
-    def _create_via_api(self, model, max_tokens, messages, system, **kwargs):
-        """The paid path. Only ever reached when the subscription path failed."""
-        import anthropic
-
-        # Don't assume someone upstream loaded .env — the podcast stage runs in a
-        # separate interpreter. Read the key ourselves so the fallback can never
-        # fail for the wrong reason ("could not resolve authentication method").
-        api_key = os.environ.get("ANTHROPIC_API_KEY")
-        if not api_key:
-            env_path = Path(__file__).resolve().parent / ".env"
-            try:
-                for raw in env_path.read_text(encoding="utf-8").splitlines():
-                    if raw.strip().startswith("ANTHROPIC_API_KEY="):
-                        api_key = raw.split("=", 1)[1].strip().strip("'\"")
-                        break
-            except Exception:
-                pass
-
-        client = anthropic.Anthropic(api_key=api_key) if api_key else anthropic.Anthropic()
-        call = {
-            "model": model or "claude-haiku-4-5-20251001",
-            "max_tokens": max_tokens or 4096,
-            "messages": messages or [],
-        }
-        if system:
-            call["system"] = system
-        call.update(kwargs)
-        return client.messages.create(**call)
-
-    def _create_via_cli(self, model: str = None, max_tokens: int = None,
-                        messages=None, system=None, **kwargs) -> _Response:
         messages = messages or []
 
         with tempfile.TemporaryDirectory(prefix="ks_claude_") as td:
