@@ -2566,16 +2566,12 @@ class YouTubeProcessor:
 
             # Duplicate guard: check if this video_url already exists in videos table
             if video_url:
-                cursor.execute('SELECT id, status FROM videos WHERE video_url = ?', (video_url,))
+                cursor.execute('SELECT id FROM videos WHERE video_url = ?', (video_url,))
                 existing = cursor.fetchone()
-                if existing and existing[1] == 'completed':
+                if existing:
                     print(f"⚠️  Duplicate prevented: {title or video_url} already exists as video {existing[0]}")
                     conn.close()
                     return existing[0]
-                if existing:
-                    # stale failed row (no transcript / error) — replace with the fresh result
-                    print(f"♻️  Replacing failed row {existing[0]} with fresh result for {title or video_url}")
-                    cursor.execute('DELETE FROM videos WHERE id = ?', (existing[0],))
 
             cursor.execute(
                 '''

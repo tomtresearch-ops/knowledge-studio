@@ -847,7 +847,7 @@ class DatabaseService:
                    CASE WHEN cv.processed_video_id IS NOT NULL THEN 1 ELSE 0 END as from_subscription
             FROM videos v
             LEFT JOIN channel_videos cv ON v.id = cv.processed_video_id
-            WHERE v.status = 'completed'
+            WHERE v.status IN ('completed', 'error', 'failed', 'no_transcript', 'no_video_found')
             GROUP BY v.id
             ORDER BY v.processing_date DESC
         ''')
