@@ -4982,34 +4982,6 @@ def toggle_video_favorite(video_id):
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
 
-@app.route('/api/visuals/<int:visual_id>/favorite', methods=['PUT'])
-def toggle_visual_favorite(visual_id):
-    """Toggle favorite status for a visual capture"""
-    try:
-        data = request.get_json()
-        favorited = data.get('favorited', False)
-
-        conn = sqlite3.connect(DATABASE_PATH)
-        cursor = conn.cursor()
-
-        # Add favorited column if it doesn't exist
-        try:
-            cursor.execute('ALTER TABLE visual_captures ADD COLUMN favorited INTEGER DEFAULT 0')
-            conn.commit()
-        except sqlite3.OperationalError:
-            pass  # Column already exists
-
-        cursor.execute('UPDATE visual_captures SET favorited = ? WHERE id = ?', (1 if favorited else 0, visual_id))
-        changed = cursor.rowcount
-        conn.commit()
-        conn.close()
-
-        if not changed:
-            return jsonify({'success': False, 'error': 'No such visual capture'}), 404
-        return jsonify({'success': True, 'favorited': favorited})
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
-
 @app.route('/api/articles/<int:article_id>/favorite', methods=['PUT'])
 def toggle_article_favorite(article_id):
     """Toggle favorite status for an article"""
@@ -5633,8 +5605,7 @@ def get_library():
             vc_conn = sqlite3.connect(DATABASE_PATH)
             vc_cursor = vc_conn.cursor()
             vc_cursor.execute('''
-                SELECT id, filename, content_type, structured_data, tags, created_at,
-                       COALESCE(favorited, 0) as favorited
+                SELECT id, filename, content_type, structured_data, tags, created_at
                 FROM visual_captures ORDER BY created_at DESC
             ''')
             for vc_row in vc_cursor.fetchall():
@@ -5664,7 +5635,6 @@ def get_library():
                     'date': vc_row[5],
                     'sort_date': vc_row[5],
                     'content_type': 'visual',
-                    'favorited': bool(vc_row[6]),
                     'visual_content_type': vc_row[2],
                     'channel': vc_row[2].replace('_', ' ').title(),
                     'status': 'completed',
@@ -8286,7 +8256,7 @@ def get_feed():
         cursor.execute('''
             SELECT cs.id as sub_id, cs.channel_name, cs.featured,
                    v.id, v.title, v.video_url, v.channel, v.processing_date,
-                   v.ai_summary, v.summary_50, v.summary_15, COALESCE(v.favorited, 0) as favorited,
+                   v.ai_summary, v.summary_50, v.summary_15,
                    COALESCE(v.original_publish_date, v.published_at, v.processing_date) as release_date,
                    ROW_NUMBER() OVER (PARTITION BY cs.id ORDER BY COALESCE(v.original_publish_date, v.published_at, v.processing_date) DESC) as rn
             FROM channel_subscriptions cs
@@ -8317,7 +8287,6 @@ def get_feed():
                 'ai_summary': row['ai_summary'],
                 'summary_50': row['summary_50'],
                 'summary_15': row['summary_15'],
-                'favorited': bool(row['favorited']),
             })
         return jsonify({'success': True, 'items': items, 'count': len(items)})
     except Exception as e:
