@@ -47,7 +47,7 @@ FEED_CONFIG = {
     },
     "health_longevity": {
         "filename": "feed_longevity_edge.xml",
-        "title": "Longevity Report",  # TODO: replace with "[Brand]: Health"
+        "title": "Longevity Edge",  # TODO: replace with "[Brand]: Health"
         "description": (
             "AI-synthesized intelligence brief on health, longevity, "
             "and life extension research."
@@ -55,7 +55,7 @@ FEED_CONFIG = {
         "category": "Health &amp; Fitness",
         "mp3_glob": "podcast_health_longevity_*.mp3",
         "max_episodes": 0,  # 2/week — keep all
-        "cover": "longevity_report_cover.png",
+        "cover": "longevity_edge_cover.png",
     },
     "ks_youtube": {
         "filename": "feed_ks_youtube.xml",
@@ -194,7 +194,6 @@ def generate_feed(vertical: str) -> str:
     feed_xml = f"""<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0"
      xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd"
-     xmlns:podcast="https://podcastindex.org/namespace/1.0"
      xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>{xml_escape(config["title"])}</title>
@@ -207,15 +206,10 @@ def generate_feed(vertical: str) -> str:
     <itunes:summary>{xml_escape(config["description"])}</itunes:summary>
     <itunes:explicit>false</itunes:explicit>
     <itunes:type>episodic</itunes:type>
-    <podcast:author>{xml_escape(BRAND_AUTHOR)}</podcast:author>
     <itunes:owner>
       <itunes:name>{xml_escape(config["title"])}</itunes:name>
       <itunes:email>{xml_escape(BRAND_OWNER_EMAIL)}</itunes:email>
     </itunes:owner>
-    <podcast:owner>
-      <podcast:ownerName>{xml_escape(BRAND_OWNER_NAME)}</podcast:ownerName>
-      <podcast:ownerEmail>{xml_escape(BRAND_OWNER_EMAIL)}</podcast:ownerEmail>
-    </podcast:owner>
     <itunes:image href="{BASE_URL}covers/{config["cover"]}"/>
     <image>
       <url>{BASE_URL}covers/{config["cover"]}</url>

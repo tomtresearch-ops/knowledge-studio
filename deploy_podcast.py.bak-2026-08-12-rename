@@ -47,7 +47,7 @@ FEED_CONFIG = {
     },
     "health_longevity": {
         "filename": "feed_longevity_edge.xml",
-        "title": "Longevity Report",  # TODO: replace with "[Brand]: Health"
+        "title": "Longevity Edge",  # TODO: replace with "[Brand]: Health"
         "description": (
             "AI-synthesized intelligence brief on health, longevity, "
             "and life extension research."
@@ -55,7 +55,7 @@ FEED_CONFIG = {
         "category": "Health &amp; Fitness",
         "mp3_glob": "podcast_health_longevity_*.mp3",
         "max_episodes": 0,  # 2/week — keep all
-        "cover": "longevity_report_cover.png",
+        "cover": "longevity_edge_cover.png",
     },
     "ks_youtube": {
         "filename": "feed_ks_youtube.xml",

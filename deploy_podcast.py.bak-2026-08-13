@@ -55,7 +55,7 @@ FEED_CONFIG = {
         "category": "Health &amp; Fitness",
         "mp3_glob": "podcast_health_longevity_*.mp3",
         "max_episodes": 0,  # 2/week — keep all
-        "cover": "longevity_report_cover.png",
+        "cover": "longevity_edge_cover.png",
     },
     "ks_youtube": {
         "filename": "feed_ks_youtube.xml",
