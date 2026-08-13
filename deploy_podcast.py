@@ -193,7 +193,8 @@ def generate_feed(vertical: str) -> str:
 
     feed_xml = f"""<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0"
-     xmlns:itunes="http://www.itunes.apple.com/dtds/podcast-1.0.dtd"
+     xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd"
+     xmlns:podcast="https://podcastindex.org/namespace/1.0"
      xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>{xml_escape(config["title"])}</title>
@@ -202,14 +203,19 @@ def generate_feed(vertical: str) -> str:
     <language>en-us</language>
     <lastBuildDate>{build_date}</lastBuildDate>
     <atom:link href="{BASE_URL}{config['filename']}" rel="self" type="application/rss+xml"/>
-    <itunes:author>{xml_escape(BRAND_AUTHOR)}</itunes:author>
+    <itunes:author>{xml_escape(config["title"])}</itunes:author>
     <itunes:summary>{xml_escape(config["description"])}</itunes:summary>
     <itunes:explicit>false</itunes:explicit>
     <itunes:type>episodic</itunes:type>
+    <podcast:author>{xml_escape(BRAND_AUTHOR)}</podcast:author>
     <itunes:owner>
-      <itunes:name>{xml_escape(BRAND_OWNER_NAME)}</itunes:name>
+      <itunes:name>{xml_escape(config["title"])}</itunes:name>
       <itunes:email>{xml_escape(BRAND_OWNER_EMAIL)}</itunes:email>
     </itunes:owner>
+    <podcast:owner>
+      <podcast:ownerName>{xml_escape(BRAND_OWNER_NAME)}</podcast:ownerName>
+      <podcast:ownerEmail>{xml_escape(BRAND_OWNER_EMAIL)}</podcast:ownerEmail>
+    </podcast:owner>
     <itunes:image href="{BASE_URL}covers/{config["cover"]}"/>
     <image>
       <url>{BASE_URL}covers/{config["cover"]}</url>
