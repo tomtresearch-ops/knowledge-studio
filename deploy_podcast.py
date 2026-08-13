@@ -47,7 +47,7 @@ FEED_CONFIG = {
     },
     "health_longevity": {
         "filename": "feed_longevity_edge.xml",
-        "title": "Longevity Edge",  # TODO: replace with "[Brand]: Health"
+        "title": "Longevity Report",  # TODO: replace with "[Brand]: Health"
         "description": (
             "AI-synthesized intelligence brief on health, longevity, "
             "and life extension research."
