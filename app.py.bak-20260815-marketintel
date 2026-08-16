@@ -7662,8 +7662,7 @@ def marketing_dashboard():
                    SUM(cv.view_count) as total_views,
                    MIN(cv.published_at) as earliest,
                    MAX(cv.published_at) as latest,
-                   cs.subscriber_count,
-                   cs.category
+                   cs.subscriber_count
             FROM channel_videos cv
             LEFT JOIN channel_subscriptions cs ON cv.channel_id = cs.channel_id
             WHERE cv.view_count IS NOT NULL AND cv.view_count > 0
@@ -7683,7 +7682,6 @@ def marketing_dashboard():
                 'earliest': row['earliest'],
                 'latest': row['latest'],
                 'subscriber_count': row['subscriber_count'],
-                'category': row['category'],
             })
 
         # 2b. Subscriber growth — compare oldest snapshot in time window to latest
@@ -7823,10 +7821,6 @@ def marketing_dashboard():
         ''')
         intel_entries = [dict(row) for row in cursor.fetchall()]
 
-        # 9. Channel -> category map (covers channels below leaderboard threshold)
-        cursor.execute("SELECT channel_name, category FROM channel_subscriptions WHERE enabled=1")
-        channel_categories = {row['channel_name']: row['category'] for row in cursor.fetchall()}
-
         conn.close()
 
         return jsonify({
@@ -7848,7 +7842,6 @@ def marketing_dashboard():
                 'recent_activity': recent_activity,
                 'top_topics': [{'topic': t[0], 'count': t[1]} for t in top_topics],
                 'intelligence': intel_entries,
-                'channel_categories': channel_categories,
             }
         })
     except Exception as e:
