@@ -947,6 +947,9 @@ class DatabaseService:
         else:
             # No channel filter - search all content
             query_sql = '''
+                    SELECT id, title, channel, video_url, full_transcript,
+                           ai_summary, processing_date, status, filename, confidence_score, tags, prompt_used,
+                           published_at, COALESCE(favorited, 0) as favorited, original_publish_date
                 SELECT id, title, channel, video_url, full_transcript,
                        ai_summary, processing_date, status, filename, confidence_score, tags, prompt_used,
                        published_at, COALESCE(favorited, 0) as favorited, original_publish_date
