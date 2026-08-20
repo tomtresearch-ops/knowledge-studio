@@ -399,17 +399,10 @@ def run_pipeline(vertical="ai_tech"):
     print(f"  Brief #{brief['id']}: {brief['title']} ({brief['signal_count']} signals)")
 
     # 3. Check for voice reference
-    # This used to print a line and return False, which the caller read as exit 0 — a clean
-    # night. In Aug 2026 a git recovery deleted the (gitignored) voice roster and every show
-    # stopped publishing for eight days while the logs stayed green. A missing input is a
-    # FAULT, not a skip: raise, so the exit code is non-zero and the alert actually fires.
     voice_ref = get_voice_reference(vertical)
     if not voice_ref:
-        raise RuntimeError(
-            f"No voice reference for {vertical} — expected {vertical}_voice.wav or "
-            f"01_grounded_present.wav under {VOICE_ROSTER_DIR}. The roster is gitignored, so a "
-            f"checkout or clean can delete it; restore from the MacBook mirror. NOT published."
-        )
+        print(f"  No voice reference found, skipping TTS")
+        return False
     print(f"  Voice: {os.path.basename(voice_ref)}")
 
     # 4. Generate script
@@ -474,13 +467,5 @@ def deploy_to_github_pages():
 
 
 if __name__ == "__main__":
-    # Exit code is the ONLY thing the scheduler reads. Returning False on a fault while
-    # exiting 0 is what made the Aug 2026 outage invisible: 2 = nothing was published and
-    # that is wrong, 0 = nothing to do (no new brief, or the episode already exists).
     vertical = sys.argv[1] if len(sys.argv) > 1 else "ai_tech"
-    try:
-        published = run_pipeline(vertical)
-    except Exception as exc:
-        print(f"  FAILED — {vertical}: {exc}")
-        sys.exit(2)
-    sys.exit(0)
+    run_pipeline(vertical)
