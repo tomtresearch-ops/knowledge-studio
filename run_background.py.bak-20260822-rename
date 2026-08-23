@@ -110,7 +110,7 @@ def get_verticals_for_today():
     """Determine which verticals should generate briefs today.
 
     SCOPE (Tom, 2026-08-06): only three brands run — Breakthrough Medicine,
-    Longevity Report, AI Landscape. ai_agents, local_ai_intel and the KS lines are
+    Longevity Edge, AI Landscape. ai_agents, local_ai_intel and the KS lines are
     PAUSED. Reason: inference runs on the subscription, the nightly consumes it
     sequentially, and whatever ran first ate the session quota — which is why
     Breakthrough Medicine (previously third in line) produced nothing between
@@ -119,7 +119,7 @@ def get_verticals_for_today():
     ORDER IS PRIORITY, not cosmetics. The list is returned lowest-cadence-first so
     the rarest brand gets the freshest quota:
     - future_medicine  (Breakthrough Medicine) — Monday and Thursday   → FIRST
-    - health_longevity (Longevity Report)        — Tuesday and Friday    → SECOND
+    - health_longevity (Longevity Edge)        — Tuesday and Friday    → SECOND
     - ai_tech          (AI Landscape)          — daily                 → LAST
 
     Life-stage verticals and futures_trends remain PAUSED (see below).
@@ -133,7 +133,7 @@ def get_verticals_for_today():
         verticals.append('future_medicine')  # Breakthrough Medicine — highest priority
 
     if day_of_week in (1, 4):  # Tuesday, Friday
-        verticals.append('health_longevity')  # Longevity Report
+        verticals.append('health_longevity')  # Longevity Edge
 
     verticals.append('ai_tech')  # AI Landscape — daily, runs last by design
 
@@ -296,11 +296,11 @@ def main():
     print("📱 Drop screenshots into the folder to process them")
     print("🔍 Use the web interface at http://localhost:5001 to view results")
     print("📡 Auto-refreshing feeds at 9am, 3pm, and 9pm")
-    print("📰 Auto-generating briefs at 2:00am (Breakthrough Medicine Mon/Thu, Longevity Report Tue/Fri, AI Landscape daily)")
+    print("📰 Auto-generating briefs at 2:00am (Breakthrough Medicine Mon/Thu, Longevity Edge Tue/Fri, AI Landscape daily)")
     print("🎙️  Auto-generating podcasts at 2:30am, newsletters at 4:00am")
     print("📧 Auto-generating newsletters at 4:00am → Ghost drafts")
     print("🐕 Publish watchdog at 5:00am and 6:00pm — alerts if any brand goes stale")
-    print("🎙️  Podcasts run sequentially at 2:30am — priority order: Breakthrough Medicine, Longevity Report, AI Landscape")
+    print("🎙️  Podcasts run sequentially at 2:30am — priority order: Breakthrough Medicine, Longevity Edge, AI Landscape")
     print("\nPress Ctrl+C to stop monitoring...\n")
     
     observer.start()
