@@ -7719,10 +7719,7 @@ def marketing_dashboard():
         top_time_params = time_cv2_params if days_filter else []
         cursor.execute(f'''
             SELECT cv.title, cv.channel_name as channel, cv.view_count,
-                   cv.published_at, cv.video_url, cv.thumbnail_url,
-                   (SELECT MIN(v.id) FROM videos v
-                     WHERE v.video_url = cv.video_url
-                       AND v.ai_summary IS NOT NULL AND TRIM(v.ai_summary) != '') as ks_id
+                   cv.published_at, cv.video_url, cv.thumbnail_url
             FROM channel_videos cv
             WHERE cv.view_count IS NOT NULL AND cv.view_count > 0
                   {top_time}
@@ -7739,10 +7736,7 @@ def marketing_dashboard():
                 cursor.execute('''
                     SELECT cv.title, cv.channel_name as channel, cv.view_count,
                            cv.published_at, cv.video_url, cv.thumbnail_url,
-                           ROUND(CAST(cv.view_count AS REAL) / ?, 1) as multiplier,
-                           (SELECT MIN(v.id) FROM videos v
-                             WHERE v.video_url = cv.video_url
-                               AND v.ai_summary IS NOT NULL AND TRIM(v.ai_summary) != '') as ks_id
+                           ROUND(CAST(cv.view_count AS REAL) / ?, 1) as multiplier
                     FROM channel_videos cv
                     WHERE cv.channel_name = ? AND cv.view_count > ? * 2
                           AND cv.view_count IS NOT NULL
