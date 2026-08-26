@@ -1,16 +1,6 @@
 {
-  "_readme": "Pronunciation fix rules for TTS normalization. Two types: 'literal' (exact find/replace, case-sensitive option) and 'pattern' (regex find/replace). Add new rules here whenever you hear a mispronunciation. Changes take effect on the next episode run — no restart needed.",
+  "_readme": "Pronunciation fix rules for TTS normalization. Two types: 'literal' (exact find/replace, case-sensitive option) and 'pattern' (regex find/replace). Add new rules here whenever you hear a mispronunciation. Changes take effect on the next episode run \u2014 no restart needed.",
   "literal": [
-    {
-      "find": "Intismeran",
-      "replace": "in-TISS-meh-ran",
-      "note": "Merck/Moderna individualised neoantigen therapy (was mRNA-4157/V940); USAN stem 'in tis me ran'. Tom heard it as 'Intersmeron' 2026-08-25"
-    },
-    {
-      "find": "intismeran",
-      "replace": "in-TISS-meh-ran",
-      "note": "lowercase"
-    },
     {
       "find": "compound ",
       "replace": "COM-pound ",
@@ -139,7 +129,7 @@
     {
       "find": "CRISPR",
       "replace": "CRISPR",
-      "note": "already pronounced correctly — keep as-is"
+      "note": "already pronounced correctly \u2014 keep as-is"
     },
     {
       "find": "GLP-1",
@@ -194,7 +184,7 @@
     {
       "find": "IV ",
       "replace": "I V ",
-      "note": "intravenous — space after to avoid 'IV' as roman numeral four"
+      "note": "intravenous \u2014 space after to avoid 'IV' as roman numeral four"
     },
     {
       "find": "et al.",
@@ -234,47 +224,47 @@
     {
       "find": "live attenuated",
       "replace": "lyve attenuated",
-      "note": "homograph: live /laɪv/ — TTS reads short-i by default"
+      "note": "homograph: live /la\u026av/ \u2014 TTS reads short-i by default"
     },
     {
       "find": "live virus",
       "replace": "lyve virus",
-      "note": "homograph: live /laɪv/"
+      "note": "homograph: live /la\u026av/"
     },
     {
       "find": "live vaccine",
       "replace": "lyve vaccine",
-      "note": "homograph: live /laɪv/"
+      "note": "homograph: live /la\u026av/"
     },
     {
       "find": "live pathogen",
       "replace": "lyve pathogen",
-      "note": "homograph: live /laɪv/"
+      "note": "homograph: live /la\u026av/"
     },
     {
       "find": "live cell",
       "replace": "lyve cell",
-      "note": "homograph: live /laɪv/"
+      "note": "homograph: live /la\u026av/"
     },
     {
       "find": "live cells",
       "replace": "lyve cells",
-      "note": "homograph: live /laɪv/"
+      "note": "homograph: live /la\u026av/"
     },
     {
       "find": "long-lived",
       "replace": "long-lyved",
-      "note": "homograph: lived /laɪvd/ — long-lived = long-lasting"
+      "note": "homograph: lived /la\u026avd/ \u2014 long-lived = long-lasting"
     },
     {
       "find": "short-lived",
       "replace": "short-lyved",
-      "note": "homograph: lived /laɪvd/"
+      "note": "homograph: lived /la\u026avd/"
     },
     {
       "find": "these compounds",
       "replace": "these COM-pounds",
-      "note": "homograph: compound noun stress — TTS defaults to verb (com-POUND)"
+      "note": "homograph: compound noun stress \u2014 TTS defaults to verb (com-POUND)"
     },
     {
       "find": "the compounds",
@@ -356,17 +346,17 @@
     {
       "find": "\\bPhase ([IVX]+)\\b",
       "replace": "PHASE_NUMERAL_PLACEHOLDER",
-      "note": "catch-all for any Phase + roman numeral not covered by literals — handled in code"
+      "note": "catch-all for any Phase + roman numeral not covered by literals \u2014 handled in code"
     },
     {
       "find": "(\\d+)B\\b",
       "replace": "\\1 billion",
-      "note": "70B → 70 billion (parameter counts)"
+      "note": "70B \u2192 70 billion (parameter counts)"
     },
     {
       "find": "(\\d+)M\\b",
       "replace": "\\1 million",
-      "note": "500M → 500 million"
+      "note": "500M \u2192 500 million"
     },
     {
       "find": "(\\d+)%",

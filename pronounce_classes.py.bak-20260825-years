@@ -74,8 +74,6 @@ _DIGIT_WORD = {'0': 'zero', '1': 'one', '2': 'two', '3': 'three', '4': 'four',
 # Leave these tokens entirely unchanged (the model already says them fine);
 # expanding them would be a regression (COVID19 -> "C O V I D ..." is wrong).
 # Keyed by the lowercased alphabetic component. Extend as new ones surface.
-_YEAR_RE = re.compile(r'(?<![\d,./-])((?:19|20)\d{2})(?![\d/%-])')
-
 EXCLUDE_WORD_ACRONYMS = {
     "covid", "sars", "aids", "ebola", "mrsa", "hin", "nasa", "radar", "laser",
     "scuba", "zika", "mers", "hpai",
@@ -102,18 +100,6 @@ def _number_to_spoken(digits):
         return _two_digit_words(int(digits))
     return ' '.join(_DIGIT_WORD[d] for d in digits)
 
-def _year_words(n):
-    """Speak a 4-digit year the way a person does: 2027 -> 'twenty twenty seven',
-    2005 -> 'two thousand five', 2010 -> 'twenty ten', 1998 -> 'nineteen ninety eight'.
-    Added 2026-08-25: Tom heard 'mid-2027' read out as 'mid two zero two seven'."""
-    hi, lo = divmod(n, 100)
-    if 2000 <= n <= 2009:
-        return "two thousand" + ((" " + _ONES[lo]) if lo else "")
-    if lo == 0:
-        return _two_digit_words(hi) + " hundred"
-    return _two_digit_words(hi) + " " + _two_digit_words(lo)
-
-
 def expand_sci_token(tok):
     """TMEM174 -> 'T M E M one seven four'.  aquaporin-4 -> 'aquaporin four'.
     COVID-19 -> unchanged (word-acronym guard).  CD20 -> 'C D twenty'.
@@ -125,12 +111,6 @@ def expand_sci_token(tok):
     letters, digits = m.group(1), m.group(2)
     if letters.lower() in EXCLUDE_WORD_ACRONYMS:    # GUARD 1: leave word-acronyms
         return tok
-    # GUARD 3 — a lowercase modifier plus a 4-digit year is a YEAR, not a gene id.
-    # Without this, mid-2027 fell through to the 3+-digit rule and was read out
-    # digit by digit: 'mid two zero two seven' (heard by Tom, 2026-08-25).
-    if (len(digits) == 4 and 1900 <= int(digits) <= 2099
-            and not any(c.isupper() for c in letters)):
-        return f"{letters} {_year_words(int(digits))}"
     caps = sum(1 for c in letters if c.isupper())
     if caps >= max(2, len(letters) - 1):           # initialism: TMEM, SUCNR, GLP
         spoken_letters = ' '.join(letters.upper())
@@ -282,12 +262,6 @@ def normalize(text, heteronyms=False):
             return expand_sci_token(tok)
         return tok
     out = _SCI_RE.sub(_sub_sci, text)
-
-    # Bare years: 2027 -> 'twenty twenty seven'. Left to the TTS model these came out
-    # as 'two zero two seven'. Bounded to 1900-2099 and skipped when the number is
-    # glued to another digit, a comma, a period, a slash, a hyphen or a percent sign,
-    # so dates (2026-08-24), thousands (1,500) and measurements stay untouched.
-    out = _YEAR_RE.sub(lambda m: _year_words(int(m.group(1))), out)
 
     # Class B — proactive POS-correct heteronym respelling (opt-in)
     if heteronyms:
