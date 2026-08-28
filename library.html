@@ -211,6 +211,7 @@
             display: flex;
             flex: 1;
             min-height: 0;
+            position: relative;
         }
 
         /* Sidebar */
@@ -229,6 +230,7 @@
             width: 0;
             padding: 32px 0;
             border-right: none;
+            overflow: visible;
         }
 
         .sidebar.collapsed .sidebar-section,
@@ -253,13 +255,13 @@
         .sidebar-edge-toggle {
             position: absolute;
             top: 50%;
-            right: -14px;
+            right: 0;
             transform: translateY(-50%);
             width: 28px;
             height: 48px;
             background: rgba(139, 92, 246, 0.2);
             border: 1px solid rgba(139, 92, 246, 0.4);
-            border-radius: 0 8px 8px 0;
+            border-radius: 8px 0 0 8px;
             color: #a78bfa;
             cursor: pointer;
             display: flex;
@@ -278,6 +280,7 @@
 
         .sidebar.collapsed .sidebar-edge-toggle {
             right: -28px;
+            border-radius: 0 8px 8px 0;
         }
 
         .sidebar-section {
@@ -2653,27 +2656,21 @@
         }
 
         @media (max-width: 900px) {
+            /* Narrow pane: the rail defaults to collapsed (set on load in JS) but the
+               edge tab stays live, so it can always be opened over the content. */
             .sidebar {
-                width: 0 !important;
-                min-width: 0 !important;
-                padding: 0 !important;
-                border-right: none !important;
-                overflow: hidden !important;
-                flex-shrink: 1 !important;
-                flex-basis: 0 !important;
+                width: 240px;
+                position: absolute;
+                left: 0;
+                top: 0;
+                bottom: 0;
+                z-index: 30;
+                background: #12121a;
             }
 
-            .sidebar .sidebar-section,
-            .sidebar .sidebar-title,
-            .sidebar .sidebar-content,
-            .sidebar .sidebar-toggle {
-                opacity: 0;
-                pointer-events: none;
-                display: none;
-            }
-
-            .main-layout .sidebar-expand-btn {
-                display: flex !important;
+            .sidebar.collapsed {
+                width: 0;
+                padding: 32px 0;
             }
         }
 
@@ -3337,7 +3334,8 @@
 
         // Restore sidebar state on load
         (function restoreSidebarState() {
-            if (localStorage.getItem('sidebarCollapsed') === '1') {
+            const pref = localStorage.getItem('sidebarCollapsed');
+            if (pref === '1' || (pref === null && window.innerWidth <= 900)) {
                 const sidebar = document.getElementById('librarySidebar');
                 const layout = document.getElementById('mainLayout');
                 const edgeToggle = document.getElementById('sidebarEdgeToggle');

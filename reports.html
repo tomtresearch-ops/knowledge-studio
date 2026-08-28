@@ -51,7 +51,46 @@
             padding: 24px 16px;
             overflow-y: auto;
             flex-shrink: 0;
+            position: relative;
+            transition: width 0.3s ease, min-width 0.3s ease, padding 0.3s ease;
         }
+        .sidebar.collapsed {
+            width: 0;
+            min-width: 0;
+            padding: 24px 0;
+            border-right: none;
+            overflow: visible;
+        }
+        .sidebar.collapsed > h2,
+        .sidebar.collapsed > .report-card {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .sidebar-edge-toggle {
+            position: absolute;
+            top: 50%;
+            right: 0;
+            transform: translateY(-50%);
+            width: 28px;
+            height: 48px;
+            background: rgba(139, 92, 246, 0.2);
+            border: 1px solid rgba(139, 92, 246, 0.4);
+            border-radius: 8px 0 0 8px;
+            color: #a78bfa;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            transition: all 0.2s;
+            z-index: 20;
+            padding: 0;
+        }
+        .sidebar-edge-toggle:hover {
+            background: rgba(139, 92, 246, 0.35);
+            color: #c4b5fd;
+        }
+        .sidebar.collapsed .sidebar-edge-toggle { right: -28px; border-radius: 0 8px 8px 0; }
         .sidebar h2 {
             font-size: 11px;
             font-weight: 600;
@@ -182,7 +221,8 @@
 </header>
 
 <div class="layout">
-    <div class="sidebar">
+    <div class="sidebar" id="reportsSidebar">
+        <button class="sidebar-edge-toggle" id="sidebarEdgeToggle" onclick="toggleSidebar()" title="Toggle sidebar">‹</button>
         <h2>Research Reports</h2>
         <div class="report-card active" onclick="showReport('creatine')">
             <span class="tag">Health</span>
@@ -454,6 +494,22 @@ function showReport(id) {
     var pane = document.getElementById('pane-' + id);
     if (pane) { pane.style.display = ''; var rc = document.getElementById('report-content'); if (rc) rc.scrollTop = 0; }
 }
+
+    function toggleSidebar() {
+        const sidebar = document.getElementById('reportsSidebar');
+        const isCollapsed = sidebar.classList.toggle('collapsed');
+        localStorage.setItem('reportsSidebarCollapsed', isCollapsed ? '1' : '0');
+        const t = document.getElementById('sidebarEdgeToggle');
+        if (t) t.textContent = isCollapsed ? '›' : '‹';
+    }
+    (function restoreReportsSidebar() {
+        if (localStorage.getItem('reportsSidebarCollapsed') === '1') {
+            const sidebar = document.getElementById('reportsSidebar');
+            const t = document.getElementById('sidebarEdgeToggle');
+            if (sidebar) sidebar.classList.add('collapsed');
+            if (t) t.textContent = '›';
+        }
+    })();
 </script>
 </body>
 </html>
