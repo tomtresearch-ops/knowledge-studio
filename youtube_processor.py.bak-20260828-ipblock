@@ -2392,50 +2392,6 @@ class YouTubeProcessor:
         finally:
             conn.close()
 
-    def _mark_ip_blocked(self, item: Dict[str, Any]):
-        """Park an item blocked by the exit IP. Retry count is deliberately NOT
-        incremented — a blocked IP must never push a good video toward 'deferred'."""
-        conn = self._get_connection()
-        cursor = conn.cursor()
-        try:
-            cursor.execute(
-                """
-                UPDATE processing_queue
-                SET status = 'blocked_ip',
-                    error_message = 'Exit IP blocked by YouTube - awaiting relay rotation',
-                    priority = MAX(COALESCE(priority, 0), 100),
-                    next_attempt_at = NULL,
-                    last_error_at = CURRENT_TIMESTAMP,
-                    started_at = NULL
-                WHERE id = ?
-                """,
-                (item['id'],)
-            )
-            conn.commit()
-            print(f"🅿️  Parked {item.get('video_url')} as blocked_ip (top of queue, no retry burned)")
-        finally:
-            conn.close()
-
-    def _request_relay_rotation(self, min_interval_seconds: int = 1200):
-        """Ask the Mullvad rotator for a new exit IP. Rate-limited so a run of
-        blocked items cannot thrash the tunnel."""
-        import subprocess
-        stamp = Path('/Users/max/control-room/state/last_block_rotation')
-        now = time.time()
-        try:
-            if stamp.exists() and (now - stamp.stat().st_mtime) < min_interval_seconds:
-                print("   (rotation already requested recently — skipping)")
-                return
-            stamp.parent.mkdir(parents=True, exist_ok=True)
-            stamp.write_text(str(now))
-            subprocess.Popen(
-                ['/bin/bash', '/Users/max/control-room/scripts/mullvad_rotate.sh', '--random'],
-                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
-            )
-            print("🔄 Requested Mullvad relay rotation (IP blocked)")
-        except Exception as exc:
-            print(f"   ⚠️ Could not request rotation: {exc}")
-
     def _mark_queue_failure(
         self,
         item: Dict[str, Any],
@@ -2662,18 +2618,6 @@ class YouTubeProcessor:
         if elapsed < QUEUE_TRANSCRIPT_COOLDOWN_SECONDS:
             time.sleep(QUEUE_TRANSCRIPT_COOLDOWN_SECONDS - elapsed)
 
-    # Added 2026-08-28: an IP block is NOT "this video has no captions".
-    # The Studio runs behind Mullvad; YouTube blocks datacenter exit IPs for
-    # transcript fetches. Conflating the two is how good submissions ended up
-    # permanently deferred. Tom's rule: nothing submitted gets lost.
-    def _is_ip_blocked_error(self, error: Exception) -> bool:
-        message = str(error).lower()
-        keywords = [
-            'ipblocked', 'youtube is blocking requests from your ip',
-            'requestblocked', 'blocking requests from your ip',
-        ]
-        return any(k in message for k in keywords)
-
     def _is_rate_limit_error(self, error: Exception) -> bool:
         message = str(error).lower()
         keywords = [
@@ -2774,15 +2718,6 @@ class YouTubeProcessor:
             if transcript and len(transcript) >= QUEUE_MIN_TRANSCRIPT_LENGTH:
                 self._cache_transcript(item, transcript)
 
-
-        if not transcript and getattr(self, '_last_fetch_ip_blocked', False):
-            # The exit IP is blocked — the video is fine. Park it at the FRONT of the
-            # queue without burning a retry, and ask for a relay rotation. Requeued
-            # automatically by ks_requeue_blocked.py once the IP changes.
-            self._mark_ip_blocked(item)
-            self._request_relay_rotation()
-            time.sleep(QUEUE_POST_PROCESS_SLEEP_SECONDS)
-            return
 
         if not transcript:
             # Mark as no_transcript but allow retries - transcripts may become available later
@@ -3201,10 +3136,6 @@ Set "is_youtube": true if you can see ANY YouTube UI elements (title bar, channe
         import time
         import re as _re
 
-        # Reset the per-call block flag. Read by the queue worker so an IP block
-        # is never mistaken for a captionless video (2026-08-28).
-        self._last_fetch_ip_blocked = False
-
         # Try youtube-transcript-api first — faster, no bot detection issues
         try:
             from youtube_transcript_api import YouTubeTranscriptApi
@@ -3220,9 +3151,6 @@ Set "is_youtube": true if you can see ANY YouTube UI elements (title bar, channe
                 elif text:
                     print(f"⚠️ youtube-transcript-api returned short transcript ({len(text)} chars), trying yt-dlp...")
         except Exception as e:
-            if self._is_ip_blocked_error(e):
-                self._last_fetch_ip_blocked = True
-                print(f"🚫 IP BLOCKED by YouTube (exit IP), not a missing transcript: {e}")
             print(f"⚠️ youtube-transcript-api failed: {e}, trying yt-dlp...")
 
         # Fallback to yt-dlp with client rotation
