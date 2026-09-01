@@ -4773,58 +4773,6 @@ def delete_visual_capture(capture_id):
         return jsonify({'success': False, 'error': str(e)}), 500
 
 
-@app.route('/api/visual-captures/<int:capture_id>/reprocess', methods=['POST'])
-def reprocess_visual_capture(capture_id):
-    """Re-extract a capture in place from its stored image.
-
-    Captures can end up empty for reasons that have nothing to do with the photo:
-    an expired Claude login, a retired model, or a content type queued for a review
-    pass that never runs. Those rows kept their image, so they are recoverable —
-    this re-runs extraction and overwrites the row rather than inserting a new one,
-    so nothing duplicates. Runs in-process, which matters: only the app has the
-    keychain access that `claude -p` needs.
-    """
-    try:
-        conn = sqlite3.connect(DATABASE_PATH)
-        cur = conn.cursor()
-        row = cur.execute(
-            'SELECT filename, content_type FROM visual_captures WHERE id = ?',
-            (capture_id,)
-        ).fetchone()
-        if not row:
-            conn.close()
-            return jsonify({'success': False, 'error': 'Capture not found'}), 404
-
-        filename, content_type = row
-        path = os.path.join(SCREENSHOTS_FOLDER, filename)
-        if not os.path.exists(path):
-            conn.close()
-            return jsonify({'success': False, 'error': 'Image no longer on disk',
-                            'filename': filename}), 410
-
-        b64 = visual_processor._encode_image(path)
-        media = visual_processor._get_media_type(path)
-        data, stats = visual_processor.extract_structured_data(b64, content_type, media)
-
-        if not data or (isinstance(data, dict) and 'error' in data):
-            conn.close()
-            return jsonify({'success': False, 'id': capture_id,
-                            'content_type': content_type, 'result': data}), 502
-
-        tags = visual_processor.generate_auto_tags(data, content_type)
-        cur.execute(
-            "UPDATE visual_captures SET structured_data = ?, tags = ?, review_status = 'complete' "
-            "WHERE id = ?",
-            (json.dumps(data), json.dumps(tags) if isinstance(tags, list) else tags, capture_id)
-        )
-        conn.commit()
-        conn.close()
-        return jsonify({'success': True, 'id': capture_id, 'content_type': content_type,
-                        'structured_data': data})
-    except Exception as e:
-        return jsonify({'success': False, 'error': str(e)}), 500
-
-
 @app.route('/api/visual-captures/pending-review')
 def get_pending_review_captures():
     """Get visual captures awaiting Claude Code review."""
@@ -5727,34 +5675,6 @@ def get_library():
         all_content = videos + articles + visuals
         # Sort by sort_date (raw timestamp), most recent first
         all_content.sort(key=lambda x: x.get('sort_date', '') or x.get('date', ''), reverse=True)
-
-        # Light mode — for the phone. The mobile cards need identity and a TL;DR,
-        # not bodies: the full payload is ~244 MB (116 MB of it transcripts) to
-        # render 60 rows, which never finishes over Wi-Fi. Keep the fields the
-        # card actually reads, trim the TL;DR source, and flag whether a full
-        # summary exists so the client can fetch it on expand.
-        if request.args.get('light'):
-            KEEP = {'id', 'title', 'channel', 'channel_name', 'content_type',
-                    'favorited', 'url', 'video_url', 'date', 'sort_date',
-                    'published_at', 'processing_date', 'created_at', 'processed_at',
-                    'status', 'queue_status', 'queue_stage', 'queue_progress',
-                    'episode_id', 'tags'}
-            TLDR_SRC = ('summary_15', 'summary_50', 'summary_30', 'ai_summary', 'summary')
-            TLDR_CHARS = 1200          # the client's TL;DR extractor reads the head
-            slim = []
-            for item in all_content:
-                out = {k: v for k, v in item.items() if k in KEEP}
-                head = None
-                for key in TLDR_SRC:
-                    val = item.get(key)
-                    if val and str(val).strip():
-                        head = str(val)[:TLDR_CHARS]
-                        break
-                out['summary_15'] = head
-                full = item.get('ai_summary') or item.get('summary')
-                out['has_full'] = bool(full and len(str(full)) > 80)
-                slim.append(out)
-            all_content = slim
 
         return jsonify({
             'success': True,

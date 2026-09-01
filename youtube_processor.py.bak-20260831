@@ -3129,18 +3129,7 @@ Set "is_youtube": true if you can see ANY YouTube UI elements (title bar, channe
             
             # YouTube search query
             search_query = f"{title}"
-            # The vision model says "not clearly visible" (among other phrasings) when it
-            # cannot read the channel. Appending that to the query poisons the search and
-            # is a real cause of "Could not find video URL". Match on substrings, not an
-            # exact list, so a new phrasing does not silently reopen the same hole.
-            junk_channel = not channel or any(
-                marker in channel.lower()
-                for marker in ('unknown', 'unable to determine', 'not visible',
-                               'not clearly', 'not legible', 'not readable',
-                               'n/a', 'none', 'unclear', 'cannot determine',
-                               "can't determine", 'no channel')
-            )
-            if not junk_channel:
+            if channel and channel.lower() not in ('unknown', 'unable to determine', 'not visible', ''):
                 search_query += f" {channel}"
             
             # YouTube Data API search
@@ -3187,17 +3176,13 @@ Set "is_youtube": true if you can see ANY YouTube UI elements (title bar, channe
                         print(f"Title: {best_match['snippet']['title']}")
                         return video_url
                     else:
-                        # The 0.3 gate above used to be decorative: this branch returned
-                        # the first search hit regardless of score, so a 0.00 match was
-                        # accepted and filed under the captured title. That is how
-                        # unrelated videos ended up in the library looking complete.
-                        # No match now means no match — the capture surfaces as
-                        # unresolved instead of quietly wrong.
                         print(f"No good title match found (best score: {best_score:.2f})")
-                        if items:
-                            print(f"  Closest was: {items[0]['snippet']['title']}")
-                        print("  Rejected — refusing to file an unverified match.")
-                        return None
+                        # Fall back to first result but log the mismatch
+                        video_id = items[0]['id']['videoId']
+                        video_url = f"https://www.youtube.com/watch?v={video_id}"
+                        print(f"Using first result (weak match): {video_url}")
+                        print(f"Title: {items[0]['snippet']['title']}")
+                        return video_url
                 else:
                     print("No videos found in search results")
                     return None
@@ -3243,13 +3228,9 @@ Set "is_youtube": true if you can see ANY YouTube UI elements (title bar, channe
         # Fallback to yt-dlp with client rotation
         # Try client types in order of reliability
         # tv client is most reliable, android/ios are good fallbacks
-        # Measured 2026-08-31 against live videos: 'tv' returns "The page needs to be
-        # reloaded", 'android'/'android_vr' hit "Sign in to confirm you're not a bot",
-        # and 'web'/'mweb'/'web_safari' come back with no formats. 'web_embedded' and
-        # 'ios' still serve captions, which is all this path needs.
-        client_types = ['web_embedded', 'ios', 'mweb', 'web_safari', 'tv', 'android']
-        # Keep the two that work first; shuffle the rest so we don't hammer one pattern.
-        client_order = ['web_embedded', 'ios'] + random.sample(client_types[2:], len(client_types) - 2)
+        client_types = ['tv', 'android', 'ios', 'web']
+        # Shuffle to avoid patterns, but prioritize tv
+        client_order = ['tv'] + random.sample([c for c in client_types if c != 'tv'], len(client_types) - 1)
         
         for attempt, client_type in enumerate(client_order):
             try:
@@ -3295,12 +3276,6 @@ Set "is_youtube": true if you can see ANY YouTube UI elements (title bar, channe
                         'extractor_args': extractor_args,
                         'referer': 'https://www.youtube.com/',
                         'socket_timeout': 30,
-                        # YouTube's SABR rollout means many videos now return no
-                        # downloadable formats. We only want subtitles, so a missing
-                        # format must not abort the extraction — without this the whole
-                        # fetch dies on "Requested format is not available" even when
-                        # the captions are sitting right there.
-                        'ignore_no_formats_error': True,
                     }
                     
                     if cookies_file:
@@ -3325,13 +3300,7 @@ Set "is_youtube": true if you can see ANY YouTube UI elements (title bar, channe
                                 print(f"   Available subtitles: {list(subtitles.keys())[:3]}...")
                                 print(f"   Available auto_captions: {list(auto_captions.keys())[:3]}...")
                             
-                            # Preferred path: let yt-dlp pull the caption file.
-                            direct = self._subs_via_ytdlp(video_url, client_type)
-                            if direct:
-                                print(f"\u2705 Transcript via yt-dlp subtitles with '{client_type}' client: {len(direct)} characters")
-                                return direct
-
-                            # Fallback: the older hand-fetch of the caption URL.
+                            # Try to get subtitles
                             for source in [subtitles, auto_captions]:
                                 for lang in ['en', 'en-US', 'en-GB', 'en-orig']:
                                     if lang in source and source[lang]:
@@ -3396,56 +3365,6 @@ Set "is_youtube": true if you can see ANY YouTube UI elements (title bar, channe
         
         print(f"❌ No transcript available after trying all strategies")
         return None
-
-    def _subs_via_ytdlp(self, video_url: str, client_type: str) -> str:
-        """Let yt-dlp fetch the caption file itself and return the cleaned text.
-
-        Hand-fetching the caption URL out of extract_info() stopped working:
-        YouTube now gates those URLs, so the request comes back empty and the
-        transcript silently reads as "not available". yt-dlp's own subtitle
-        downloader still gets them (measured 2026-08-31, 'web_embedded' client).
-        Returns '' when nothing usable comes back.
-        """
-        import tempfile, glob, shutil, os as _os
-        try:
-            import yt_dlp
-        except ImportError:
-            return ''
-        tmp = tempfile.mkdtemp(prefix='ks_subs_')
-        try:
-            opts = {
-                'skip_download': True,
-                'writesubtitles': True,
-                'writeautomaticsub': True,
-                'subtitleslangs': ['en', 'en-US', 'en-GB', 'en-orig'],
-                'subtitlesformat': 'json3/vtt/srv1/best',
-                'ignore_no_formats_error': True,
-                'quiet': True,
-                'no_warnings': True,
-                'socket_timeout': 30,
-                'retries': 2,
-                'outtmpl': _os.path.join(tmp, '%(id)s.%(ext)s'),
-                'extractor_args': {'youtube': {'player_client': [client_type]}},
-            }
-            with yt_dlp.YoutubeDL(opts) as ydl:
-                ydl.download([video_url])
-            best = ''
-            for path in sorted(glob.glob(_os.path.join(tmp, '*'))):
-                try:
-                    raw = open(path, 'r', errors='ignore').read()
-                except OSError:
-                    continue
-                text = self.clean_subtitle_content(raw)
-                if text and len(text) > len(best):
-                    best = text
-            # 200, not 1000: a short video has a short transcript, and the old
-            # threshold threw away perfectly good captions as if none existed.
-            return best if len(best) > 200 else ''
-        except Exception as e:
-            print(f"   \u26a0\ufe0f yt-dlp subtitle download failed ({client_type}): {e}")
-            return ''
-        finally:
-            shutil.rmtree(tmp, ignore_errors=True)
 
     def clean_subtitle_content(self, subtitle_content: str) -> str:
         """Clean subtitle content to extract readable text"""

@@ -13567,60 +13567,6 @@ nav.nav a.ks-dragging { opacity: 0.4; outline: 1px dashed #8b5cf6; border-radius
   applyOrder();
 })();
 </script>
-
-<!-- Reload control. The nav's refresh button is one emoji at the end of ten links and
-     disappears in a narrow window; this window is often popped out on its own desktop,
-     where there is no browser toolbar and no Command Center chrome to reach for. Fixed
-     position, always legible, and it carries the load time so staleness is visible
-     without clicking anything. Full page reload on purpose: a data-only refresh cannot
-     pick up a changed page. -->
-<div id="ks-reload-pill" title="Reload this page">
-  <span id="ks-reload-stamp">loaded —</span>
-  <button id="ks-reload-btn" type="button">&#8635; Reload</button>
-</div>
-<style>
-  #ks-reload-pill {
-    position: fixed; right: 18px; bottom: 18px; z-index: 9999;
-    display: flex; align-items: center; gap: 10px;
-    padding: 8px 10px 8px 14px; border-radius: 999px;
-    background: rgba(18, 22, 34, 0.96);
-    border: 1px solid rgba(255, 255, 255, 0.16);
-    box-shadow: 0 6px 22px rgba(0, 0, 0, 0.45);
-    font-size: 12px; color: #cfd4e4;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  }
-  #ks-reload-stamp { white-space: nowrap; letter-spacing: 0.2px; }
-  #ks-reload-btn {
-    cursor: pointer; border-radius: 999px; padding: 5px 12px;
-    background: #2b6fd6; color: #fff; border: 0;
-    font-size: 12px; font-weight: 600; white-space: nowrap;
-  }
-  #ks-reload-btn:hover { background: #3a82ee; }
-  #ks-reload-btn:active { transform: translateY(1px); }
-  @media print { #ks-reload-pill { display: none; } }
-</style>
-<script>
-  (function () {
-    var loadedAt = new Date();
-    function two(n) { return (n < 10 ? '0' : '') + n; }
-    function paint() {
-      var mins = Math.floor((Date.now() - loadedAt.getTime()) / 60000);
-      var clock = two(loadedAt.getHours()) + ':' + two(loadedAt.getMinutes());
-      var age = mins < 1 ? 'just now'
-              : mins < 60 ? mins + ' min ago'
-              : Math.floor(mins / 60) + ' hr ago';
-      var el = document.getElementById('ks-reload-stamp');
-      if (el) el.textContent = 'loaded ' + clock + ' \u00b7 ' + age;
-    }
-    paint();
-    setInterval(paint, 30000);
-    var btn = document.getElementById('ks-reload-btn');
-    if (btn) btn.addEventListener('click', function () {
-      btn.textContent = '\u21bb Reloading\u2026';
-      location.reload();
-    });
-  })();
-</script>
 </body>
 </html>
 

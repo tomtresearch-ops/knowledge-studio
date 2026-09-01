@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ks-mobile-v2';
+const CACHE_NAME = 'ks-mobile-v1';
 const STATIC = ['/mobile', '/mobile/manifest.json'];
 
 self.addEventListener('install', e => {
@@ -22,19 +22,7 @@ self.addEventListener('fetch', e => {
         );
         return;
     }
-    // The app shell is network-first with a cache fallback: cache-first pinned
-    // phones to whatever /mobile they installed, so fixes never arrived.
-    if (e.request.mode === 'navigate' || url.pathname === '/mobile') {
-        e.respondWith(
-            fetch(e.request).then(resp => {
-                const copy = resp.clone();
-                caches.open(CACHE_NAME).then(c => c.put(e.request, copy));
-                return resp;
-            }).catch(() => caches.match(e.request).then(c => c || caches.match('/mobile')))
-        );
-        return;
-    }
-    // Cache-first for the rest of the static assets
+    // Cache-first for static
     e.respondWith(
         caches.match(e.request).then(cached => cached || fetch(e.request))
     );

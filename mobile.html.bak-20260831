@@ -404,8 +404,8 @@ function buildCard(item) {
   html += '<div class="card-meta">' + date + (type === 'article' ? ' &middot; Article' : '') + '</div>';
   html += '</div>';
   if (tl) html += '<div class="card-tldr" data-iid="' + id + '">' + esc(tl) + '</div>';
-  if ((full && full.length > 80) || item.has_full) {
-    html += '<button class="card-expand-btn" data-eid="' + id + '" data-etype="' + type + '"><span class="chev">&#9660;</span> Full summary</button>';
+  if (full && full.length > 80) {
+    html += '<button class="card-expand-btn" data-eid="' + id + '"><span class="chev">&#9660;</span> Full summary</button>';
     html += '<div class="card-full" id="cf-' + id + '">' + esc(full) + '</div>';
   }
   html += '<div class="card-actions">';
@@ -426,7 +426,6 @@ function bindCards(cid) {
       var id = btn.getAttribute('data-eid');
       var el = document.getElementById('cf-' + id);
       var isOpen = el.classList.contains('open');
-      if (!isOpen) fillFullSummary(id, btn.getAttribute('data-etype') || 'video');
       el.classList.toggle('open', !isOpen);
       btn.classList.toggle('open', !isOpen);
       btn.querySelector('.chev').innerHTML = isOpen ? '&#9660;' : '&#9650;';
@@ -472,7 +471,7 @@ async function loadLib(force) {
   if (state.library && !force) return renderLib();
   document.getElementById('lib-list').innerHTML = '<div class="spinner"></div>';
   try {
-    var r = await fetch('/api/library?light=1');
+    var r = await fetch('/api/library');
     var d = await r.json();
     state.library = d.content || [];
     renderLib();
@@ -787,25 +786,6 @@ document.getElementById('c-save').addEventListener('click', async function() {
 
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/mobile/sw.js', { scope: '/mobile/' }).catch(function(){});
-}
-
-// Light-mode library cards ship a TL;DR only. Pull the full summary the first
-// time a card is expanded, so the list stays small enough to load on a phone.
-async function fillFullSummary(id, type) {
-  var box = document.getElementById('cf-' + id);
-  if (!box || box.dataset.loaded || box.textContent.trim()) return;
-  box.dataset.loaded = '1';
-  box.textContent = 'Loading…';
-  var path = (type === 'video') ? '/api/videos/' + id : '/api/articles/' + id;
-  try {
-    var r = await fetch(path);
-    var d = await r.json();
-    var o = d.video || d.article || d.content || d;
-    box.textContent = o.ai_summary || o.summary || 'No summary.';
-  } catch(e) {
-    box.dataset.loaded = '';
-    box.textContent = 'Could not load the full summary.';
-  }
 }
 
 loadFeed();
