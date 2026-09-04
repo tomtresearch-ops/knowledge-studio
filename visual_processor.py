@@ -644,14 +644,19 @@ def process_visual_capture(filepath, source_context=None, db_path=None):
     QUEUE_FOR_REVIEW = {'whiteboard', 'handwritten', 'chart'}
 
     if content_type in QUEUE_FOR_REVIEW:
-        print(f"  Queued for Claude Code review (type: {content_type})")
-        structured_data = {"pending": True, "note": "Awaiting Claude Code analysis for full context extraction"}
-        tags = [content_type, 'pending_review']
+        # These types used to be parked with {"pending": true} for a Claude Code review
+        # pass. Nothing ever consumed that queue, so every chart, whiteboard and
+        # handwritten capture sat empty forever. Extract now with the model already
+        # routed for the type; keep review_status = 'pending_review' so it still
+        # surfaces for a look, but with content in it instead of a placeholder.
+        print(f"  Extracting {content_type} (flagged for review, not deferred)")
+        structured_data, extract_stats = extract_structured_data(image_b64, content_type, media_type)
+        tags = generate_auto_tags(structured_data, content_type)
         review_status = 'pending_review'
-        total_api_calls = detect_stats['api_calls']
-        total_input = detect_stats['input_tokens']
-        total_output = detect_stats['output_tokens']
-        cost = detect_stats.get('cost', 0.0)
+        total_api_calls = detect_stats['api_calls'] + extract_stats['api_calls']
+        total_input = detect_stats['input_tokens'] + extract_stats['input_tokens']
+        total_output = detect_stats['output_tokens'] + extract_stats['output_tokens']
+        cost = detect_stats.get('cost', 0.0) + extract_stats.get('cost', 0.0)
     else:
         print(f"  Extracting structured data...")
         structured_data, extract_stats = extract_structured_data(image_b64, content_type, media_type)
