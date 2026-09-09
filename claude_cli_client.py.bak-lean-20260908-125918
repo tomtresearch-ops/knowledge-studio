@@ -45,37 +45,6 @@ import tempfile
 from pathlib import Path
 
 CLAUDE_BIN = os.environ.get("CLAUDE_BIN", "/opt/homebrew/bin/claude")
-
-# -- Lean invocation (2026-09-08) --------------------------------------------
-# `claude -p` boots a full Claude Code AGENT. The product system prompt, every
-# tool definition and the machine's CLAUDE.md files ship as input before a word
-# of the actual job, and the agent's own preamble inflates the output. Measured
-# on this exact binary: 29,373 input tokens of overhead per call and 419 output
-# tokens to answer "OK". Stripped to a plain system prompt with no tools, the
-# same probe measured 1,554 in / 4 out -- a 95% cut on input, 99% on output,
-# SAME model, same subscription.
-#
-# This shim mimics the Anthropic SDK, where `system` IS the whole system prompt,
-# so replacing rather than appending is also the more faithful behaviour.
-# Vision calls still need the Read tool, because image blocks reach the CLI as
-# file paths -- those keep Read and nothing else.
-#
-# Undo: set KS_LEAN_CLI=0 in the environment. No code change needed.
-LEAN = os.environ.get("KS_LEAN_CLI", "1") != "0"
-LEAN_SYSTEM = ("You are a text processing engine. Follow the instructions in "
-               "the message exactly and return only what they ask for. "
-               "No preamble, no commentary.")
-
-
-def _has_image(messages) -> bool:
-    for m in messages or []:
-        c = m.get("content")
-        if isinstance(c, list):
-            for b in c:
-                if isinstance(b, dict) and b.get("type") == "image":
-                    return True
-    return False
-
 DEFAULT_TIMEOUT = int(os.environ.get("CLAUDE_CLI_TIMEOUT", "600"))
 
 # ── Automatic fallback to the metered API ────────────────────────────────────
@@ -304,15 +273,10 @@ class _Messages:
             cmd = [CLAUDE_BIN, "-p"]
             if model:
                 cmd += ["--model", model]
-            sys_text = ""
             if system:
                 sys_text = system if isinstance(system, str) else _flatten_content(system, tmpdir)
-            if LEAN:
-                cmd += ["--system-prompt", sys_text or LEAN_SYSTEM,
-                        "--strict-mcp-config",
-                        "--tools", "Read" if _has_image(messages) else ""]
-            elif sys_text:
-                cmd += ["--append-system-prompt", sys_text]
+                if sys_text:
+                    cmd += ["--append-system-prompt", sys_text]
 
             # CRITICAL: the pipeline loads ANTHROPIC_API_KEY from .env, and the
             # CLI refuses to use the subscription login when any API-key auth
